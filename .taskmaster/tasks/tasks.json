@@ -1,0 +1,162 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": "1",
+        "title": "Project Setup and Firebase Configuration",
+        "description": "Initialize the React Native (Expo) frontend project and the Node.js (Express) backend. Configure Firebase services including Authentication, Firestore, Cloud Functions, and Hosting. Set up secure Firestore rules.",
+        "details": "Initialize a new Expo project for the mobile app. Set up a Node.js project for the backend API proxy. In the Firebase console, enable Authentication (Anonymous/Spotify), Firestore, and Cloud Functions. Define the initial Firestore data models for `users`, `translations`, `psychometric_words`, and `missing_tracks` as specified in PRD section 5.2. Implement the Firestore security rules from section 11.3 to restrict data access — users can only read/write their own documents, translations are read-only from client, psychometric_words are read-only from client, all writes to translations and psychometric_words go through backend Admin SDK only. Add `.env` to `.gitignore` and create a `.env.example` file for managing API keys. Set up Firebase billing alerts to detect unexpected usage spikes.",
+        "testStrategy": "Verify that the Expo app runs on both iOS and Android simulators. Confirm that a test Cloud Function can be deployed and invoked. Manually test Firestore rules using the simulator to ensure an authenticated user can only write to their own `users/{uid}` document and that client-side writes to `translations` are blocked with a permission error. Verify billing alerts are configured.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-04-29T17:05:18.370Z"
+      },
+      {
+        "id": "2",
+        "title": "Spotify User Authentication and Token Management",
+        "description": "Implement the Spotify OAuth 2.0 authentication flow. Securely store and manage user access and refresh tokens in Firestore via the backend, enabling persistent sessions.",
+        "details": "Use Firebase Auth to create a user upon successful Spotify login. The frontend will initiate the Spotify OAuth flow. Upon receiving the authorization code, it will be sent to a backend Cloud Function. The backend will exchange the code for an access token and a refresh token. These tokens will be stored securely in the user's document in Firestore (`users/{uid}`). The backend will also handle token refresh logic using the stored refresh token when the access token expires — the client never holds the refresh token directly. The Spotify OAuth scope must be strictly limited to `user-read-playback-state` and `user-read-currently-playing` only — do not request any additional scopes.",
+        "testStrategy": "Test the full login flow: user taps 'Connect Spotify', is redirected to Spotify, authorizes the app, and is redirected back. Verify that a new user is created in Firebase Auth and a corresponding document with Spotify tokens is created in Firestore. Verify the refresh token is ONLY in Firestore and never sent to the client. Test token refresh: manually expire an access token and verify the backend automatically refreshes it on the next API call without any user action.",
+        "priority": "high",
+        "dependencies": [
+          "1"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "3",
+        "title": "Backend API Proxy for Spotify, Musixmatch, and Claude",
+        "description": "Develop backend Cloud Functions to act as a secure proxy for all third-party API calls. This keeps all API keys and secrets off the client device.",
+        "details": "Create primary backend endpoints using Node.js/Express on Cloud Functions:\n1. `/spotify/player`: Fetches the user's current playback state. Requires a valid Firebase Auth ID token in the Authorization header. Retrieves the user's Spotify access token from Firestore and calls Spotify `/me/player`. Returns track ID, track name, artist, album art, position_ms, duration_ms, is_playing, and shuffle_state.\n2. `/lyrics/fetch`: Takes a Musixmatch track ID, calls Musixmatch API for LRC lyrics. Returns raw LRC string.\n3. `/translate/lyrics`: Takes a JSON array of English lyric lines and a track ID. Before calling Claude, checks if translation already exists in Firestore cache. If cache hit, returns cached data immediately. If cache miss, calls Claude Haiku API with streaming enabled. Stores completed translation in Firestore under `translations/{track_id}`. Supports request cancellation — if client disconnects mid-stream, abort the Claude request and do NOT write partial data to Firestore.\n4. `/tracks/missing`: Accepts a track ID and name, logs it to the `missing_tracks` Firestore collection for review.\nAll API keys (Spotify Client Secret, Musixmatch, Anthropic) must be stored as Google Cloud Secret Manager secrets, not plaintext environment variables.\nAll endpoints must validate the Firebase ID token and return 401 for missing/invalid tokens.\nAll input parameters must be validated: track IDs alphanumeric+hyphens max 64 chars, reject unexpected shapes with 400.\nRate limits: `/translate/lyrics` max 20 calls/minute per user. `/spotify/player` max 120 calls/minute per user.",
+        "testStrategy": "Use Postman or Insomnia to test each endpoint. For `/spotify/player`, provide a valid Firebase Auth token and verify it returns complete playback data including shuffle_state and duration_ms. For `/lyrics/fetch`, provide a known track ID and verify LRC output. For `/translate/lyrics`, send a sample JSON array and verify translated JSON array is returned AND stored in Firestore cache. Send the same request again and verify it returns from cache without calling Claude (check backend logs). Verify all endpoints return 401 for unauthenticated requests and 400 for malformed input. Test rate limiting by sending 25 rapid requests.",
+        "priority": "high",
+        "dependencies": [
+          "1"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "4",
+        "title": "Psychometric Vocabulary Database Setup",
+        "description": "Create and populate the `psychometric_words` collection in Firestore with the curated list of 1,200+ vocabulary words and their associated data.",
+        "details": "Write a one-time Node.js script to parse the source file (CSV or JSON) of the 1,200 psychometric words. For each word, create a document in the `psychometric_words` Firestore collection. The document schema must match PRD section 5.2, including fields: `word` (normalized lowercase), `partOfSpeech`, `hebrewShort`, `hebrewFull`, `ipa`, `frequencyTier` (HIGH/MEDIUM/LOW), `synonyms` (array), and `exampleSentence`. Also create a local JSON copy of the word list to be bundled with the app — this allows client-side word matching without a Firestore read on every lyric line (important for performance). The local copy contains only the fields needed for matching and highlighting: `word`, `hebrewShort`, `frequencyTier`.",
+        "testStrategy": "After running the script, verify the `psychometric_words` collection in the Firebase console contains the correct number of documents. Spot-check 10 documents to ensure all fields are populated correctly. Write a simple read query in the app to fetch a word and confirm the data is accessible. Verify the local JSON bundle is correctly imported and a test lookup returns the correct entry.",
+        "priority": "high",
+        "dependencies": [
+          "1"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "5",
+        "title": "Real-time Spotify Playback State Polling",
+        "description": "Implement the client-side logic to poll the backend every 1,000ms to get the user's current Spotify playback state and detect song changes, pauses, scrubs, and loops.",
+        "details": "In the React Native app, after a user is logged in, start a `setInterval` loop that calls the `/spotify/player` backend endpoint every 1,000ms. Store each poll result in a ref to enable comparison with the previous result. Manage the component lifecycle: start polling when app is active (AppState 'active'), pause polling when app is in background (AppState 'background') to save battery. Store the full polling response in a state management solution (e.g., Zustand).\n\nDetection logic based on comparing current and previous poll:\n- NEW SONG: track ID changed → trigger new song loading flow, cancel any in-flight requests for previous song via AbortController.\n- PAUSE: position_ms did not advance by ~1,000ms between polls (position delta < 200ms) → freeze highlight, show subtle pause indicator.\n- RESUME: position_ms advances again after a pause → resume sync loop.\n- SCRUB FORWARD/BACKWARD: position_ms jumped by more than 3,000ms in either direction → jump highlight to correct line immediately.\n- LOOP: position_ms dropped below 3,000ms while track ID is unchanged AND previous position_ms was within 5,000ms of duration_ms → reset highlight to line 0, do not reload any data.\n- SHUFFLE: read shuffle_state field from poll response and store in state (used by pre-fetch logic in Task 6).",
+        "testStrategy": "Play a song on Spotify. Verify in app logs that polling fires every second. Test each detection case: change songs and verify new song flow triggers; pause in Spotify and verify highlight freezes; resume and verify sync continues; scrub the timeline and verify highlight jumps correctly; enable repeat on a single song and verify loop is detected without reloading data; enable shuffle and verify shuffle_state is correctly stored.",
+        "priority": "high",
+        "dependencies": [
+          "2",
+          "3"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "6",
+        "title": "Lyrics Fetching, Translation, Caching, and Progressive Display",
+        "description": "On song change, orchestrate the full lyrics and translation loading flow including cache checks, progressive display, pre-fetching for the next song, and all edge cases from PRD 5.7.",
+        "details": "When a new track ID is detected (Task 5), execute this loading sequence:\n\n1. IMMEDIATE: Display song title and artist. Show loading indicator. Cancel any in-flight request for previous song using AbortController.\n2. LYRICS FETCH: Check Firestore `translations/{track_id}` for cached data. If cache hit, skip to step 4. If cache miss, call `/lyrics/fetch` backend endpoint. Parse LRC format `[mm:ss.xx]lyric` into array of `{ time_ms, line_english }` objects.\n3. ENGLISH DISPLAY: Render English lyrics immediately in the UI (unstyled, no translation yet). Begin sync loop (Task 7) right away — user sees lyrics in sync with music before translation arrives.\n4. TRANSLATION: If cache hit, attach Hebrew translations to each line and render. If cache miss, call `/translate/lyrics` backend with streaming. As each translated line arrives in the stream, insert it into the UI beneath the English line progressively.\n5. CACHE WRITE: On successful full translation, store complete `{ lines: [{time_ms, english, hebrew}] }` object in Firestore `translations/{track_id}`.\n\nEdge cases to handle:\n- MID-SONG OPEN (PRD 5.7 Case 3): On app open or foreground restore, use the position_ms from the first poll to jump directly to the correct lyric line. Do not animate from line 0.\n- NO LYRICS (PRD 5.7 Case 5): If Musixmatch returns no results, show Hebrew message 'מילות השיר הזה לא זמינות כרגע', a report button that calls `/tracks/missing`, and do not call Claude.\n- SHUFFLE MODE (PRD 5.7 Case 6): If shuffle_state is true, disable pre-fetch. Otherwise, after current song loads, silently pre-fetch lyrics + translation for the next track in the queue.\n- CONSECUTIVE CACHE MISSES (PRD 5.7 Case 7): Backend enforces max 1 concurrent Claude request per user via queue. If a second request is queued, return English-only immediately and process translation when the queue clears.\n- NETWORK DROPOUT (PRD 5.7 Case 4): On polling failure, show subtle connectivity indicator, freeze highlight at last known line. On reconnect, fire immediate poll, get current position_ms, jump to correct line.",
+        "testStrategy": "Test cache miss: play an obscure song, verify English appears first then Hebrew fills in progressively. Check Firestore for the cached entry. Test cache hit: play the same song again, verify near-instant full load. Test mid-song open: start a song in Spotify, wait 90 seconds, open the app, verify it syncs to the correct line immediately without starting from line 0. Test no-lyrics: play a song not in Musixmatch, verify the Hebrew fallback message and report button appear. Test shuffle mode: enable shuffle and verify pre-fetch does not run (check logs). Test network dropout: enable airplane mode mid-song, verify highlight freezes and a connectivity indicator appears, then disable airplane mode and verify the app re-syncs to the correct position.",
+        "priority": "high",
+        "dependencies": [
+          "5"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "7",
+        "title": "Lyric Synchronization and UI Highlighting",
+        "description": "Implement the 200ms sync loop that highlights the active lyric line, auto-scrolls the view, and handles all playback state changes correctly.",
+        "details": "Create a `setInterval` loop running every 200ms. In each tick, read the latest `position_ms` from the Spotify poll state. Find the active lyric line: the last entry in the parsed LRC array whose `time_ms` is <= current `position_ms`. Apply active line styling (full opacity, white, slightly larger). Dim lines above (30% opacity) and below (45% opacity). Use `ScrollView.scrollTo` with 300ms ease animation to keep the active line vertically centered. Do not animate on the first render or on position jumps > 3,000ms (scrub/open mid-song) — use instant scroll instead.\n\nSync loop state machine:\n- PLAYING: normal 200ms sync\n- PAUSED: freeze on last active line, stop scrolling\n- SCRUBBED: instant jump to new line, no animation\n- LOOPED: reset to line 0, instant scroll to top, resume normally\n- NO_LYRICS: sync loop does not run",
+        "testStrategy": "Play a song and verify the highlight moves line by line in sync with audio within ±500ms accuracy. Test scrubbing forward and backward in Spotify — the highlight should jump immediately to the correct line with no animation lag. Test pausing — the highlight should freeze. Test opening the app mid-song — it should render at the correct line with no visible scroll from the top. Put a song on repeat — the highlight should smoothly return to line 0 at the loop point without a reload.",
+        "priority": "high",
+        "dependencies": [
+          "6"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "8",
+        "title": "Vocabulary Highlighting and Word Card UI",
+        "description": "Scan active lyrics for psychometric vocabulary using the local word list, highlight matching words inline, and display an interactive word card at the bottom of the screen.",
+        "details": "When a lyric line becomes active (Task 7), scan its English text. Normalize each word to lowercase and strip punctuation before lookup. Check against the local bundled JSON word list (from Task 4) — do not make a Firestore read on every line scan. If matches are found, wrap each matching word in a `<Text>` component with the accent highlight color. Display a persistent word card component at the bottom of the screen. If multiple psychometric words appear in one line, cycle through them every 4 seconds. Word card displays: English word (large), IPA, part of speech, short Hebrew definition, frequency badge (HIGH=red, MEDIUM=yellow, LOW=green). Words the user has already learned (encounterCount >= 3 AND tapped) display with a subtle checkmark instead of full highlight color — they are still visible but de-emphasized. Tapping the word card or a highlighted word opens the full Word Detail Modal (PRD 4.2.5): full Hebrew definition, lyric context box, example sentence, synonyms (tappable), and 'Add to review list' toggle.",
+        "testStrategy": "Load a song known to contain psychometric words. Verify words are highlighted in the correct color as their line becomes active. Verify the word card appears with correct data. Test a line with 3 psychometric words — verify the card cycles through all three every 4 seconds. Tap the card and verify the full detail modal opens with all fields populated. Mark a word as learned and verify it shows a checkmark instead of full highlight on next encounter.",
+        "priority": "high",
+        "dependencies": [
+          "4",
+          "7"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "9",
+        "title": "User Progress Tracking and Firestore Word History",
+        "description": "Implement user statistics tracking — word encounter logging, learned word detection, streak management, and the Progress screen UI.",
+        "details": "When a user encounters a psychometric word (line becomes active containing the word), create or update the document at `users/{uid}/wordHistory/{wordId}`. Increment `encounterCount`, update `lastEncounteredAt`, and append the current song context to `songContexts` array (max last 5 contexts to limit document size). When the user taps the word card or word detail modal, set a `tappedAt` timestamp. Implement learned word logic: if `encounterCount >= 3` AND `tappedAt` is set → mark as learned, set `learnedAt`, increment `totalWordsLearned` in the parent user document. Streak logic: on session start, compare today's date (Asia/Jerusalem timezone) with `streakLastUpdated`. If different day, increment `streakCount` and update `streakLastUpdated`. If more than 1 day gap, reset `streakCount` to 1. Progress screen (Tab 3) displays: flame icon + streak count, weekly word counter (resets Monday), total learned / total psychometric words progress bar, stats grid (songs, artists, sessions, total time), recent words list (last 20 with song context).",
+        "testStrategy": "Encounter a word across 3 separate sessions. After each session, check Firestore to verify `encounterCount` increments. Tap the word card once, then trigger the third encounter — verify `learnedAt` is set and `totalWordsLearned` is updated in the user document. Test streak: use the app on day 1, check streak=1. Use again on day 2, check streak=2. Skip day 3, use on day 4, check streak resets to 1. Verify the Progress screen displays all stats correctly and updates in real time.",
+        "priority": "high",
+        "dependencies": [
+          "2",
+          "8"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "10",
+        "title": "Onboarding Flow",
+        "description": "Build the first-time user onboarding experience — 4 screens guiding the user from value proposition through Spotify connection to their first real song.",
+        "details": "Detect first launch using a flag in Firebase Auth user profile or AsyncStorage. Show the onboarding flow only once. Screen 1: Value proposition — 3 animated slides showing the core loop (music → lyrics → highlighted word → definition). Skippable. Screen 2: Spotify Connect — OAuth button, plain Hebrew explanation of why Spotify access is needed and what permissions are requested. Triggers the auth flow from Task 2. Screen 3: Notifications permission — opt-in only, explain the weekly summary benefit. Do not show a system permission dialog without this screen first. Screen 4: Quick demo — a static mock 'now playing' screen with a highlighted word to set expectations before the first real song. Shows a 'התחל להאזין' (Start Listening) CTA that dismisses onboarding. Target total onboarding time: under 90 seconds. All copy in Hebrew.",
+        "testStrategy": "Launch the app as a new user and verify all four screens appear in the correct order. Verify the skip button on screen 1 jumps to screen 2. Verify the Spotify connect button on screen 2 triggers the OAuth flow from Task 2. Verify onboarding does not appear again on second launch. Verify the notification permission dialog only appears after the explanation screen, not before.",
+        "priority": "high",
+        "dependencies": [
+          "2",
+          "9"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "11",
+        "title": "Security Hardening",
+        "description": "Implement all security requirements from PRD section 11 — Firebase App Check, rate limiting, input validation, dependency auditing, and incident response preparation.",
+        "details": "Implement the following security measures across the app and backend:\n\nFIREBASE APP CHECK: Enable Firebase App Check using DeviceCheck (iOS) and Play Integrity (Android). Configure Cloud Functions to require a valid App Check token on all endpoints. This prevents API abuse from clients not using the official app.\n\nRATE LIMITING: Enforce per-user rate limits on all backend endpoints as specified in Task 3 (20 calls/min for /translate, 120 calls/min for /spotify/player). Use a Firestore-based counter or an in-memory solution with Cloud Functions.\n\nINPUT VALIDATION: All backend endpoints must validate and sanitize inputs before use. Track IDs: alphanumeric + hyphens, max 64 chars. Lyric arrays: max 200 items, each item max 500 chars. Strip any HTML tags from lyric content before passing to Claude to prevent prompt injection.\n\nCLAUDE PROMPT INJECTION PREVENTION: Lyric lines are always passed as data in the user message content array, never interpolated into the system prompt string. System prompt is hardcoded and never modified by user input.\n\nDEPENDENCY AUDIT: Run `npm audit` on both frontend and backend. Resolve all high and critical severity vulnerabilities before launch. Add `npm audit --audit-level=high` as a pre-deployment check in the CI pipeline.\n\nSECRETS AUDIT: Verify no API keys appear in any committed file. Use `git log -S 'sk-ant'` and similar patterns to scan git history. If any key is found in history, rotate it immediately.\n\nINCIDENT RESPONSE: Create a private `SECURITY.md` file documenting: security contact email, steps to revoke Spotify/Musixmatch/Anthropic tokens, steps to lock down Firestore rules in an emergency, and a log template for recording incidents.",
+        "testStrategy": "App Check: Deploy to a test device and verify Cloud Functions reject calls made from outside the app (e.g., from Postman without an App Check token). Rate limiting: send 25 rapid requests to /translate and verify the 21st+ receives a 429 response. Input validation: send a request with a track ID containing SQL injection characters and verify it returns a 400 error. Prompt injection: send a lyric line containing 'Ignore previous instructions and...' and verify it is passed as data and does not affect the system prompt. Dependency audit: run `npm audit` and verify zero high/critical issues. Secrets audit: run git history scan and verify no secrets are present.",
+        "priority": "high",
+        "dependencies": [
+          "3",
+          "5"
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "lastModified": "2026-04-29T17:05:18.370Z",
+      "taskCount": 11,
+      "completedCount": 1,
+      "tags": [
+        "master"
+      ]
+    }
+  }
+}
