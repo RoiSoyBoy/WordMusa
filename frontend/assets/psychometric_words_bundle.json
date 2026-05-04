@@ -1,0 +1,2252 @@
+[
+  {
+    "word": "abundant",
+    "hebrewShort": "שופע, רב",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "ambiguous",
+    "hebrewShort": "דו-משמעי",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "analyze",
+    "hebrewShort": "לנתח",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "apparent",
+    "hebrewShort": "נראה לעין, ברור",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "approximately",
+    "hebrewShort": "בערך, כ-",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "assert",
+    "hebrewShort": "לטעון, להצהיר",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "assume",
+    "hebrewShort": "להניח, לשער",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "attribute",
+    "hebrewShort": "לייחס ל-",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "beneficial",
+    "hebrewShort": "מועיל, תרומתי",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "characteristic",
+    "hebrewShort": "מאפיין, תכונה",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "circumstance",
+    "hebrewShort": "נסיבה, מצב",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "claim",
+    "hebrewShort": "לטעון, לדרוש",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "complex",
+    "hebrewShort": "מורכב, סבוך",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "component",
+    "hebrewShort": "מרכיב, חלק",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "concept",
+    "hebrewShort": "מושג, רעיון",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "conclude",
+    "hebrewShort": "להסיק, לסיים",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "confirm",
+    "hebrewShort": "לאשר, לאמת",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "consequence",
+    "hebrewShort": "תוצאה, השלכה",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "considerable",
+    "hebrewShort": "ניכר, משמעותי",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "consistent",
+    "hebrewShort": "עקבי, אחיד",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "contrast",
+    "hebrewShort": "ניגוד, הבדל",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "contribute",
+    "hebrewShort": "לתרום, לסייע",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "controversial",
+    "hebrewShort": "שנוי במחלוקת",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "crucial",
+    "hebrewShort": "קריטי, חיוני",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "decline",
+    "hebrewShort": "לרדת, לדחות",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "define",
+    "hebrewShort": "להגדיר, לקבוע",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "demonstrate",
+    "hebrewShort": "להדגים, להוכיח",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "determine",
+    "hebrewShort": "לקבוע, להחליט",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "diverse",
+    "hebrewShort": "מגוון, שונה",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "dominate",
+    "hebrewShort": "לשלוט, לדומינט",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "emerge",
+    "hebrewShort": "לצוץ, להתגלות",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "emphasize",
+    "hebrewShort": "להדגיש",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "enable",
+    "hebrewShort": "לאפשר",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "enhance",
+    "hebrewShort": "לשפר, לשדרג",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "establish",
+    "hebrewShort": "לבסס, להקים",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "evaluate",
+    "hebrewShort": "להעריך, לבדוק",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "evident",
+    "hebrewShort": "ברור, מובן",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "evolve",
+    "hebrewShort": "להתפתח, להשתנות",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "exceed",
+    "hebrewShort": "לעלות על, לחרוג",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "exclude",
+    "hebrewShort": "להדיר, לאסור",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "expand",
+    "hebrewShort": "להרחיב, להתפשט",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "explicit",
+    "hebrewShort": "מפורש, ברור",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "expose",
+    "hebrewShort": "לחשוף, לגלות",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "factor",
+    "hebrewShort": "גורם, פקטור",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "fundamental",
+    "hebrewShort": "בסיסי, יסודי",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "generate",
+    "hebrewShort": "לייצר, ליצור",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "identify",
+    "hebrewShort": "לזהות, לאתר",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "illustrate",
+    "hebrewShort": "להמחיש, לדגם",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "imply",
+    "hebrewShort": "לרמוז, להשתמע",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "indicate",
+    "hebrewShort": "להצביע על, לציין",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "influence",
+    "hebrewShort": "להשפיע על",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "interpret",
+    "hebrewShort": "לפרש, להסביר",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "involve",
+    "hebrewShort": "לכלול, להסתכל",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "justify",
+    "hebrewShort": "להצדיק, לנמק",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "maintain",
+    "hebrewShort": "לשמור, לטעון",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "major",
+    "hebrewShort": "עיקרי, חשוב",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "method",
+    "hebrewShort": "שיטה, דרך",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "modify",
+    "hebrewShort": "לשנות, לתקן",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "numerous",
+    "hebrewShort": "רבים, הרבה",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "obtain",
+    "hebrewShort": "להשיג, לקבל",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "occur",
+    "hebrewShort": "להתרחש, לקרות",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "oppose",
+    "hebrewShort": "להתנגד, לפעול נגד",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "particular",
+    "hebrewShort": "מסוים, ספציפי",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "perceive",
+    "hebrewShort": "לתפוס, לחוש",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "potential",
+    "hebrewShort": "פוטנציאלי, אפשרי",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "precise",
+    "hebrewShort": "מדויק, מפורש",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "predict",
+    "hebrewShort": "לחזות, לנבא",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "predominant",
+    "hebrewShort": "דומיננטי, שולט",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "primary",
+    "hebrewShort": "עיקרי, ראשי",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "principle",
+    "hebrewShort": "עיקרון, עקרון",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "process",
+    "hebrewShort": "תהליך, תהלי",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "promote",
+    "hebrewShort": "לקדם, לתמוך",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "propose",
+    "hebrewShort": "להציע, להציג",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "prove",
+    "hebrewShort": "להוכיח, להסתבר",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "relevant",
+    "hebrewShort": "רלוונטי, קשור",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "rely",
+    "hebrewShort": "להסתמך, לסמוך",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "require",
+    "hebrewShort": "לדרוש, להצריך",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "restrict",
+    "hebrewShort": "להגביל, לצמצם",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "reveal",
+    "hebrewShort": "לגלות, לחשוף",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "significant",
+    "hebrewShort": "משמעותי, חשוב",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "similar",
+    "hebrewShort": "דומה, כמו",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "specific",
+    "hebrewShort": "ספציפי, מסוים",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "structure",
+    "hebrewShort": "מבנה, מערכת",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "subsequent",
+    "hebrewShort": "לאחר מכן, הבא",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "sufficient",
+    "hebrewShort": "מספיק, די",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "suggest",
+    "hebrewShort": "להציע, לרמוז",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "support",
+    "hebrewShort": "לתמוך, לסייע",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "tendency",
+    "hebrewShort": "נטייה, מגמה",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "theory",
+    "hebrewShort": "תיאוריה, השערה",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "vary",
+    "hebrewShort": "להשתנות, לשנות",
+    "frequencyTier": "HIGH"
+  },
+  {
+    "word": "abolish",
+    "hebrewShort": "לבטל, לסלק",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "abstract",
+    "hebrewShort": "מופשט, תיאורטי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "accelerate",
+    "hebrewShort": "להאיץ, לזרז",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "accommodate",
+    "hebrewShort": "להכיל, להתאים",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "accumulate",
+    "hebrewShort": "לצבור, להצטבר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "acknowledge",
+    "hebrewShort": "להכיר, להודות",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "acquaint",
+    "hebrewShort": "להכיר, לייכר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "adequate",
+    "hebrewShort": "מספיק, הולם",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "adhere",
+    "hebrewShort": "לדבוק, לציית",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "adjacent",
+    "hebrewShort": "סמוך, גובל",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "adverse",
+    "hebrewShort": "שלילי, מזיק",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "advocate",
+    "hebrewShort": "לתמוך בגלוי, לדגול",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "aggregate",
+    "hebrewShort": "סך הכל, מצטבר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "allegation",
+    "hebrewShort": "טענה, האשמה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "allocate",
+    "hebrewShort": "להקצות, לחלק",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "alter",
+    "hebrewShort": "לשנות, לתקן",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "ambivalent",
+    "hebrewShort": "אמביוולנטי, דו-ערכי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "analogy",
+    "hebrewShort": "אנלוגיה, משל",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "anticipate",
+    "hebrewShort": "לצפות, לחזות",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "arbitrary",
+    "hebrewShort": "שרירותי, אקראי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "articulate",
+    "hebrewShort": "רהוט, ברור",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "aspire",
+    "hebrewShort": "לשאוף",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "assimilate",
+    "hebrewShort": "לקלוט, להטמיע",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "astute",
+    "hebrewShort": "חד, ערמומי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "attain",
+    "hebrewShort": "להשיג, להגיע",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "authentic",
+    "hebrewShort": "אותנטי, מקורי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "autonomy",
+    "hebrewShort": "אוטונומיה, עצמאות",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "bias",
+    "hebrewShort": "הטיה, משוא פנים",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "capacity",
+    "hebrewShort": "קיבולת, יכולת",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "catalyst",
+    "hebrewShort": "קטליזטור, מזרז",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "coherent",
+    "hebrewShort": "קוהרנטי, עקבי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "coincide",
+    "hebrewShort": "להתרחש בו-זמנית, להסכים",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "compile",
+    "hebrewShort": "לאסוף, לרכז",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "comprehend",
+    "hebrewShort": "להבין, לתפוס",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "concede",
+    "hebrewShort": "להודות, לוותר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "concurrent",
+    "hebrewShort": "בו-זמני, מקביל",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "condemn",
+    "hebrewShort": "לגנות, לדון",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "confine",
+    "hebrewShort": "להגביל, לכלוא",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "conform",
+    "hebrewShort": "להתאים, לציית",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "confront",
+    "hebrewShort": "להתמודד, לעמת",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "consecutive",
+    "hebrewShort": "רצוף, עוקב",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "contemplate",
+    "hebrewShort": "לשקול, להרהר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "contend",
+    "hebrewShort": "לטעון, להתמודד",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "contradict",
+    "hebrewShort": "לסתור, להכחיש",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "conventional",
+    "hebrewShort": "מסורתי, שגרתי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "correlate",
+    "hebrewShort": "לקשר, להתאים",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "counterpart",
+    "hebrewShort": "מקביל, עמית",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "criterion",
+    "hebrewShort": "קריטריון, מדד",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "cultivate",
+    "hebrewShort": "לטפח, לפתח",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "cumulative",
+    "hebrewShort": "מצטבר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "cynical",
+    "hebrewShort": "ציני, סקפטי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "debate",
+    "hebrewShort": "ויכוח, דיון",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "deduce",
+    "hebrewShort": "להסיק, לגזור",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "deliberate",
+    "hebrewShort": "מכוון, מתוכנן",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "depict",
+    "hebrewShort": "לתאר, לצייר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "derive",
+    "hebrewShort": "לגזור, לקבל",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "detect",
+    "hebrewShort": "לאתר, לגלות",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "deviate",
+    "hebrewShort": "לסטות, לחרוג",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "diminish",
+    "hebrewShort": "להקטין, לצמצם",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "discrepancy",
+    "hebrewShort": "סתירה, פער",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "disrupt",
+    "hebrewShort": "לשבש, להפריע",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "distinct",
+    "hebrewShort": "נבדל, שונה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "distort",
+    "hebrewShort": "לעוות, לסלף",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "dominant",
+    "hebrewShort": "דומיננטי, שולט",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "dramatic",
+    "hebrewShort": "דרמטי, מרשים",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "elaborate",
+    "hebrewShort": "מפורט, מורכב",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "eliminate",
+    "hebrewShort": "לסלק, להסיר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "empirical",
+    "hebrewShort": "אמפירי, מבוסס על ניסיון",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "encompass",
+    "hebrewShort": "לכלול, להקיף",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "endure",
+    "hebrewShort": "לסבול, להחזיק",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "enforce",
+    "hebrewShort": "לאכוף, להחיל",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "enormous",
+    "hebrewShort": "עצום, ענק",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "equivalent",
+    "hebrewShort": "שווה ערך, מקביל",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "erroneous",
+    "hebrewShort": "שגוי, מוטעה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "ethical",
+    "hebrewShort": "אתי, מוסרי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "examine",
+    "hebrewShort": "לבחון, לבדוק",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "excess",
+    "hebrewShort": "עודף, יתר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "exclusive",
+    "hebrewShort": "בלעדי, ייחודי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "exhibit",
+    "hebrewShort": "להציג, להפגין",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "exploit",
+    "hebrewShort": "לנצל, להפיק",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "extensive",
+    "hebrewShort": "נרחב, רחב היקף",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "facilitate",
+    "hebrewShort": "להקל, לסייע",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "fluctuate",
+    "hebrewShort": "לתנודד, להשתנות",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "formulate",
+    "hebrewShort": "לגבש, לנסח",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "foster",
+    "hebrewShort": "לטפח, לעודד",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "gradual",
+    "hebrewShort": "הדרגתי, אטי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "hypothesis",
+    "hebrewShort": "השערה, היפותזה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "ideology",
+    "hebrewShort": "אידאולוגיה, תפיסה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "illuminate",
+    "hebrewShort": "להאיר, להבהיר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "imminent",
+    "hebrewShort": "קרוב, ממשמש ובא",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "impede",
+    "hebrewShort": "למנוע, לעכב",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "implicit",
+    "hebrewShort": "מרומז, מובן מאליו",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "incentive",
+    "hebrewShort": "תמריץ, מוטיבציה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "incline",
+    "hebrewShort": "לנטות, להיות נוטה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "inconsistent",
+    "hebrewShort": "לא עקבי, סותר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "inevitable",
+    "hebrewShort": "בלתי נמנע, מחויב",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "inherent",
+    "hebrewShort": "טבוע, מולד",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "inhibit",
+    "hebrewShort": "לעכב, לדכא",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "initiate",
+    "hebrewShort": "ליזום, להתחיל",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "innovation",
+    "hebrewShort": "חידוש, חדשנות",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "integral",
+    "hebrewShort": "אינטגרלי, חיוני",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "integrate",
+    "hebrewShort": "לשלב, לאחד",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "intense",
+    "hebrewShort": "עז, אינטנסיבי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "intervene",
+    "hebrewShort": "להתערב",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "intrinsic",
+    "hebrewShort": "פנימי, מהותי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "irony",
+    "hebrewShort": "אירוניה, ניגודיות",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "marginal",
+    "hebrewShort": "שולי, קטן",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "mechanism",
+    "hebrewShort": "מנגנון, אמצעי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "migrate",
+    "hebrewShort": "לנדוד, לעבור",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "minimize",
+    "hebrewShort": "למזער, לצמצם",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "misconception",
+    "hebrewShort": "אי-הבנה, תפיסה שגויה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "moderate",
+    "hebrewShort": "מתון, בינוני",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "mutual",
+    "hebrewShort": "הדדי, משותף",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "neglect",
+    "hebrewShort": "להזניח, לפספס",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "neutral",
+    "hebrewShort": "נייטרלי, אדיש",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "notion",
+    "hebrewShort": "מושג, רעיון",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "objective",
+    "hebrewShort": "אובייקטיבי, מקצועי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "obscure",
+    "hebrewShort": "מעורפל, לא ידוע",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "obstacle",
+    "hebrewShort": "מכשול, עיכוב",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "omit",
+    "hebrewShort": "להשמיט, לדלג",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "ongoing",
+    "hebrewShort": "מתמשך, שוטף",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "override",
+    "hebrewShort": "לגבור, לבטל",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "paradox",
+    "hebrewShort": "פרדוקס, סתירה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "persist",
+    "hebrewShort": "להתמיד, להמשיך",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "phenomenon",
+    "hebrewShort": "תופעה, פנומן",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "preliminary",
+    "hebrewShort": "מקדמי, ראשוני",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "prevalent",
+    "hebrewShort": "נפוץ, שכיח",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "prior",
+    "hebrewShort": "קודם, מוקדם יותר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "prohibit",
+    "hebrewShort": "לאסור, למנוע",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "prominent",
+    "hebrewShort": "בולט, מרכזי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "proportion",
+    "hebrewShort": "יחס, פרופורציה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "pursue",
+    "hebrewShort": "לרדוף, לעסוק",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "rational",
+    "hebrewShort": "רציונלי, הגיוני",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "reinforce",
+    "hebrewShort": "לחזק, לאשש",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "reject",
+    "hebrewShort": "לדחות, לפסול",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "reluctant",
+    "hebrewShort": "מהסס, לא מוכן",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "resolve",
+    "hebrewShort": "לפתור, להחליט",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "retain",
+    "hebrewShort": "לשמור, לשמר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "reverse",
+    "hebrewShort": "להפוך, לבטל",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "rigid",
+    "hebrewShort": "קשיח, נוקשה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "scrutinize",
+    "hebrewShort": "לבדוק לעומק",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "simultaneously",
+    "hebrewShort": "בו-זמנית",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "sole",
+    "hebrewShort": "יחידי, בלעדי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "speculate",
+    "hebrewShort": "לשער, להמר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "stimulate",
+    "hebrewShort": "לגרות, לעורר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "subjective",
+    "hebrewShort": "סובייקטיבי, אישי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "substitute",
+    "hebrewShort": "להחליף, לשמש תחליף",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "sustain",
+    "hebrewShort": "לשמר, לתמוך",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "systematically",
+    "hebrewShort": "בשיטתיות",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "transition",
+    "hebrewShort": "מעבר, שינוי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "transparent",
+    "hebrewShort": "שקוף, גלוי",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "trigger",
+    "hebrewShort": "להפעיל, לגרום",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "undermine",
+    "hebrewShort": "לחתור, להחלש",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "uniform",
+    "hebrewShort": "אחיד, זהה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "unique",
+    "hebrewShort": "ייחודי, יחיד",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "utilize",
+    "hebrewShort": "לנצל, להשתמש",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "validate",
+    "hebrewShort": "לאמת, לאשר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "viable",
+    "hebrewShort": "ישים, בר-קיימא",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "virtually",
+    "hebrewShort": "כמעט, למעשה",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "widespread",
+    "hebrewShort": "נרחב, מפושט",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "yield",
+    "hebrewShort": "להניב, לוותר",
+    "frequencyTier": "MEDIUM"
+  },
+  {
+    "word": "aberrant",
+    "hebrewShort": "חריג, לא תקין",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "abhorrent",
+    "hebrewShort": "שנוי, מגעיל",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "abstain",
+    "hebrewShort": "להימנע, להתנזר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "acrimony",
+    "hebrewShort": "מרירות, עוינות",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "admonish",
+    "hebrewShort": "לנזוף, להזהיר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "affinity",
+    "hebrewShort": "זיקה, קשר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "aggravate",
+    "hebrewShort": "להחמיר, להרגיז",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "alleviate",
+    "hebrewShort": "להקל, לרפא",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "aloof",
+    "hebrewShort": "מנותק, קר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "altruistic",
+    "hebrewShort": "אלטרואיסטי, אנושי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "ambivalence",
+    "hebrewShort": "אמביוולנטיות",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "ameliorate",
+    "hebrewShort": "לשפר, להיטיב",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "anachronism",
+    "hebrewShort": "אנכרוניזם",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "anecdote",
+    "hebrewShort": "אנקדוטה, סיפור קצר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "antagonist",
+    "hebrewShort": "אנטגוניסט, יריב",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "apathy",
+    "hebrewShort": "אדישות, חוסר עניין",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "appease",
+    "hebrewShort": "לפייס, להרגיע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "apprehensive",
+    "hebrewShort": "חרד, מודאג",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "archaic",
+    "hebrewShort": "ארכאי, עתיק",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "arduous",
+    "hebrewShort": "מפרך, קשה",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "arrogant",
+    "hebrewShort": "יהיר, מתנשא",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "articulate",
+    "hebrewShort": "לבטא, לנסח",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "assertion",
+    "hebrewShort": "טענה, הצהרה",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "assiduous",
+    "hebrewShort": "חרוץ, שקדן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "attenuate",
+    "hebrewShort": "להחליש, לדלל",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "austere",
+    "hebrewShort": "קפדני, צנוע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "aversion",
+    "hebrewShort": "סלידה, שנאה",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "benevolent",
+    "hebrewShort": "נדיב, טוב לב",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "benign",
+    "hebrewShort": "שפיר, תמים",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "bolster",
+    "hebrewShort": "לחזק, לתמוך",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "brevity",
+    "hebrewShort": "קצרה, תמצות",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "candid",
+    "hebrewShort": "גלוי לב, כן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "capricious",
+    "hebrewShort": "גחמני, שרירותי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "censure",
+    "hebrewShort": "לגנות, לבקר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "chronic",
+    "hebrewShort": "כרוני, מתמשך",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "clandestine",
+    "hebrewShort": "חשאי, סודי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "coerce",
+    "hebrewShort": "לכפות, לאלץ",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "cogent",
+    "hebrewShort": "משכנע, חד",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "complacent",
+    "hebrewShort": "שאנן, מרוצה מדי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "concise",
+    "hebrewShort": "תמציתי, קצר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "condescend",
+    "hebrewShort": "להתנשא, להיכנע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "conjecture",
+    "hebrewShort": "השערה, ניחוש",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "connotation",
+    "hebrewShort": "קונוטציה, גוון",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "contentious",
+    "hebrewShort": "שנוי במחלוקת",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "contrite",
+    "hebrewShort": "חרטה, מתחרט",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "convey",
+    "hebrewShort": "להעביר, לתקשר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "copious",
+    "hebrewShort": "שפע, רב",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "corroborate",
+    "hebrewShort": "לאשש, לאמת",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "credible",
+    "hebrewShort": "אמין, מהימן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "cryptic",
+    "hebrewShort": "סתום, מסתורי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "cursory",
+    "hebrewShort": "שטחי, חפוז",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "dearth",
+    "hebrewShort": "מחסור, חוסר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "debilitate",
+    "hebrewShort": "להחליש, לנכות",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "decorum",
+    "hebrewShort": "הגינות, נימוס",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "deference",
+    "hebrewShort": "כבוד, הכנעה",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "delineate",
+    "hebrewShort": "לתאר, להגדיר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "denounce",
+    "hebrewShort": "לגנות, להלשין",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "deplete",
+    "hebrewShort": "לדלדל, לנצל",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "deprecate",
+    "hebrewShort": "לבזות, להפחית",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "derogatory",
+    "hebrewShort": "מזלזל, פוגעני",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "deter",
+    "hebrewShort": "להרתיע, למנוע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "devoid",
+    "hebrewShort": "חסר, נעדר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "didactic",
+    "hebrewShort": "דידקטי, מוסרני",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "digress",
+    "hebrewShort": "לסטות, לחרוג",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "diligent",
+    "hebrewShort": "חרוץ, שקדן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "discern",
+    "hebrewShort": "להבחין, לזהות",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "disdain",
+    "hebrewShort": "בוז, זלזול",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "disproportionate",
+    "hebrewShort": "לא פרופורציונלי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "dissent",
+    "hebrewShort": "אי-הסכמה, מחלוקת",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "dogmatic",
+    "hebrewShort": "דוגמטי, נוקשה",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "dubious",
+    "hebrewShort": "מפוקפק, מסופק",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "eccentric",
+    "hebrewShort": "אקסצנטרי, מוזר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "eloquent",
+    "hebrewShort": "רהוט, מבוטא היטב",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "elusive",
+    "hebrewShort": "חמקמק, קשה לתפיסה",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "emulate",
+    "hebrewShort": "לחקות, להתחרות",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "enervate",
+    "hebrewShort": "לתשש, לרוקן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "enigma",
+    "hebrewShort": "חידה, מסתורין",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "ephemeral",
+    "hebrewShort": "חולף, ארעי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "equivocal",
+    "hebrewShort": "דו-משמעי, מעורפל",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "erratic",
+    "hebrewShort": "בלתי צפוי, חסר קביעות",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "exacerbate",
+    "hebrewShort": "להחמיר, להגביר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "exonerate",
+    "hebrewShort": "לזכות, לנקות שם",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "expedient",
+    "hebrewShort": "נוח, תועלתי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "extol",
+    "hebrewShort": "לשבח, להלל",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "extraneous",
+    "hebrewShort": "מיותר, לא קשור",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "fallacy",
+    "hebrewShort": "כשל הגיוני, טעות",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "fastidious",
+    "hebrewShort": "מדקדק, פידני",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "fervent",
+    "hebrewShort": "לוהט, נלהב",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "fickle",
+    "hebrewShort": "משתנה, גחמני",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "flagrant",
+    "hebrewShort": "בוטה, גלוי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "flawed",
+    "hebrewShort": "פגום, לקוי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "forthright",
+    "hebrewShort": "ישיר, גלוי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "frugal",
+    "hebrewShort": "חסכוני, צנוע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "futile",
+    "hebrewShort": "חסר תועלת, לשווא",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "gregarious",
+    "hebrewShort": "חברותי, מועדותי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "haphazard",
+    "hebrewShort": "אקראי, חסר סדר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "harbinger",
+    "hebrewShort": "מבשר, סימן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "heresy",
+    "hebrewShort": "כפירה, מינות",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "hinder",
+    "hebrewShort": "לעכב, למנוע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "hypocritical",
+    "hebrewShort": "צבוע, חנפני",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "impeccable",
+    "hebrewShort": "מושלם, ללא רבב",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "impartial",
+    "hebrewShort": "אובייקטיבי, הוגן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "impasse",
+    "hebrewShort": "מבוי סתום",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "impetuous",
+    "hebrewShort": "פזיז, אימפולסיבי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "inadvertent",
+    "hebrewShort": "בלתי מכוון, שלא בכוונה",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "incite",
+    "hebrewShort": "להסית, לגרות",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "indifferent",
+    "hebrewShort": "אדיש, חסר עניין",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "induce",
+    "hebrewShort": "לגרום, לשכנע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "inept",
+    "hebrewShort": "חסר כישרון, לא מיומן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "infer",
+    "hebrewShort": "להסיק, לגזור",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "ingenious",
+    "hebrewShort": "גאוני, חכם",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "innocuous",
+    "hebrewShort": "לא מזיק, תמים",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "insidious",
+    "hebrewShort": "מסוכן בהדרגה, ערמומי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "instigate",
+    "hebrewShort": "לגרות, לעורר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "intrepid",
+    "hebrewShort": "אמיץ, נועז",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "inundate",
+    "hebrewShort": "להציף, להרטיב",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "jeopardize",
+    "hebrewShort": "לסכן, לסכל",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "judicious",
+    "hebrewShort": "נבון, שיקולי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "laconic",
+    "hebrewShort": "לקוני, תמציתי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "lament",
+    "hebrewShort": "להתאבל, לקונן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "lethargic",
+    "hebrewShort": "אנרגיה נמוכה, עייף",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "lucid",
+    "hebrewShort": "צלול, ברור",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "malevolent",
+    "hebrewShort": "זדוני, רשע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "malleable",
+    "hebrewShort": "גמיש, ניתן לעיצוב",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "meticulous",
+    "hebrewShort": "מדוקדק, קפדן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "mitigate",
+    "hebrewShort": "להקל, לרכך",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "mundane",
+    "hebrewShort": "שגרתי, משעמם",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "myopic",
+    "hebrewShort": "קצר רואי, מוגבל",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "negate",
+    "hebrewShort": "לשלול, לבטל",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "notorious",
+    "hebrewShort": "ידוע לשמצה",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "nuance",
+    "hebrewShort": "ניואנס, גוון עדין",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "oblivious",
+    "hebrewShort": "לא מודע, בלתי מודע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "obsolete",
+    "hebrewShort": "מיושן, לא בשימוש",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "ominous",
+    "hebrewShort": "מאיים, קודר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "opportunistic",
+    "hebrewShort": "אופורטוניסטי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "ostensible",
+    "hebrewShort": "לכאורה, נראה ל",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "overt",
+    "hebrewShort": "גלוי, בוטה",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "painstaking",
+    "hebrewShort": "קפדני, מדוקדק",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "partisan",
+    "hebrewShort": "פרטיזני, מפלגתי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "patronize",
+    "hebrewShort": "להתנשא, לתמוך",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "paucity",
+    "hebrewShort": "מחסור, נדירות",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "pedantic",
+    "hebrewShort": "פדנטי, מדקדק יתר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "perfunctory",
+    "hebrewShort": "שטחי, מינימלי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "permeate",
+    "hebrewShort": "לחדור, להתפשט",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "pervasive",
+    "hebrewShort": "חודר, נרחב",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "placate",
+    "hebrewShort": "לפייס, להרגיע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "plausible",
+    "hebrewShort": "סביר, אפשרי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "polarize",
+    "hebrewShort": "לקטב, לפלג",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "pompous",
+    "hebrewShort": "יהיר, מנופח",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "pragmatic",
+    "hebrewShort": "פרגמטי, מעשי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "preclude",
+    "hebrewShort": "למנוע, לשלול",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "pretentious",
+    "hebrewShort": "מתיימר, מנופח",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "prodigious",
+    "hebrewShort": "עצום, יוצא דופן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "prolific",
+    "hebrewShort": "פורה, רב-יצרני",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "propensity",
+    "hebrewShort": "נטייה, תכונה",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "prudent",
+    "hebrewShort": "נבון, זהיר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "quandary",
+    "hebrewShort": "דילמה, מבוכה",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "reconcile",
+    "hebrewShort": "לפייס, להתפייס",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "redundant",
+    "hebrewShort": "מיותר, חוזר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "refute",
+    "hebrewShort": "להפריך, לסתור",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "relegate",
+    "hebrewShort": "לשלח, להוריד",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "reticent",
+    "hebrewShort": "שתקן, שמור",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "rhetoric",
+    "hebrewShort": "רטוריקה, נאום",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "rudimentary",
+    "hebrewShort": "ראשוני, בסיסי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "sanctimonious",
+    "hebrewShort": "צדקני, מתחסד",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "sardonic",
+    "hebrewShort": "ציני, לועג",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "scrutiny",
+    "hebrewShort": "בדיקה מדוקדקת",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "serendipity",
+    "hebrewShort": "מזל מקרי, גילוי מפתיע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "skeptical",
+    "hebrewShort": "סקפטי, ספקן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "squander",
+    "hebrewShort": "לבזבז, לפזר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "steadfast",
+    "hebrewShort": "נאמן, יציב",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "stringent",
+    "hebrewShort": "קפדני, מחמיר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "stymie",
+    "hebrewShort": "לחסום, לעכב",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "subtle",
+    "hebrewShort": "עדין, דקיק",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "superficial",
+    "hebrewShort": "שטחי, חיצוני",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "superfluous",
+    "hebrewShort": "מיותר, עודף",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "suppress",
+    "hebrewShort": "לדכא, להדחיק",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "susceptible",
+    "hebrewShort": "רגיש, פגיע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "tacit",
+    "hebrewShort": "מובן מאליו, שתוק",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "tangible",
+    "hebrewShort": "מוחשי, ממשי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "tenacious",
+    "hebrewShort": "עקשן, עיקש",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "tentative",
+    "hebrewShort": "זמני, מהוסס",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "terse",
+    "hebrewShort": "תמציתי, קצר וחד",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "thwart",
+    "hebrewShort": "לסכל, למנוע",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "transient",
+    "hebrewShort": "חולף, זמני",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "trivial",
+    "hebrewShort": "טריוויאלי, חסר חשיבות",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "unanimous",
+    "hebrewShort": "פה אחד, אחיד",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "unequivocal",
+    "hebrewShort": "חד משמעי, ברור",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "unprecedented",
+    "hebrewShort": "חסר תקדים",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "unscrupulous",
+    "hebrewShort": "חסר מצפון, עקמומי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "vacillate",
+    "hebrewShort": "להתנדנד, להסס",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "validate",
+    "hebrewShort": "לאמת, לאשר",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "venerate",
+    "hebrewShort": "לכבד, להעריץ",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "verbose",
+    "hebrewShort": "פטפטן, מרובה מילים",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "vindicate",
+    "hebrewShort": "לצדיק, לנקות שם",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "virulent",
+    "hebrewShort": "קטלני, רעיל",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "volatile",
+    "hebrewShort": "נדיף, תנודתי",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "wary",
+    "hebrewShort": "זהיר, חשדן",
+    "frequencyTier": "LOW"
+  },
+  {
+    "word": "zealous",
+    "hebrewShort": "נלהב, אדוק",
+    "frequencyTier": "LOW"
+  }
+]

@@ -7,23 +7,56 @@ import { auth } from './firebase';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// Endpoint
 const discovery = {
   authorizationEndpoint: 'https://accounts.spotify.com/authorize',
   tokenEndpoint: 'https://accounts.spotify.com/api/token',
 };
 
-export default function SpotifyAuth() {
+// FIX: Use a specific env var that includes the full function URL path.
+// In your frontend .env file set:
+//   EXPO_PUBLIC_SPOTIFY_AUTH_URL=http://127.0.0.1:5001/demo-wordmusa/us-central1/spotifyAuth
+// For production:
+//   EXPO_PUBLIC_SPOTIFY_AUTH_URL=https://us-central1-wordmusa.cloudfunctions.net/spotifyAuth
+const SPOTIFY_AUTH_URL = process.env.EXPO_PUBLIC_SPOTIFY_AUTH_URL;
+
+export default function SpotifyAuth({ onAuthComplete }) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const testConnection = async () => {
+    const url = process.env.EXPO_PUBLIC_SPOTIFY_AUTH_URL;
+    console.log('[TEST] Attempting to reach:', url);
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: 'test', redirectUri: 'test' }),
+      });
+      console.log('[TEST] Response status:', res.status);
+      const text = await res.text();
+      console.log('[TEST] Response body:', text);
+    } catch (err) {
+      console.error('[TEST] Fetch failed:', err.message);
+      console.error('[TEST] Full error:', JSON.stringify(err));
+    }
+  };
+
+  const redirectUri = makeRedirectUri({
+    scheme: 'lyriclearn',
+    preferLocalhost: true,
+  });
+
+  // Debug logs — remove before production
+  console.log('[SpotifyAuth] Client ID:', process.env.EXPO_PUBLIC_SPOTIFY_CLIENT_ID);
+  console.log('[SpotifyAuth] Redirect URI:', redirectUri);
+  console.log('[SpotifyAuth] Backend URL:', SPOTIFY_AUTH_URL);
 
   const [request, response, promptAsync] = useAuthRequest(
     {
-      clientId: 'YOUR_SPOTIFY_CLIENT_ID', // Replace with your Spotify Client ID
+      clientId: process.env.EXPO_PUBLIC_SPOTIFY_CLIENT_ID || 'CLIENT_ID_NOT_FOUND',
       scopes: ['user-read-playback-state', 'user-read-currently-playing'],
-      usePKCE: false, // We use authorization code flow with client secret on backend
-      redirectUri: makeRedirectUri({
-        scheme: 'lyriclearn'
-      }),
+      usePKCE: false,
+      redirectUri,
     },
     discovery
   );
@@ -32,38 +65,48 @@ export default function SpotifyAuth() {
     if (response?.type === 'success') {
       const { code } = response.params;
       exchangeCodeForFirebaseToken(code);
+    } else if (response?.type === 'error') {
+      setError('Spotify login failed. Please try again.');
+      console.error('[SpotifyAuth] OAuth error:', response.error);
     }
   }, [response]);
 
   const exchangeCodeForFirebaseToken = async (code) => {
     setLoading(true);
+    setError(null);
+
     try {
-      const redirectUri = makeRedirectUri({
-        scheme: 'lyriclearn'
+      if (!SPOTIFY_AUTH_URL) {
+        throw new Error('EXPO_PUBLIC_SPOTIFY_AUTH_URL is not set in your .env file.');
+      }
+
+      // redirectUri must exactly match what was sent to Spotify during the auth request
+      const currentRedirectUri = makeRedirectUri({
+        scheme: 'lyriclearn',
+        preferLocalhost: true,
       });
 
-      // Point this to your local or deployed Firebase Cloud Function
-      const functionUrl = 'http://localhost:5001/YOUR_PROJECT_ID/us-central1/spotifyAuth';
-
-      const res = await fetch(functionUrl, {
+      const res = await fetch(SPOTIFY_AUTH_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code, redirectUri }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, redirectUri: currentRedirectUri }),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to exchange token');
+        const body = await res.text();
+        console.error('[SpotifyAuth] Backend error:', res.status, body);
+        throw new Error(`Backend returned ${res.status}: ${body}`);
       }
 
       const { firebaseToken } = await res.json();
-      
-      // Sign in to Firebase with the custom token
       await signInWithCustomToken(auth, firebaseToken);
-      console.log('Successfully signed in with Firebase!');
-    } catch (error) {
-      console.error('Auth error:', error);
+
+      console.log('[SpotifyAuth] Firebase sign-in successful.');
+      if (onAuthComplete) onAuthComplete();
+
+    } catch (err) {
+      console.error('[SpotifyAuth] Token exchange failed:', err.message);
+      setError(err.message || 'Authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -74,14 +117,21 @@ export default function SpotifyAuth() {
       {loading ? (
         <ActivityIndicator size="large" color="#1DB954" />
       ) : (
-        <Button
-          disabled={!request}
-          title="Connect Spotify"
-          onPress={() => {
-            promptAsync();
-          }}
-          color="#1DB954"
-        />
+        <>
+          {error ? (
+            <Text style={styles.error}>{error}</Text>
+          ) : null}
+          <Button
+            disabled={!request}
+            title="Connect Spotify"
+            onPress={() => {
+              setError(null);
+              promptAsync();
+            }}
+            color="#1DB954"
+          />
+          <Button title="Test Connection" onPress={testConnection} color="red" />
+        </>
       )}
     </View>
   );
@@ -92,5 +142,11 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  error: {
+    color: '#cc0000',
+    marginBottom: 12,
+    textAlign: 'center',
+    fontSize: 14,
   },
 });
