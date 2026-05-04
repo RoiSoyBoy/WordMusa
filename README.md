@@ -20,7 +20,7 @@ The project is organized into two main parts:
 - Located in the `backend/` directory.
 - Built with **Node.js** and **Firebase** (Firestore & Firebase Functions/Express).
 - Manages Spotify tokens securely.
-- Fetches lyrics from Musixmatch and handles Hebrew translations via the Anthropic Claude API.
+- Fetches lyrics from LRCLIB and handles Hebrew translations via the Anthropic Claude 3 Haiku API.
 - Caches translations and stores the psychometric vocabulary database in Firestore to optimize performance and reduce API costs.
 - Enforces strict security rules (`firestore.rules`).
 

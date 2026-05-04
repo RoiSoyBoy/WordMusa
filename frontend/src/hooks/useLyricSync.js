@@ -140,69 +140,126 @@ export function useLyricSync(currentTrack) {
 
       if (signal.aborted) return;
 
-      // Step 4: Fetch Hebrew translation (streaming)
+      // Step 4 & 5: Fetch Hebrew translation (streaming) using XMLHttpRequest
       const englishLines = parsedLines.map(l => l.text);
-      const translateRes = await fetch(`${BACKEND_URL}/translateLyrics`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      
+      console.log(`[useLyricSync] Requesting translation for: ${track.track_name} (${englishLines.length} lines)`);
+
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${BACKEND_URL}/translateLyrics`);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        
+        let processedTextLength = 0;
+        let buffer = '';
+        let fullText = '';
+        let translationsArray = null;
+
+        xhr.onreadystatechange = () => {
+          if (signal.aborted) {
+            xhr.abort();
+            resolve();
+            return;
+          }
+
+          if (xhr.readyState === 3 || xhr.readyState === 4) {
+            if (xhr.status !== 200 && xhr.readyState === 4) {
+              console.warn('[useLyricSync] Translation failed, status:', xhr.status);
+              resolve();
+              return;
+            }
+
+            const currentText = xhr.responseText;
+            const newText = currentText.substring(processedTextLength);
+            
+            if (newText) {
+              processedTextLength = currentText.length;
+              buffer += newText;
+              
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+              
+              for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                const dataStr = line.slice(6);
+                if (dataStr === '[DONE]') {
+                  console.log('[useLyricSync] Stream [DONE] received');
+                  break;
+                }
+
+                try {
+                  const event = JSON.parse(dataStr);
+
+                  if (event.translated_lyrics) {
+                    console.log('[useLyricSync] Cache hit received');
+                    translationsArray = event.translated_lyrics;
+                  } else if (event.text) {
+                    fullText += event.text;
+                    
+                    // Progressive Regex parsing to extract completed strings safely
+                    const matches = [...fullText.matchAll(/"([^"\\]*(\\.[^"\\]*)*)"/g)];
+                    if (matches.length > 0) {
+                      const partialArray = matches.map(m => {
+                        try { return JSON.parse(m[0]); } catch(e) { return ""; }
+                      });
+                      
+                      setLines(prevLines => prevLines.map((l, i) => ({
+                        ...l,
+                        translation: partialArray[i] || l.translation,
+                      })));
+                    }
+                  } else if (event.error) {
+                    console.error('[useLyricSync] Stream error event:', event.error);
+                  }
+                } catch (e) {
+                  // Incomplete chunk, ignore
+                }
+              }
+              
+              if (translationsArray && Array.isArray(translationsArray)) {
+                setLines(prevLines => prevLines.map((l, i) => ({
+                  ...l,
+                  translation: translationsArray[i] || l.translation,
+                })));
+              }
+            }
+          }
+
+          if (xhr.readyState === 4) {
+            console.log('[useLyricSync] XHR complete. Final status:', xhr.status);
+            if (!translationsArray && fullText) {
+              try {
+                const finalArray = JSON.parse(fullText);
+                if (Array.isArray(finalArray)) {
+                  setLines(prevLines => prevLines.map((l, i) => ({
+                    ...l,
+                    translation: finalArray[i] || l.translation,
+                  })));
+                }
+              } catch (e) {
+                console.log('[useLyricSync] Final parse error (could mean stream died early):', e.message);
+              }
+            }
+            resolve();
+          }
+        };
+
+        xhr.onerror = () => {
+          console.warn('[useLyricSync] Translation network error');
+          resolve();
+        };
+
+        xhr.send(JSON.stringify({
           track_id: track.track_id,
           lyrics: englishLines,
-        }),
-        signal,
+        }));
+        
+        signal.addEventListener('abort', () => {
+          xhr.abort();
+          resolve();
+        });
       });
-
-      if (signal.aborted) return;
-
-      if (!translateRes.ok) {
-        // Translation failed — English-only is fine, stay in 'ready' state
-        console.warn('Translation failed, showing English only');
-        return;
-      }
-
-      // Step 5: Read SSE stream — merge translations into lines as they arrive
-      const reader = translateRes.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let translationsArray = null;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done || signal.aborted) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        for (const line of chunk.split('\n')) {
-          if (!line.startsWith('data: ')) continue;
-          const dataStr = line.slice(6);
-          if (dataStr === '[DONE]') break;
-
-          try {
-            const event = JSON.parse(dataStr);
-
-            // Cache hit — full translation array returned at once
-            if (event.translated_lyrics) {
-              translationsArray = event.translated_lyrics;
-              break;
-            }
-          } catch (e) {
-            // Incomplete chunk, ignore
-          }
-        }
-
-        if (translationsArray) break;
-      }
-
-      if (signal.aborted) return;
-
-      // Step 6: Merge translations into lines
-      if (translationsArray && Array.isArray(translationsArray)) {
-        setLines(parsedLines.map((l, i) => ({
-          ...l,
-          translation: translationsArray[i] || null,
-        })));
-      }
 
     } catch (err) {
       if (err.name === 'AbortError') return;

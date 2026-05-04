@@ -10,3 +10,4 @@ firebase-debug.log
 firebase-debug.*.log
 *-firebase-adminsdk-*.json
 wordmusa-556c2e0a7e35.json
+firestore-debug.log

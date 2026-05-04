@@ -28,7 +28,7 @@ const db = getFirestore();
 
 const spotifyClientId = defineSecret('SPOTIFY_CLIENT_ID');
 const spotifyClientSecret = defineSecret('SPOTIFY_CLIENT_SECRET');
-const anthropicApiKey = defineSecret('ANTHROPIC_API_KEY');
+const openaiApiKey = defineSecret('OPENAI_API_KEY');
 
 // Helper to verify App Check token
 async function verifyAppCheck(req, res) {
@@ -414,7 +414,7 @@ exports.lyricsFetch = onRequest((req, res) => {
   });
 });
 
-exports.translateLyrics = onRequest({ secrets: [anthropicApiKey] }, (req, res) => {
+exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
   cors(req, res, async () => {
     try {
       if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
@@ -446,11 +446,11 @@ exports.translateLyrics = onRequest({ secrets: [anthropicApiKey] }, (req, res) =
         return;
       }
 
-      // AbortController so we can cancel the Claude request if client disconnects
+      // AbortController so we can cancel the API request if client disconnects
       const controller = new AbortController();
       req.on('close', () => controller.abort());
 
-      const apiKey = process.env.ANTHROPIC_API_KEY || anthropicApiKey.value();
+      const apiKey = process.env.OPENAI_API_KEY || openaiApiKey.value();
 
       // System prompt: lyric lines are passed as data in the user message,
       // never interpolated into the system string (prevents prompt injection).
@@ -461,21 +461,18 @@ exports.translateLyrics = onRequest({ secrets: [anthropicApiKey] }, (req, res) =
         'Return ONLY a valid JSON array of Hebrew strings, same length as input. ' +
         'No markdown, no preamble, no explanation.';
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'x-api-key': apiKey,
-          // FIX: updated anthropic-version header to current stable
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          // FIX: claude-3-haiku-20240307 is deprecated — use current Haiku model
-          model: 'claude-haiku-4-5-20251001',
+          model: 'gpt-4o-mini',
           max_tokens: 4096,
-          system: systemPrompt,
           stream: true,
           messages: [
+            { role: 'system', content: systemPrompt },
             { role: 'user', content: JSON.stringify(sanitizedLyrics) },
           ],
         }),
@@ -484,12 +481,13 @@ exports.translateLyrics = onRequest({ secrets: [anthropicApiKey] }, (req, res) =
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Anthropic API error:', errorText);
+        console.error('OpenAI API error:', errorText);
         res.write(`data: ${JSON.stringify({ error: 'Translation failed' })}\n\n`);
         return res.end();
       }
 
       let fullText = '';
+      let buffer = '';
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
 
@@ -497,21 +495,20 @@ exports.translateLyrics = onRequest({ secrets: [anthropicApiKey] }, (req, res) =
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        for (const line of chunk.split('\n')) {
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep the incomplete line
+
+        for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
           const dataStr = line.slice(6);
           if (dataStr === '[DONE]') continue;
           try {
             const event = JSON.parse(dataStr);
-            // Anthropic streaming: type=content_block_delta, delta.type=text_delta
-            if (
-              event.type === 'content_block_delta' &&
-              event.delta?.type === 'text_delta' &&
-              event.delta?.text
-            ) {
-              fullText += event.delta.text;
-              res.write(`data: ${JSON.stringify({ text: event.delta.text })}\n\n`);
+            // OpenAI streaming: choices[0].delta.content
+            if (event.choices && event.choices[0] && event.choices[0].delta && event.choices[0].delta.content) {
+              fullText += event.choices[0].delta.content;
+              res.write(`data: ${JSON.stringify({ text: event.choices[0].delta.content })}\n\n`);
             }
           } catch (e) {
             // Incomplete chunk — safe to ignore
@@ -530,7 +527,7 @@ exports.translateLyrics = onRequest({ secrets: [anthropicApiKey] }, (req, res) =
           updated_at: FieldValue.serverTimestamp(),
         });
       } catch (e) {
-        console.error('Failed to parse Claude output or save to cache:', fullText);
+        console.error('Failed to parse OpenAI output or save to cache:', fullText);
       }
 
     } catch (error) {
