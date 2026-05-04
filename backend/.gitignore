@@ -8,3 +8,5 @@ dist/
 lib/
 firebase-debug.log
 firebase-debug.*.log
+*-firebase-adminsdk-*.json
+wordmusa-firebase-adminsdk-fbsvc-4ec0706391.json
