@@ -1,161 +1,210 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import useWordStore from '../store/useWordStore';
 
-export default function WordCard() {
-  const { activeWords, setSelectedWord, incrementEncounter } = useWordStore();
+const FREQ_COLOR = { HIGH: '#F76A8A', MEDIUM: '#FFC832', LOW: '#6AF7C8' };
+const FREQ_BG = {
+  HIGH: 'rgba(247,106,138,0.15)',
+  MEDIUM: 'rgba(255,200,50,0.15)',
+  LOW: 'rgba(106,247,200,0.15)',
+};
 
-  // Move the null/undefined guard for activeWords to the very top of the WordCard component 
-  // (before any access to activeWords.length or any hooks that derive state)
-  if (!activeWords || activeWords.length === 0) {
-    return null; // Don't show if no active words
-  }
-
+export default function WordCard({ onWordTap, lyricContext }) {
+  const { activeWords, setSelectedWord } = useWordStore();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const slideAnim = useRef(new Animated.Value(100)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  // bounds check for currentIndex
-  const safeIndex = (currentIndex >= 0 && currentIndex < activeWords.length) ? currentIndex : 0;
-  
+  // Animate in/out when activeWords changes
   useEffect(() => {
-    // Reset index when active words change
     setCurrentIndex(0);
-    
     if (activeWords.length > 0) {
-      // Increment encounter for the first word immediately
-      incrementEncounter(activeWords[0].word.toLowerCase());
+      Animated.parallel([
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 65,
+          friction: 11,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      slideAnim.setValue(100);
+      fadeAnim.setValue(0);
     }
-  }, [activeWords, incrementEncounter]);
+  }, [activeWords]);
 
+  // Cycle through multiple words every 4 seconds
   useEffect(() => {
     if (activeWords.length <= 1) return;
-
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => {
-        const nextIndex = prev + 1;
-        return nextIndex >= activeWords.length ? 0 : nextIndex;
-      });
+      setCurrentIndex(prev => (prev + 1) % activeWords.length);
     }, 4000);
-
     return () => clearInterval(interval);
-  }, [activeWords.length]);
+  }, [activeWords]);
 
-  // Separate effect to track encounters when index changes
-  useEffect(() => {
-    if (safeIndex > 0 && safeIndex < activeWords.length) {
-      incrementEncounter(activeWords[safeIndex].word.toLowerCase());
-    }
-  }, [safeIndex, activeWords, incrementEncounter]);
+  if (!activeWords || activeWords.length === 0) return null;
 
-  const currentWord = activeWords[safeIndex];
-  if (!currentWord) return null;
+  const safeIndex = currentIndex < activeWords.length ? currentIndex : 0;
+  const word = activeWords[safeIndex];
+  if (!word) return null;
 
-  const frequencyColors = {
-    HIGH: '#E22134',
-    MEDIUM: '#F1C40F',
-    LOW: '#2ECC71'
-  };
+  const freq = word.frequencyTier;
 
   return (
-    <TouchableOpacity 
-      style={styles.cardContainer} 
-      activeOpacity={0.8}
-      onPress={() => setSelectedWord(currentWord)}
+    <Animated.View
+      style={[
+        styles.card,
+        { transform: [{ translateY: slideAnim }], opacity: fadeAnim },
+      ]}
     >
-      <View style={styles.headerRow}>
-        <Text style={styles.wordText}>{currentWord.word}</Text>
-        <View style={[styles.badge, { backgroundColor: frequencyColors[currentWord.frequency] || '#888' }]}>
-          <Text style={styles.badgeText}>{currentWord.frequency}</Text>
-        </View>
-      </View>
-      
-      <View style={styles.subHeaderRow}>
-        <Text style={styles.ipaText}>/{currentWord.ipa}/</Text>
-        <Text style={styles.posText}>{currentWord.partOfSpeech}</Text>
-      </View>
+      <TouchableOpacity
+        activeOpacity={0.75}
+        onPress={() => {
+          setSelectedWord({ ...word, lyricContext });
+          onWordTap?.(word);
+        }}
+      >
+        {/* Top accent line */}
+        <View style={styles.accentLine} />
 
-      <Text style={styles.defText}>{currentWord.hebrewDefinitionShort}</Text>
-      
-      {activeWords.length > 1 && (
-        <View style={styles.dotsContainer}>
-          {activeWords.map((_, idx) => (
-            <View key={idx} style={[styles.dot, idx === safeIndex && styles.activeDot]} />
-          ))}
+        <View style={styles.inner}>
+          {/* Row 1 — word + frequency badge */}
+          <View style={styles.headerRow}>
+            <Text style={styles.wordText}>{word.word}</Text>
+            <View style={styles.rightMeta}>
+              {freq && (
+                <View style={[styles.badge, { borderColor: FREQ_COLOR[freq], backgroundColor: FREQ_BG[freq] }]}>
+                  <Text style={[styles.badgeText, { color: FREQ_COLOR[freq] }]}>{freq}</Text>
+                </View>
+              )}
+              <Text style={styles.chevron}>›</Text>
+            </View>
+          </View>
+
+          {/* Row 2 — IPA + part of speech */}
+          <View style={styles.metaRow}>
+            {word.ipa ? <Text style={styles.ipaText}>/{word.ipa}/</Text> : null}
+            {word.partOfSpeech ? <Text style={styles.posText}>{word.partOfSpeech}</Text> : null}
+          </View>
+
+          {/* Row 3 — Hebrew short definition */}
+          <Text style={styles.defText} numberOfLines={2}>
+            {word.hebrewShort}
+          </Text>
+
+          {/* Pagination dots for multiple words */}
+          {activeWords.length > 1 && (
+            <View style={styles.dots}>
+              {activeWords.map((_, idx) => (
+                <View key={idx} style={[styles.dot, idx === safeIndex && styles.dotActive]} />
+              ))}
+            </View>
+          )}
         </View>
-      )}
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  cardContainer: {
-    backgroundColor: '#282828',
-    padding: 16,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+  card: {
+    backgroundColor: '#13131A',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.07)',
+    overflow: 'hidden',
+  },
+  accentLine: {
+    height: 2,
+    backgroundColor: '#7C6AF7',
+    opacity: 0.5,
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 1,
+  },
+  inner: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 14,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   wordText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
+    color: '#F0EEFF',
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+    flexShrink: 1,
   },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  subHeaderRow: {
+  rightMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    gap: 8,
+    marginLeft: 8,
+  },
+  badge: {
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  chevron: {
+    color: 'rgba(255,255,255,0.25)',
+    fontSize: 20,
+    lineHeight: 22,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 7,
   },
   ipaText: {
-    color: '#aaa',
-    fontSize: 14,
-    marginRight: 8,
+    color: '#7A7A9A',
+    fontSize: 13,
+    fontFamily: 'monospace',
   },
   posText: {
-    color: '#1DB954',
-    fontSize: 14,
+    color: '#6AF7C8',
+    fontSize: 12,
     fontStyle: 'italic',
+    opacity: 0.85,
   },
   defText: {
-    color: '#fff',
-    fontSize: 18,
+    color: '#C8C4F0',
+    fontSize: 15,
     textAlign: 'right',
+    lineHeight: 22,
   },
-  dotsContainer: {
+  dots: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 12,
+    marginTop: 10,
+    gap: 5,
   },
   dot: {
-    width: 6,
-    height: 6,
+    width: 5,
+    height: 5,
     borderRadius: 3,
-    backgroundColor: '#555',
-    marginHorizontal: 4,
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
-  activeDot: {
-    backgroundColor: '#1DB954',
-  }
+  dotActive: {
+    backgroundColor: '#7C6AF7',
+    width: 14,
+    borderRadius: 3,
+  },
 });

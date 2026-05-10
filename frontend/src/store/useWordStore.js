@@ -1,16 +1,6 @@
 import { create } from 'zustand';
-import wordsData from '../../assets/words.json';
-
-// Convert the words array to an object for fast lookup O(1)
-const dictionary = {};
-wordsData.forEach(word => {
-  if (word?.word) {
-      dictionary[word.word.toLowerCase()] = word;
-  }
-});
 
 const useWordStore = create((set, get) => ({
-  dictionary,
   userProgress: {},
   activeWords: [],
   selectedWord: null,
@@ -24,11 +14,23 @@ const useWordStore = create((set, get) => ({
   closeModal: () => set({ selectedWord: null }),
 
   incrementEncounter: (wordStr) => set((state) => {
-    return state;
+    const prev = state.userProgress[wordStr] || { encounterCount: 0 };
+    return {
+      userProgress: {
+        ...state.userProgress,
+        [wordStr]: { ...prev, encounterCount: prev.encounterCount + 1 },
+      },
+    };
   }),
 
   toggleReviewList: (wordStr) => set((state) => {
-    return state;
+    const prev = state.userProgress[wordStr] || {};
+    return {
+      userProgress: {
+        ...state.userProgress,
+        [wordStr]: { ...prev, savedToReview: !prev.savedToReview },
+      },
+    };
   })
 }));
 

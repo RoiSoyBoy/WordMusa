@@ -54,7 +54,7 @@ export default function SpotifyAuth({ onAuthComplete }) {
   const [request, response, promptAsync] = useAuthRequest(
     {
       clientId: process.env.EXPO_PUBLIC_SPOTIFY_CLIENT_ID || 'CLIENT_ID_NOT_FOUND',
-      scopes: ['user-read-playback-state', 'user-read-currently-playing'],
+      scopes: ['user-read-playback-state', 'user-read-currently-playing', 'user-modify-playback-state'],
       usePKCE: false,
       redirectUri,
     },

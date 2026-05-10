@@ -454,12 +454,18 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
 
       // System prompt: lyric lines are passed as data in the user message,
       // never interpolated into the system string (prevents prompt injection).
-      const systemPrompt =
-        'You are a Hebrew translator for song lyrics. ' +
-        'The user message will be a JSON array of English lyric lines. ' +
-        'Translate each line to natural, colloquial Hebrew preserving tone and meaning. ' +
-        'Return ONLY a valid JSON array of Hebrew strings, same length as input. ' +
-        'No markdown, no preamble, no explanation.';
+     const systemPrompt =
+  'You are a Hebrew song lyrics translator. ' +
+  'INPUT: a JSON array of English lyric lines. ' +
+  'OUTPUT: a JSON array of Hebrew strings, identical length, same order. ' +
+  'RULES: ' +
+  '1. Translate to natural, spoken Israeli Hebrew (not formal/biblical). ' +
+  '2. Preserve emotional tone, slang, and poetic rhythm where possible. ' +
+  '3. Keep proper nouns, brand names, and English slang untranslated. ' +
+  '4. If a line is empty or instrumental (e.g. "[Chorus]"), return an empty string for that index. ' +
+  '5. Output raw JSON only — no markdown fences, no keys, no explanation, no preamble. ' +
+  'EXAMPLE INPUT: ["I\'ve been alone all night","She\'s touching my elusive heart"] ' +
+  'EXAMPLE OUTPUT: ["הייתי לבד כל הלילה","היא נוגעת בלבי החמקמק"]';
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -575,6 +581,75 @@ exports.tracksMissing = onRequest((req, res) => {
 
     } catch (error) {
       console.error('Error in tracksMissing:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+});
+
+exports.spotifyControl = onRequest({ secrets: [spotifyClientId, spotifyClientSecret] }, (req, res) => {
+  cors(req, res, async () => {
+    try {
+      if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+      if (!(await verifyAppCheck(req, res))) return;
+      const user = await verifyAuth(req, res);
+      if (!user) return;
+
+      const allowed = await checkRateLimit(user.uid, 'spotify_control', 60);
+      if (!allowed) return res.status(429).send('Too Many Requests');
+
+      const { action } = req.body;
+      const validActions = ['play', 'pause', 'next', 'previous', 'seek'];
+      if (!validActions.includes(action)) {
+        return res.status(400).send('Invalid action');
+      }
+
+      const clientId = process.env.SPOTIFY_CLIENT_ID || spotifyClientId.value();
+      const clientSecret = process.env.SPOTIFY_CLIENT_SECRET || spotifyClientSecret.value();
+      const accessToken = await getValidSpotifyAccessToken(user.uid, clientId, clientSecret);
+
+      let spotifyUrl, method, body;
+
+      switch (action) {
+        case 'play':
+          spotifyUrl = 'https://api.spotify.com/v1/me/player/play';
+          method = 'PUT';
+          break;
+        case 'pause':
+          spotifyUrl = 'https://api.spotify.com/v1/me/player/pause';
+          method = 'PUT';
+          break;
+        case 'next':
+          spotifyUrl = 'https://api.spotify.com/v1/me/player/next';
+          method = 'POST';
+          break;
+        case 'previous':
+          spotifyUrl = 'https://api.spotify.com/v1/me/player/previous';
+          method = 'POST';
+          break;
+        case 'seek':
+          const position = parseInt(req.body.position_ms, 10);
+          if (isNaN(position) || position < 0) return res.status(400).send('Invalid position_ms');
+          spotifyUrl = `https://api.spotify.com/v1/me/player/seek?position_ms=${position}`;
+          method = 'PUT';
+          break;
+      }
+
+      const response = await fetch(spotifyUrl, {
+        method,
+        headers: { 'Authorization': `Bearer ${accessToken}` },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+
+      if (response.status === 204 || response.ok) {
+        return res.status(200).json({ success: true });
+      }
+
+      const err = await response.text();
+      console.error('Spotify control error:', err);
+      return res.status(response.status).send('Spotify control failed');
+
+    } catch (error) {
+      console.error('Error in spotifyControl:', error);
       res.status(500).send('Internal Server Error');
     }
   });

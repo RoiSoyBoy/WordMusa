@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(cd C:\\\\DEV\\\\LyricLearn\\\\backend; $env:FUNCTIONS_EMULATOR=\"true\"; $env:FIRESTORE_EMULATOR_HOST=\"localhost:8080\"; $env:FIREBASE_AUTH_EMULATOR_HOST=\"localhost:9099\"; $proc = Start-Job -ScriptBlock { cd C:\\\\DEV\\\\LyricLearn\\\\backend; node \"node_modules\\\\firebase-functions\\\\lib\\\\bin\\\\firebase-functions.js\" --port 8560 2>&1 }; Start-Sleep -Seconds 4; try { $resp = Invoke-WebRequest -Uri \"http://localhost:8560/__/functions.yaml\" -TimeoutSec 5; \"Got response: $\\($resp.StatusCode\\)\"; $resp.Content | Select-Object -First 1000 } catch { \"Error: $_\" }; Stop-Job $proc; Remove-Job $proc -Force)",
+      "Bash(Get-Content C:\\\\DEV\\\\LyricLearn\\\\backend\\\\firebase-debug.log -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -Last 80)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7"
+  ]
+}

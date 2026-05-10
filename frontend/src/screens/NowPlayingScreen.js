@@ -1,49 +1,54 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, ActivityIndicator,
-  Image, TouchableOpacity
+  View, Text, ScrollView, StyleSheet, ActivityIndicator, Image,
 } from 'react-native';
 import { auth } from '../firebase';
+import { signOut } from 'firebase/auth';
 import { useLyricSync } from '../hooks/useLyricSync';
+import { useWordTracking } from '../hooks/useWordTracking';
+import useWordStore from '../store/useWordStore';
+import { psychometricWordSet, psychometricWordMap } from '../utils/psychometricWords';
+import WordCard from '../components/WordCard';
+import PlaybackControls from '../components/PlaybackControls';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const POLL_INTERVAL_MS = 1000;
 
 export default function NowPlayingScreen() {
   const [currentTrack, setCurrentTrack] = useState(null);
-  const [isPolling, setIsPolling] = useState(true);
+  const [highlightedWord, setHighlightedWord] = useState(null);
   const pollIntervalRef = useRef(null);
   const scrollViewRef = useRef(null);
-  const lineHeightRef = useRef(72); // approximate px per lyric line
+  const lineHeightRef = useRef(72);
 
   const { lines, activeIndex, status } = useLyricSync(currentTrack);
+  const { recordWordEncounter, recordWordTap, recordTrackSeen } = useWordTracking();
+  const { setActiveWords } = useWordStore();
 
-  // Polling loop
+  // ── Spotify polling ──────────────────────────────────────────────────────────
+
   const pollSpotify = useCallback(async () => {
     try {
       const user = auth.currentUser;
       if (!user) return;
       const token = await user.getIdToken();
-
       const res = await fetch(`${BACKEND_URL}/spotifyPlayer`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+      if (res.status === 401) {
+        // Token invalid or user record gone (e.g. emulator restart) — force re-auth
+        signOut(auth).catch(() => {});
+        return;
+      }
       if (!res.ok) return;
-
       const data = await res.json();
       if (!data.is_playing) {
         setCurrentTrack(prev => prev ? { ...prev, is_playing: false } : null);
         return;
       }
-
-      setCurrentTrack(prev => {
-        // Preserve track_id continuity for useLyricSync change detection
-        if (prev?.track_id === data.track_id) {
-          return { ...data };
-        }
-        return data;
-      });
+      setCurrentTrack(prev =>
+        prev?.track_id === data.track_id ? { ...data } : data
+      );
     } catch (err) {
       console.warn('Spotify poll failed:', err.message);
     }
@@ -55,36 +60,89 @@ export default function NowPlayingScreen() {
     return () => clearInterval(pollIntervalRef.current);
   }, [pollSpotify]);
 
-  // Auto-scroll to active line
+  // Track new songs for stats
   useEffect(() => {
-    if (activeIndex < 0 || !scrollViewRef.current) return;
-    const yOffset = Math.max(0, activeIndex * lineHeightRef.current - 150);
-    scrollViewRef.current.scrollTo({ y: yOffset, animated: true });
+    if (currentTrack?.track_id) recordTrackSeen(currentTrack.track_id);
+  }, [currentTrack?.track_id]);
+
+  // ── Word scanning ─────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (activeIndex < 0 || !lines[activeIndex]) {
+      setActiveWords([]);
+      setHighlightedWord(null);
+      return;
+    }
+    const text = lines[activeIndex].text;
+    const seen = new Set();
+    const matched = [];
+
+    text.split(/\b/).forEach(part => {
+      const clean = part.toLowerCase().replace(/[^a-z]/g, '');
+      if (clean && psychometricWordMap.has(clean) && !seen.has(clean)) {
+        seen.add(clean);
+        matched.push(psychometricWordMap.get(clean));
+      }
+    });
+
+    setActiveWords(matched);
+    setHighlightedWord(matched[0] || null);
+
+    if (matched.length > 0 && currentTrack) {
+      matched.forEach(wordData => {
+        recordWordEncounter(wordData, {
+          trackName: currentTrack.track_name,
+          artistName: currentTrack.artist,
+          lyricLine: text,
+        });
+      });
+    }
   }, [activeIndex]);
 
-  // ── Render helpers ──────────────────────────────────────────────────────────
+  // ── Auto-scroll ───────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (activeIndex < 0 || !scrollViewRef.current) return;
+    const y = Math.max(0, activeIndex * lineHeightRef.current - 150);
+    scrollViewRef.current.scrollTo({ y, animated: true });
+  }, [activeIndex]);
+
+  // ── Lyric line rendering ──────────────────────────────────────────────────────
+
+  const renderHighlightedLine = (text, baseStyle) => {
+    if (!text) return <Text style={baseStyle} />;
+    const parts = text.split(/(\b[a-zA-Z']+\b)/);
+    return (
+      <Text style={baseStyle}>
+        {parts.map((part, idx) => {
+          const clean = part.toLowerCase().replace(/[^a-z]/g, '');
+          if (clean && psychometricWordSet.has(clean)) {
+            return <Text key={idx} style={styles.highlightedWord}>{part}</Text>;
+          }
+          return <Text key={idx}>{part}</Text>;
+        })}
+      </Text>
+    );
+  };
 
   const renderLyricLine = (line, index) => {
     const isActive = index === activeIndex;
     const isPast = index < activeIndex;
     const isFuture = index > activeIndex;
 
+    const englishStyle = [
+      styles.lyricEnglish,
+      isPast && styles.textPast,
+      isActive && styles.textActive,
+      isFuture && styles.textFuture,
+    ];
+
     return (
       <View
         key={index}
-        style={[
-          styles.lyricLine,
-          isActive && styles.lyricLineActive,
-        ]}
+        style={[styles.lyricLine, isActive && styles.lyricLineActive]}
       >
-        <Text style={[
-          styles.lyricEnglish,
-          isPast && styles.textPast,
-          isActive && styles.textActive,
-          isFuture && styles.textFuture,
-        ]}>
-          {line.text}
-        </Text>
+        {renderHighlightedLine(line.text, englishStyle)}
         {line.translation ? (
           <Text style={[
             styles.lyricHebrew,
@@ -95,18 +153,15 @@ export default function NowPlayingScreen() {
             {line.translation}
           </Text>
         ) : (
-          // Translation loading placeholder
-          status === 'ready' && (
-            <View style={styles.translationPlaceholder} />
-          )
+          status === 'ready' && <View style={styles.translationPlaceholder} />
         )}
       </View>
     );
   };
 
-  // ── States ──────────────────────────────────────────────────────────────────
+  // ── Empty state ───────────────────────────────────────────────────────────────
 
-  if (!currentTrack || !currentTrack.is_playing) {
+  if (!currentTrack) {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>פתח את ספוטיפיי והתחל להאזין</Text>
@@ -114,6 +169,13 @@ export default function NowPlayingScreen() {
       </View>
     );
   }
+
+  // ── Main render ───────────────────────────────────────────────────────────────
+
+  const activeLine = (activeIndex >= 0 && lines[activeIndex]) ? lines[activeIndex] : null;
+  const activeLyricContext = activeLine
+    ? { text: activeLine.text, translation: activeLine.translation || null }
+    : null;
 
   return (
     <View style={styles.container}>
@@ -123,12 +185,8 @@ export default function NowPlayingScreen() {
           <Image source={{ uri: currentTrack.album_art }} style={styles.albumArt} />
         )}
         <View style={styles.trackInfo}>
-          <Text style={styles.trackName} numberOfLines={1}>
-            {currentTrack.track_name}
-          </Text>
-          <Text style={styles.artistName} numberOfLines={1}>
-            {currentTrack.artist}
-          </Text>
+          <Text style={styles.trackName} numberOfLines={1}>{currentTrack.track_name}</Text>
+          <Text style={styles.artistName} numberOfLines={1}>{currentTrack.artist}</Text>
         </View>
       </View>
 
@@ -139,19 +197,16 @@ export default function NowPlayingScreen() {
           <Text style={styles.loadingText}>טוען מילים...</Text>
         </View>
       )}
-
       {status === 'no_lyrics' && (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>מילות השיר הזה לא זמינות כרגע</Text>
         </View>
       )}
-
       {status === 'error' && (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>שגיאה בטעינת המילים</Text>
         </View>
       )}
-
       {status === 'ready' && lines.length > 0 && (
         <ScrollView
           ref={scrollViewRef}
@@ -163,15 +218,20 @@ export default function NowPlayingScreen() {
           <View style={styles.bottomPadding} />
         </ScrollView>
       )}
+
+      {/* Word card — sits between lyrics and playback controls */}
+      <WordCard
+        lyricContext={activeLyricContext}
+        onWordTap={(wordData) => recordWordTap(wordData)}
+      />
+
+      <PlaybackControls currentTrack={currentTrack} onPollNow={pollSpotify} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0A0A0F',
-  },
+  container: { flex: 1, backgroundColor: '#0A0A0F' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -179,23 +239,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.06)',
   },
-  albumArt: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    marginRight: 12,
-  },
+  albumArt: { width: 48, height: 48, borderRadius: 8, marginRight: 12 },
   trackInfo: { flex: 1 },
-  trackName: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  artistName: {
-    color: '#7A7A9A',
-    fontSize: 13,
-    marginTop: 2,
-  },
+  trackName: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  artistName: { color: '#7A7A9A', fontSize: 13, marginTop: 2 },
   lyricsScroll: { flex: 1 },
   lyricsContent: { paddingTop: 24, paddingHorizontal: 20 },
   lyricLine: {
@@ -222,6 +269,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontStyle: 'italic',
   },
+  highlightedWord: {
+    color: '#6AF7C8',
+    fontWeight: '600',
+  },
   textPast: { opacity: 0.3 },
   textActive: { color: '#FFFFFF', fontWeight: '600' },
   textFuture: { opacity: 0.45 },
@@ -247,16 +298,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 32,
   },
-  emptyText: {
-    color: '#7A7A9A',
-    fontSize: 16,
-    textAlign: 'center',
-  },
+  emptyText: { color: '#7A7A9A', fontSize: 16, textAlign: 'center' },
   emptySubtext: {
     color: 'rgba(122,122,154,0.6)',
     fontSize: 13,
     marginTop: 8,
     textAlign: 'center',
   },
-  bottomPadding: { height: 100 },
+  bottomPadding: { height: 12 },
 });

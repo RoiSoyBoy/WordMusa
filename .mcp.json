@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "@upstash/context7-mcp@latest"
+      ],
+      "env": {}
+    },
+     "firebase": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@gannonh/firebase-mcp"],
+      "env": {
+      "SERVICE_ACCOUNT_KEY_PATH": "./backend/wordmusa-556c2e0a7e35.json",
+
+        "FIREBASE_PROJECT_ID": "wordmusa"
+      }
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {}
+    }
+  }
+}
