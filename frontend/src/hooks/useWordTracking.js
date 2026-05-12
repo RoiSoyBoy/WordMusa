@@ -185,5 +185,51 @@ export function useWordTracking() {
     }
   }
 
-  return { recordWordEncounter, recordWordTap, recordTrackSeen };
+  // ── recordWordFlag ─────────────────────────────────────────────────────────
+  // Called when the user long-presses any word in the active lyric line.
+
+  async function recordWordFlag(word, lyricContext, trackContext, wordTranslation) {
+    const user = auth.currentUser;
+    if (!user || !word) return;
+
+    const wordId = toWordId(word);
+    const wordRef = doc(db, 'users', user.uid, 'wordHistory', wordId);
+
+    const flagContext = {
+      text: lyricContext?.text || '',
+      translation: lyricContext?.translation || null,
+      trackName: trackContext?.trackName || '',
+      wordTranslation: wordTranslation || null,
+    };
+
+    const contextEntry = {
+      trackName: trackContext?.trackName || '',
+      artistName: trackContext?.artistName || '',
+      lyricLine: lyricContext?.text || '',
+    };
+
+    try {
+      const snap = await getDoc(wordRef);
+
+      if (!snap.exists()) {
+        await setDoc(wordRef, {
+          word,
+          flagged: true,
+          flagContext,
+          encounterCount: 0,
+          firstEncounteredAt: serverTimestamp(),
+          lastEncounteredAt: serverTimestamp(),
+          tappedAt: null,
+          learnedAt: null,
+          songContexts: [contextEntry],
+        });
+      } else if (!snap.data().flagged) {
+        await updateDoc(wordRef, { flagged: true, flagContext });
+      }
+    } catch (err) {
+      console.warn('recordWordFlag error:', err.message);
+    }
+  }
+
+  return { recordWordEncounter, recordWordTap, recordTrackSeen, recordWordFlag };
 }

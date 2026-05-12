@@ -586,6 +586,55 @@ exports.tracksMissing = onRequest((req, res) => {
   });
 });
 
+exports.translateWord = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
+  cors(req, res, async () => {
+    try {
+      if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+      if (!(await verifyAppCheck(req, res))) return;
+      const user = await verifyAuth(req, res);
+      if (!user) return;
+
+      const allowed = await checkRateLimit(user.uid, 'translate_word', 30);
+      if (!allowed) return res.status(429).send('Too Many Requests');
+
+      const { word } = req.body;
+      if (!word || typeof word !== 'string') return res.status(400).send('Missing word');
+      const sanitized = word.replace(/[^a-zA-Z\s'-]/g, '').substring(0, 60).trim();
+      if (!sanitized) return res.status(400).send('Invalid word');
+
+      const apiKey = process.env.OPENAI_API_KEY || openaiApiKey.value();
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: 'Translate the given English word to Hebrew. Respond with only the Hebrew word or short phrase. No explanations, no transliteration, no punctuation.' },
+            { role: 'user', content: sanitized },
+          ],
+          max_tokens: 30,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('OpenAI error:', await response.text());
+        return res.status(500).send('Translation failed');
+      }
+
+      const data = await response.json();
+      const translation = data.choices?.[0]?.message?.content?.trim() || '';
+      res.json({ translation });
+
+    } catch (error) {
+      console.error('Error in translateWord:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+});
+
 exports.spotifyControl = onRequest({ secrets: [spotifyClientId, spotifyClientSecret] }, (req, res) => {
   cors(req, res, async () => {
     try {

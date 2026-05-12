@@ -8,7 +8,7 @@ import { db, auth } from '../firebase';
 import useWordStore from '../store/useWordStore';
 import { psychometricWordMap } from '../utils/psychometricWords';
 
-const FILTERS = ['הכל', 'נלמד', 'בתהליך', 'HIGH'];
+const FILTERS = ['הכל', 'נלמד', 'בתהליך', 'HIGH', 'מסומן'];
 
 const FREQ_COLOR = { HIGH: '#F76A8A', MEDIUM: '#FFC832', LOW: '#6AF7C8' };
 const FREQ_BG = {
@@ -48,34 +48,54 @@ export default function DictionaryScreen() {
     const wordStr = w.word?.toLowerCase() || '';
     if (search && !wordStr.includes(search.toLowerCase())) return false;
     if (activeFilter === 'נלמד') return !!w.learnedAt;
-    if (activeFilter === 'בתהליך') return !w.learnedAt;
+    if (activeFilter === 'בתהליך') return !w.learnedAt && w.encounterCount > 0;
     if (activeFilter === 'HIGH') return psychometricWordMap.get(wordStr)?.frequencyTier === 'HIGH';
+    if (activeFilter === 'מסומן') return !!w.flagged;
     return true;
   });
 
   const renderItem = ({ item }) => {
     const fullWord = psychometricWordMap.get(item.word?.toLowerCase());
     const freq = fullWord?.frequencyTier;
+    const isFlaggedOnly = item.flagged && !fullWord;
+
+    const handlePress = () => {
+      if (isFlaggedOnly) {
+        setSelectedWord({
+          word: item.word,
+          lyricContext: {
+            text: item.flagContext?.text || '',
+            translation: item.flagContext?.translation || null,
+          },
+        });
+      } else if (fullWord) {
+        setSelectedWord(fullWord);
+      }
+    };
 
     return (
       <TouchableOpacity
         style={styles.row}
         activeOpacity={0.7}
-        onPress={() => fullWord && setSelectedWord(fullWord)}
+        onPress={handlePress}
       >
         <View style={styles.rowLeft}>
           <Text style={styles.wordText}>{item.word}</Text>
           <Text style={styles.hebrewText} numberOfLines={1}>
-            {fullWord?.hebrewShort || ''}
+            {isFlaggedOnly
+              ? (item.flagContext?.wordTranslation || '')
+              : (fullWord?.hebrewShort || '')}
           </Text>
         </View>
         <View style={styles.rowRight}>
-          {freq && (
+          {!isFlaggedOnly && freq ? (
             <View style={[styles.badge, { borderColor: FREQ_COLOR[freq], backgroundColor: FREQ_BG[freq] }]}>
               <Text style={[styles.badgeText, { color: FREQ_COLOR[freq] }]}>{freq}</Text>
             </View>
+          ) : null}
+          {item.encounterCount > 0 && (
+            <Text style={styles.count}>{item.encounterCount}×</Text>
           )}
-          <Text style={styles.count}>{item.encounterCount}×</Text>
           {item.learnedAt && <Text style={styles.check}>✓</Text>}
         </View>
       </TouchableOpacity>

@@ -1,10 +1,14 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Modal, TouchableOpacity,
-  ScrollView, PanResponder,
+  ScrollView, PanResponder, ActivityIndicator,
 } from 'react-native';
 import useWordStore from '../store/useWordStore';
 import { psychometricWordMap } from '../utils/psychometricWords';
+import { useWordTracking } from '../hooks/useWordTracking';
+import { auth } from '../firebase';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 const FREQ_COLOR = { HIGH: '#F76A8A', MEDIUM: '#FFC832', LOW: '#6AF7C8' };
 const FREQ_BG = {
@@ -15,6 +19,45 @@ const FREQ_BG = {
 
 export default function WordDetailModal() {
   const { selectedWord, closeModal, setSelectedWord } = useWordStore();
+  const { recordWordFlag } = useWordTracking();
+  const [added, setAdded] = useState(false);
+  const [wordTranslation, setWordTranslation] = useState(null);
+  const [translationLoading, setTranslationLoading] = useState(false);
+
+  const isPsychometric = !!(selectedWord?.frequencyTier || selectedWord?.hebrewShort || selectedWord?.hebrewFull);
+
+  useEffect(() => {
+    setAdded(false);
+    setWordTranslation(null);
+    if (!selectedWord?.word || isPsychometric) return;
+
+    let cancelled = false;
+    setTranslationLoading(true);
+
+    (async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+        const token = await user.getIdToken();
+        const res = await fetch(`${BACKEND_URL}/translateWord`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ word: selectedWord.word }),
+        });
+        if (!cancelled && res.ok) {
+          const data = await res.json();
+          const translation = data.translation || null;
+          setWordTranslation(translation);
+        }
+      } catch (err) {
+        console.warn('translateWord error:', err.message);
+      } finally {
+        if (!cancelled) setTranslationLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [selectedWord?.word, isPsychometric]);
 
   // Swipe-down to close
   const panResponder = useRef(
@@ -80,8 +123,14 @@ export default function WordDetailModal() {
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-            {/* Full Hebrew definition */}
-            <Text style={styles.defText}>{selectedWord.hebrewFull || selectedWord.hebrewShort}</Text>
+            {/* Hebrew definition — psychometric words show dictionary def; others show fetched translation */}
+            {isPsychometric ? (
+              <Text style={styles.defText}>{selectedWord.hebrewFull || selectedWord.hebrewShort}</Text>
+            ) : translationLoading ? (
+              <ActivityIndicator color="#7C6AF7" style={{ marginBottom: 18 }} />
+            ) : wordTranslation ? (
+              <Text style={styles.defText}>{wordTranslation}</Text>
+            ) : null}
 
             {/* Lyric context box */}
             {lyricContext?.text ? (
@@ -126,6 +175,27 @@ export default function WordDetailModal() {
                 </View>
               </View>
             ) : null}
+
+            {!isPsychometric && (
+              <TouchableOpacity
+                style={[styles.addBtn, added && styles.addBtnDone]}
+                activeOpacity={0.7}
+                onPress={() => {
+                  if (added) return;
+                  recordWordFlag(
+                    selectedWord.word,
+                    selectedWord.lyricContext,
+                    { trackName: selectedWord.trackName, artistName: selectedWord.artistName },
+                    wordTranslation
+                  );
+                  setAdded(true);
+                }}
+              >
+                <Text style={[styles.addBtnText, added && styles.addBtnTextDone]}>
+                  {added ? 'נוסף למילון ✓' : 'הוסף למילון'}
+                </Text>
+              </TouchableOpacity>
+            )}
 
             <View style={styles.bottomSpacer} />
           </ScrollView>
@@ -289,5 +359,26 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 32,
+  },
+  addBtn: {
+    marginTop: 20,
+    backgroundColor: 'rgba(124,106,247,0.15)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(124,106,247,0.4)',
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  addBtnDone: {
+    backgroundColor: 'rgba(106,247,200,0.1)',
+    borderColor: 'rgba(106,247,200,0.3)',
+  },
+  addBtnText: {
+    color: '#7C6AF7',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  addBtnTextDone: {
+    color: '#6AF7C8',
   },
 });

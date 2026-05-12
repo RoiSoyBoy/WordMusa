@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, ActivityIndicator, Image,
+  View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Image,
 } from 'react-native';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -19,11 +19,14 @@ export default function NowPlayingScreen() {
   const [highlightedWord, setHighlightedWord] = useState(null);
   const pollIntervalRef = useRef(null);
   const scrollViewRef = useRef(null);
-  const lineHeightRef = useRef(72);
+  const itemRefs = useRef({});
+  const userScrollingRef = useRef(false);
+  const scrollResumeTimerRef = useRef(null);
+  const activeIndexRef = useRef(-1);
 
   const { lines, activeIndex, status } = useLyricSync(currentTrack);
   const { recordWordEncounter, recordWordTap, recordTrackSeen } = useWordTracking();
-  const { setActiveWords } = useWordStore();
+  const { setActiveWords, setSelectedWord } = useWordStore();
 
   // ── Spotify polling ──────────────────────────────────────────────────────────
 
@@ -99,27 +102,126 @@ export default function NowPlayingScreen() {
     }
   }, [activeIndex]);
 
-  // ── Auto-scroll ───────────────────────────────────────────────────────────────
+  // ── Auto-scroll (Spotify-style) ───────────────────────────────────────────────
 
+  useEffect(() => { activeIndexRef.current = activeIndex; }, [activeIndex]);
+
+  useEffect(() => () => clearTimeout(scrollResumeTimerRef.current), []);
+
+  const scrollToActive = useCallback((idx) => {
+    if (idx < 0 || !scrollViewRef.current) return;
+    const item = itemRefs.current[idx];
+    if (!item) return;
+    item.measureLayout(
+      scrollViewRef.current,
+      (_x, y) => {
+        scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 180), animated: true });
+      },
+      () => {}
+    );
+  }, []);
+
+  const resumeAutoScroll = useCallback(() => {
+    userScrollingRef.current = false;
+    scrollToActive(activeIndexRef.current);
+  }, [scrollToActive]);
+
+  const handleScrollBeginDrag = useCallback(() => {
+    userScrollingRef.current = true;
+    clearTimeout(scrollResumeTimerRef.current);
+  }, []);
+
+  const handleScrollEnd = useCallback((e) => {
+    clearTimeout(scrollResumeTimerRef.current);
+    const currentY = e.nativeEvent.contentOffset.y;
+    const idx = activeIndexRef.current;
+    const item = itemRefs.current[idx];
+    if (!item || !scrollViewRef.current) return;
+    item.measureLayout(
+      scrollViewRef.current,
+      (_x, lineY) => {
+        const targetY = Math.max(0, lineY - 180);
+        if (Math.abs(currentY - targetY) < 250) {
+          // Near the playing segment — resume auto-scroll after a short pause
+          scrollResumeTimerRef.current = setTimeout(resumeAutoScroll, 2000);
+        }
+        // Far away — stay where the user scrolled, don't resume
+      },
+      () => {}
+    );
+  }, [resumeAutoScroll]);
+
+  // Auto-scroll fires only when user isn't manually scrolling
   useEffect(() => {
-    if (activeIndex < 0 || !scrollViewRef.current) return;
-    const y = Math.max(0, activeIndex * lineHeightRef.current - 150);
-    scrollViewRef.current.scrollTo({ y, animated: true });
-  }, [activeIndex]);
+    if (userScrollingRef.current) return;
+    scrollToActive(activeIndex);
+  }, [activeIndex, scrollToActive]);
+
+  // Re-center once when translations first arrive — their added height shifts all
+  // line positions, making the initial English-only scroll measurement stale.
+  const hasTranslations = useMemo(() => lines.some(l => l.translation != null), [lines]);
+  useEffect(() => {
+    if (!hasTranslations || userScrollingRef.current) return;
+    const t = setTimeout(() => scrollToActive(activeIndexRef.current), 150);
+    return () => clearTimeout(t);
+  }, [hasTranslations, scrollToActive]);
+
+  // ── Lyric seek ───────────────────────────────────────────────────────────────
+
+  const seekToLine = useCallback(async (timeMs) => {
+    try {
+      const token = await auth.currentUser.getIdToken();
+      fetch(`${BACKEND_URL}/spotifyControl`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'seek', position_ms: timeMs }),
+      }).then(() => pollSpotify()).catch(console.warn);
+    } catch (err) {
+      console.warn('seek error:', err.message);
+    }
+  }, [pollSpotify]);
 
   // ── Lyric line rendering ──────────────────────────────────────────────────────
 
-  const renderHighlightedLine = (text, baseStyle) => {
+  const handleWordLongPress = (part, line) => {
+    const clean = part.toLowerCase().replace(/[^a-z]/g, '');
+    if (!clean) return;
+    const lyricContext = line
+      ? { text: line.text, translation: line.translation || null }
+      : null;
+    const fullWord = psychometricWordMap.get(clean);
+    if (fullWord) {
+      setSelectedWord({ ...fullWord, lyricContext });
+    } else {
+      setSelectedWord({
+        word: part.trim(),
+        lyricContext,
+        trackName: currentTrack?.track_name,
+        artistName: currentTrack?.artist,
+      });
+    }
+  };
+
+  const renderHighlightedLine = (text, baseStyle, line) => {
     if (!text) return <Text style={baseStyle} />;
     const parts = text.split(/(\b[a-zA-Z']+\b)/);
     return (
       <Text style={baseStyle}>
         {parts.map((part, idx) => {
           const clean = part.toLowerCase().replace(/[^a-z]/g, '');
-          if (clean && psychometricWordSet.has(clean)) {
-            return <Text key={idx} style={styles.highlightedWord}>{part}</Text>;
+          if (!clean) return <Text key={idx}>{part}</Text>;
+          if (psychometricWordSet.has(clean)) {
+            return (
+              <Text key={idx} style={styles.highlightedWord} onLongPress={() => handleWordLongPress(part, line)} suppressHighlighting>
+                {part}
+              </Text>
+            );
           }
-          return <Text key={idx}>{part}</Text>;
+          return (
+            <Text key={idx} onLongPress={() => handleWordLongPress(part, line)} suppressHighlighting>
+              {part}
+            </Text>
+          );
         })}
       </Text>
     );
@@ -138,11 +240,17 @@ export default function NowPlayingScreen() {
     ];
 
     return (
-      <View
+      <Pressable
         key={index}
-        style={[styles.lyricLine, isActive && styles.lyricLineActive]}
+        ref={(r) => { itemRefs.current[index] = r; }}
+        onPress={() => seekToLine(line.time_ms)}
+        style={({ pressed }) => [
+          styles.lyricLine,
+          isActive && styles.lyricLineActive,
+          pressed && styles.lyricLinePressed,
+        ]}
       >
-        {renderHighlightedLine(line.text, englishStyle)}
+        {renderHighlightedLine(line.text, englishStyle, line)}
         {line.translation ? (
           <Text style={[
             styles.lyricHebrew,
@@ -155,7 +263,7 @@ export default function NowPlayingScreen() {
         ) : (
           status === 'ready' && <View style={styles.translationPlaceholder} />
         )}
-      </View>
+      </Pressable>
     );
   };
 
@@ -213,6 +321,10 @@ export default function NowPlayingScreen() {
           style={styles.lyricsScroll}
           contentContainerStyle={styles.lyricsContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          onScrollBeginDrag={handleScrollBeginDrag}
+          onScrollEndDrag={handleScrollEnd}
+          onMomentumScrollEnd={handleScrollEnd}
         >
           {lines.map((line, index) => renderLyricLine(line, index))}
           <View style={styles.bottomPadding} />
@@ -246,28 +358,32 @@ const styles = StyleSheet.create({
   lyricsScroll: { flex: 1 },
   lyricsContent: { paddingTop: 24, paddingHorizontal: 20 },
   lyricLine: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginBottom: 4,
-    minHeight: 64,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    marginBottom: 8,
   },
   lyricLineActive: {
     backgroundColor: 'rgba(124,106,247,0.15)',
     borderWidth: 1,
     borderColor: 'rgba(124,106,247,0.3)',
   },
+  lyricLinePressed: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
   lyricEnglish: {
-    fontSize: 15,
+    fontSize: 19,
     color: 'rgba(240,238,255,0.9)',
     textAlign: 'left',
+    lineHeight: 26,
   },
   lyricHebrew: {
-    fontSize: 13,
+    fontSize: 15,
     color: '#7A7A9A',
     textAlign: 'right',
-    marginTop: 4,
+    marginTop: 6,
     fontStyle: 'italic',
+    lineHeight: 21,
   },
   highlightedWord: {
     color: '#6AF7C8',
@@ -278,7 +394,7 @@ const styles = StyleSheet.create({
   textFuture: { opacity: 0.45 },
   hebrewActive: { color: 'rgba(200,195,255,0.8)' },
   translationPlaceholder: {
-    height: 13,
+    height: 15,
     width: '60%',
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 4,

@@ -25,6 +25,12 @@ export function useLyricSync(currentTrack) {
   const abortControllerRef = useRef(null);
   const syncIntervalRef = useRef(null);
   const positionRef = useRef(0);
+  const linesRef = useRef([]);
+
+  // Keep linesRef in sync so the interval always reads the latest lines
+  useEffect(() => {
+    linesRef.current = lines;
+  }, [lines]);
 
   // Update position ref on every render so sync interval always has latest value
   useEffect(() => {
@@ -58,19 +64,26 @@ export function useLyricSync(currentTrack) {
     };
   }, [currentTrack?.track_id]);
 
-  // Sync loop: runs every 200ms, updates activeIndex
+  // Sync loop: starts when lines first arrive, reads linesRef so it never
+  // restarts on translation chunk updates (which would freeze the interval).
+  const hasLines = lines.length > 0;
   useEffect(() => {
-    if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
-
-    if (lines.length === 0) return;
+    if (!hasLines) {
+      clearInterval(syncIntervalRef.current);
+      syncIntervalRef.current = null;
+      return;
+    }
 
     syncIntervalRef.current = setInterval(() => {
-      const newIndex = getActiveLyricIndex(lines, positionRef.current);
+      const newIndex = getActiveLyricIndex(linesRef.current, positionRef.current);
       setActiveIndex(prev => prev !== newIndex ? newIndex : prev);
     }, 200);
 
-    return () => clearInterval(syncIntervalRef.current);
-  }, [lines]);
+    return () => {
+      clearInterval(syncIntervalRef.current);
+      syncIntervalRef.current = null;
+    };
+  }, [hasLines]);
 
   const getAuthToken = async () => {
     const user = auth.currentUser;
@@ -155,6 +168,7 @@ export function useLyricSync(currentTrack) {
         let buffer = '';
         let fullText = '';
         let translationsArray = null;
+        let lastExtractedCount = 0;
 
         xhr.onreadystatechange = () => {
           if (signal.aborted) {
@@ -196,18 +210,19 @@ export function useLyricSync(currentTrack) {
                     translationsArray = event.translated_lyrics;
                   } else if (event.text) {
                     fullText += event.text;
-                    
-                    // Progressive Regex parsing to extract completed strings safely
-                    const matches = [...fullText.matchAll(/"([^"\\]*(\\.[^"\\]*)*)"/g)];
-                    if (matches.length > 0) {
-                      const partialArray = matches.map(m => {
-                        try { return JSON.parse(m[0]); } catch(e) { return ""; }
-                      });
-                      
-                      setLines(prevLines => prevLines.map((l, i) => ({
-                        ...l,
-                        translation: partialArray[i] || l.translation,
-                      })));
+                    // Only re-extract when a quote arrives (≈ start/end of each translated line)
+                    if (event.text.includes('"')) {
+                      const matches = [...fullText.matchAll(/"([^"\\]*(\\.[^"\\]*)*)"/g)];
+                      if (matches.length > lastExtractedCount) {
+                        lastExtractedCount = matches.length;
+                        const partialArray = matches.map(m => {
+                          try { return JSON.parse(m[0]); } catch (e) { return ''; }
+                        });
+                        setLines(prevLines => prevLines.map((l, i) => ({
+                          ...l,
+                          translation: partialArray[i] || l.translation,
+                        })));
+                      }
                     }
                   } else if (event.error) {
                     console.error('[useLyricSync] Stream error event:', event.error);
