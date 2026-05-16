@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { parseLRC, getActiveLyricIndex } from '../utils/lrcParser';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL; 
 
@@ -21,10 +22,13 @@ export function useLyricSync(currentTrack) {
   const [lines, setLines] = useState([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [status, setStatus] = useState('idle');
+  const [translationsReady, setTranslationsReady] = useState(false);
   const currentTrackIdRef = useRef(null);
   const abortControllerRef = useRef(null);
   const syncIntervalRef = useRef(null);
   const positionRef = useRef(0);
+  const lastPollTimeRef = useRef(Date.now());
+  const isPlayingRef = useRef(false);
   const linesRef = useRef([]);
 
   // Keep linesRef in sync so the interval always reads the latest lines
@@ -32,12 +36,14 @@ export function useLyricSync(currentTrack) {
     linesRef.current = lines;
   }, [lines]);
 
-  // Update position ref on every render so sync interval always has latest value
+  // Record poll snapshot — position + wall-clock time so interval can interpolate
   useEffect(() => {
     if (currentTrack?.position_ms != null) {
       positionRef.current = currentTrack.position_ms;
+      lastPollTimeRef.current = Date.now();
+      isPlayingRef.current = currentTrack.is_playing ?? true;
     }
-  }, [currentTrack?.position_ms]);
+  }, [currentTrack?.position_ms, currentTrack?.is_playing]);
 
   // Main effect: fires when track changes
   useEffect(() => {
@@ -53,6 +59,7 @@ export function useLyricSync(currentTrack) {
     setLines([]);
     setActiveIndex(-1);
     setStatus('loading');
+    setTranslationsReady(false);
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -75,7 +82,9 @@ export function useLyricSync(currentTrack) {
     }
 
     syncIntervalRef.current = setInterval(() => {
-      const newIndex = getActiveLyricIndex(linesRef.current, positionRef.current);
+      const elapsed = isPlayingRef.current ? Date.now() - lastPollTimeRef.current : 0;
+      const interpolatedPosition = positionRef.current + elapsed;
+      const newIndex = getActiveLyricIndex(linesRef.current, interpolatedPosition);
       setActiveIndex(prev => prev !== newIndex ? newIndex : prev);
     }, 200);
 
@@ -96,34 +105,52 @@ export function useLyricSync(currentTrack) {
       const token = await getAuthToken();
       const durationSecs = Math.round(track.duration_ms / 1000);
 
-      // Step 1: Fetch lyrics from LRCLIB via backend
-      const lyricsParams = new URLSearchParams({
-        track_name: track.track_name,
-        artist_name: track.artist,
-        duration: durationSecs,
-      });
+      // Fire translation cache check immediately — runs in parallel with lyricsFetch
+      const translationCachePromise = getDoc(doc(db, 'translations', track.track_id))
+        .catch(() => null);
 
-      const lyricsRes = await fetch(
-        `${BACKEND_URL}/lyricsFetch?${lyricsParams}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          signal,
-        }
-      );
+      // Step 1: Fetch lyrics — check Firestore cache directly, then LRCLIB if needed.
+      // Bypasses the lyricsFetch backend function to eliminate cold-start and auth overhead.
+      const cacheKey = `${track.track_name.toLowerCase().replace(/\s+/g, '_')}_${track.artist.toLowerCase().replace(/\s+/g, '_')}`;
+      const lyricsCacheDoc = await getDoc(doc(db, 'lyrics_cache', cacheKey));
 
       if (signal.aborted) return;
 
-      if (lyricsRes.status === 404) {
-        setStatus('no_lyrics');
-        return;
-      }
+      let lyricsData;
+      if (lyricsCacheDoc.exists()) {
+        lyricsData = lyricsCacheDoc.data().lyrics;
+      } else {
+        const lyricsParams = new URLSearchParams({ track_name: track.track_name, artist_name: track.artist });
+        if (durationSecs > 0) lyricsParams.append('duration', durationSecs);
 
-      if (!lyricsRes.ok) {
-        setStatus('error');
-        return;
-      }
+        const lrclibRes = await fetch(`https://lrclib.net/api/get?${lyricsParams}`, {
+          headers: { 'User-Agent': 'LyricLearn/1.0' },
+          signal,
+        });
 
-      const lyricsData = await lyricsRes.json();
+        if (signal.aborted) return;
+
+        if (lrclibRes.status === 404) {
+          setStatus('no_lyrics');
+          return;
+        }
+
+        if (!lrclibRes.ok) {
+          setStatus('error');
+          return;
+        }
+
+        const lrclibData = await lrclibRes.json();
+        lyricsData = { synced: lrclibData.syncedLyrics || null, plain: lrclibData.plainLyrics || null };
+
+        // Cache for future loads — fire and forget, create only (rule: allow create)
+        setDoc(doc(db, 'lyrics_cache', cacheKey), {
+          lyrics: lyricsData,
+          track_name: track.track_name,
+          artist_name: track.artist,
+          cached_at: serverTimestamp(),
+        }).catch(() => {});
+      }
 
       if (!lyricsData.synced) {
         // No synced lyrics — show plain text without sync
@@ -134,6 +161,7 @@ export function useLyricSync(currentTrack) {
             .map((text, i) => ({ time_ms: i * 3000, text, translation: null }));
           setLines(plainLines);
           setStatus('ready');
+          setTranslationsReady(true);
         } else {
           setStatus('no_lyrics');
         }
@@ -153,9 +181,20 @@ export function useLyricSync(currentTrack) {
 
       if (signal.aborted) return;
 
-      // Step 4 & 5: Fetch Hebrew translation (streaming) using XMLHttpRequest
+      // Step 4: Check if translation was already cached (Firestore read fired in parallel above)
       const englishLines = parsedLines.map(l => l.text);
-      
+      const translationCacheDoc = await translationCachePromise;
+      if (translationCacheDoc?.exists()) {
+        const cached = translationCacheDoc.data().translated_lyrics;
+        if (Array.isArray(cached)) {
+          console.log(`[useLyricSync] Translation cache hit (Firestore direct) for: ${track.track_name}`);
+          setLines(parsedLines.map((l, i) => ({ ...l, translation: cached[i] || null })));
+          setTranslationsReady(true);
+          return;
+        }
+      }
+
+      // Step 5: Cache miss — fetch Hebrew translation via streaming SSE
       console.log(`[useLyricSync] Requesting translation for: ${track.track_name} (${englishLines.length} lines)`);
 
       await new Promise((resolve, reject) => {
@@ -242,6 +281,7 @@ export function useLyricSync(currentTrack) {
           }
 
           if (xhr.readyState === 4) {
+            setTranslationsReady(true);
             console.log('[useLyricSync] XHR complete. Final status:', xhr.status);
             if (!translationsArray && fullText) {
               try {
@@ -268,6 +308,8 @@ export function useLyricSync(currentTrack) {
         xhr.send(JSON.stringify({
           track_id: track.track_id,
           lyrics: englishLines,
+          track_name: track.track_name,
+          artist_name: track.artist,
         }));
         
         signal.addEventListener('abort', () => {
@@ -283,5 +325,5 @@ export function useLyricSync(currentTrack) {
     }
   };
 
-  return { lines, activeIndex, status };
+  return { lines, activeIndex, status, translationsReady };
 }

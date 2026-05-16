@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   doc, getDoc, setDoc, updateDoc, increment, serverTimestamp,
+  collection, query, where, onSnapshot,
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 
@@ -25,6 +26,7 @@ function parseDDMMYYYY(str) {
 export function useWordTracking() {
   const seenTrackIds = useRef(new Set());
   const streakUpdated = useRef(false);
+  const [learnedWordSet, setLearnedWordSet] = useState(new Set());
 
   // Run streak check once per mount (app open / foreground)
   useEffect(() => {
@@ -32,6 +34,25 @@ export function useWordTracking() {
       streakUpdated.current = true;
       updateStreak();
     }
+  }, []);
+
+  // Live subscription to learned words — updates as the user learns new words
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) return;
+    const q = query(
+      collection(db, 'users', user.uid, 'wordHistory'),
+      where('learnedAt', '!=', null)
+    );
+    const unsub = onSnapshot(q, snapshot => {
+      const words = new Set();
+      snapshot.forEach(d => {
+        const w = d.data().word;
+        if (w) words.add(w.toLowerCase());
+      });
+      setLearnedWordSet(words);
+    }, err => console.warn('learnedWordSet snapshot error:', err.message));
+    return unsub;
   }, []);
 
   // ── recordWordEncounter ────────────────────────────────────────────────────
@@ -231,5 +252,5 @@ export function useWordTracking() {
     }
   }
 
-  return { recordWordEncounter, recordWordTap, recordTrackSeen, recordWordFlag };
+  return { recordWordEncounter, recordWordTap, recordTrackSeen, recordWordFlag, learnedWordSet };
 }

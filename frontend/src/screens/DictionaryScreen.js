@@ -7,6 +7,7 @@ import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import useWordStore from '../store/useWordStore';
 import { psychometricWordMap } from '../utils/psychometricWords';
+import { theme } from '../styles/theme';
 
 const FILTERS = ['הכל', 'נלמד', 'בתהליך', 'HIGH', 'מסומן'];
 
@@ -129,7 +130,7 @@ export default function DictionaryScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator color="#7C6AF7" style={styles.spinner} />
+        <ActivityIndicator color={theme.colors.accent} style={styles.spinner} />
       ) : filtered.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyText}>
@@ -152,23 +153,23 @@ export default function DictionaryScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A0A0F', paddingTop: 12 },
+  container: { flex: 1, backgroundColor: theme.colors.bg, paddingTop: 12 },
   searchInput: {
-    backgroundColor: '#1C1C28',
-    color: '#F0EEFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    backgroundColor: theme.colors.surface2,
+    color: theme.colors.text,
+    borderRadius: theme.radii.md,
+    paddingHorizontal: theme.spacing.md,
     paddingVertical: 10,
-    marginHorizontal: 16,
+    marginHorizontal: theme.spacing.md,
     marginBottom: 12,
     fontSize: 15,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
   },
   filterRow: {
-    flexDirection: 'row-reverse', // Reversed for RTL layout consistency
-    paddingHorizontal: 16,
-    gap: 8,
+    flexDirection: 'row-reverse',
+    paddingHorizontal: theme.spacing.md,
+    gap: theme.spacing.sm,
     marginBottom: 12,
   },
   filterTab: {
@@ -179,40 +180,40 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.12)',
   },
   filterTabActive: {
-    borderColor: '#7C6AF7',
-    backgroundColor: 'rgba(124,106,247,0.15)',
+    borderColor: theme.colors.accent,
+    backgroundColor: theme.colors.highlight,
   },
-  filterLabel: { color: '#7A7A9A', fontSize: 13 },
-  filterLabelActive: { color: '#7C6AF7' },
+  filterLabel: { color: theme.colors.muted, fontSize: 13 },
+  filterLabelActive: { color: theme.colors.accent },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: theme.spacing.md,
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.04)',
   },
-  rowLeft: { flex: 1 }, // Added to ensure spacing
-  wordText: { 
-    color: '#F0EEFF', 
-    fontSize: 16, 
-    fontWeight: '600', 
-    marginBottom: 3, 
-    textAlign: 'left' 
+  rowLeft: { flex: 1 },
+  wordText: {
+    color: theme.colors.text,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 3,
+    textAlign: 'left',
   },
-  hebrewText: { color: '#7A7A9A', fontSize: 13, textAlign: 'left' },
+  hebrewText: { color: theme.colors.muted, fontSize: 13, textAlign: 'left' },
   rowRight: { flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 12 },
   badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
     borderRadius: 20,
     borderWidth: 1,
   },
-  badgeText: { fontSize: 10, fontWeight: '600', textTransform: 'uppercase' },
-  count: { color: '#7A7A9A', fontSize: 12 },
-  check: { color: '#6AF7C8', fontSize: 16, fontWeight: '700' },
+  badgeText: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase' },
+  count: { color: theme.colors.muted, fontSize: 12 },
+  check: { color: theme.colors.accentGreen, fontSize: 16, fontWeight: '700' },
   spinner: { marginTop: 40 },
   empty: { marginTop: 50, paddingHorizontal: 40 },
-  emptyText: { color: '#7A7A9A', fontSize: 15, textAlign: 'center', lineHeight: 24 },
+  emptyText: { color: theme.colors.muted, fontSize: 15, textAlign: 'center', lineHeight: 24 },
 });

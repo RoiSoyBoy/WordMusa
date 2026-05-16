@@ -1,30 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, ActivityIndicator,
+  View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   doc, onSnapshot, collection, query, where, orderBy, getDocs, Timestamp,
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import useWordStore from '../store/useWordStore';
 import { psychometricWordMap } from '../utils/psychometricWords';
+import { theme } from '../styles/theme';
 
-const DAYS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+const DAYS_HE = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 
 function getDayLabel(daysAgo) {
   if (daysAgo === 0) return 'היום';
   if (daysAgo === 1) return 'אתמול';
-   const d = new Date();
+  const d = new Date();
   d.setDate(d.getDate() - daysAgo);
- const formatter = new Intl.DateTimeFormat('he-IL', {
-    timeZone: 'Asia/Jerusalem',
-   weekday: 'short'
-  });
- const parts = formatter.formatToParts(d);
- const dayOfWeek = d.toLocaleString('en-US', { timeZone: 'Asia/Jerusalem', weekday: 'short' });
-  // Map to get day index in Asia/Jerusalem timezone
   const jerusalemDate = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
- return DAYS[jerusalemDate.getDay()];
+  return DAYS_HE[jerusalemDate.getDay()];
 }
 
 export default function ProgressScreen() {
@@ -94,7 +89,7 @@ export default function ProgressScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#7C6AF7" />
+        <ActivityIndicator color={theme.colors.accent} />
       </View>
     );
   }
@@ -110,18 +105,23 @@ export default function ProgressScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Streak card */}
-      <View style={styles.streakCard}>
+      <LinearGradient
+        colors={['rgba(247,106,138,0.2)', 'rgba(124,106,247,0.15)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.streakCard}
+      >
         <Text style={styles.streakFlame}>🔥</Text>
         <Text style={styles.streakCount}>{streak}</Text>
         <Text style={styles.streakLabel}>ימים רצופים</Text>
-      </View>
+      </LinearGradient>
 
       {/* Stats grid */}
       <View style={styles.statsGrid}>
-        <StatCell value={learned} label="מילים נלמדו" color="#7C6AF7" />
-        <StatCell value={encountered} label="מילים נתקלו" color="#6AF7C8" />
-        <StatCell value={songs} label="שירים הושמעו" color="#7C6AF7" />
-        <StatCell value={`${memory}%`} label="אחוז זכירה" color="#6AF7C8" />
+        <StatCell value={learned} label="מילים נלמדו" color={theme.colors.accent} />
+        <StatCell value={encountered} label="מילים נתקלו" color={theme.colors.accentGreen} />
+        <StatCell value={songs} label="שירים הושמעו" color={theme.colors.accent} />
+        <StatCell value={`${memory}%`} label="אחוז זכירה" color={theme.colors.accentGreen} />
       </View>
 
       {/* Weekly chart */}
@@ -150,20 +150,32 @@ export default function ProgressScreen() {
           <Text style={styles.sectionTitle}>מילים אחרונות</Text>
           {recentWords.map(item => {
             const fullWord = psychometricWordMap.get(item.word?.toLowerCase());
+            const isLearned = !!item.learnedAt;
             return (
-              <View key={item.id} style={styles.recentRow}>
+              <TouchableOpacity
+                key={item.id}
+                style={styles.recentRow}
+                activeOpacity={0.7}
+                onPress={() => fullWord && setSelectedWord(fullWord)}
+              >
                 <View style={styles.recentLeft}>
                   <Text style={styles.recentWord}>{item.word}</Text>
                   <Text style={styles.recentHebrew} numberOfLines={1}>
                     {fullWord?.hebrewShort || ''}
                   </Text>
                 </View>
-                {item.songContexts?.[0]?.trackName ? (
-                  <Text style={styles.recentSong} numberOfLines={1}>
-                    🎵 {item.songContexts[0].trackName}
-                  </Text>
-                ) : null}
-              </View>
+                <View style={styles.recentRight}>
+                  {item.songContexts?.[0]?.trackName ? (
+                    <Text style={styles.recentSong} numberOfLines={1}>
+                      🎵 {item.songContexts[0].trackName}
+                    </Text>
+                  ) : null}
+                  <View style={[
+                    styles.statusDot,
+                    { backgroundColor: isLearned ? theme.colors.accentGreen : theme.colors.accent },
+                  ]} />
+                </View>
+              </TouchableOpacity>
             );
           })}
         </View>
@@ -182,53 +194,52 @@ function StatCell({ value, label, color }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A0A0F' },
-  content: { padding: 16, paddingBottom: 40 },
+  container: { flex: 1, backgroundColor: theme.colors.bg },
+  content: { padding: theme.spacing.md, paddingBottom: 40 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   streakCard: {
-    backgroundColor: 'rgba(247,106,138,0.12)',
-    borderRadius: 20,
+    borderRadius: theme.radii.lg,
     borderWidth: 1,
     borderColor: 'rgba(247,106,138,0.25)',
     padding: 24,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: theme.spacing.md,
   },
   streakFlame: { fontSize: 40, marginBottom: 8 },
-  streakCount: { color: '#F76A8A', fontSize: 52, fontWeight: '800', lineHeight: 60 },
-  streakLabel: { color: '#F76A8A', fontSize: 15, opacity: 0.8, marginTop: 4, textAlign: 'right' },
+  streakCount: { color: theme.colors.accentPink, fontSize: 52, fontWeight: '800', lineHeight: 60 },
+  streakLabel: { color: theme.colors.accentPink, fontSize: 15, opacity: 0.8, marginTop: 4, textAlign: 'right' },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
-    marginBottom: 16,
+    marginBottom: theme.spacing.md,
   },
   statCell: {
     flex: 1,
     minWidth: '45%',
-    backgroundColor: '#13131A',
-    borderRadius: 16,
+    backgroundColor: theme.colors.surface2,
+    borderRadius: theme.radii.md,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
-    padding: 16,
+    padding: theme.spacing.md,
     alignItems: 'center',
   },
   statValue: { fontSize: 32, fontWeight: '800', marginBottom: 4 },
-  statLabel: { color: '#7A7A9A', fontSize: 12, textAlign: 'right' },
+  statLabel: { color: theme.colors.muted, fontSize: 12, textAlign: 'right' },
   section: {
-    backgroundColor: '#13131A',
-    borderRadius: 16,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.md,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
-    padding: 16,
-    marginBottom: 16,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   sectionTitle: {
-    color: '#7A7A9A',
+    color: theme.colors.muted,
     fontSize: 12,
     textTransform: 'uppercase',
     letterSpacing: 1,
-    marginBottom: 16,
+    marginBottom: theme.spacing.md,
     textAlign: 'right',
   },
   chart: {
@@ -245,7 +256,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   barCount: {
-    color: '#7C6AF7',
+    color: theme.colors.accent,
     fontSize: 10,
     marginBottom: 2,
     height: 14,
@@ -260,11 +271,12 @@ const styles = StyleSheet.create({
   },
   barFill: {
     width: '100%',
-    backgroundColor: '#7C6AF7',
-    borderRadius: 4,
+    backgroundColor: theme.colors.accent,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
   },
   barEmpty: { backgroundColor: 'transparent' },
-  barLabel: { color: '#7A7A9A', fontSize: 10, marginTop: 6 },
+  barLabel: { color: theme.colors.muted, fontSize: 9, marginTop: 6, textAlign: 'center' },
   recentRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -274,7 +286,18 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255,255,255,0.04)',
   },
   recentLeft: { flex: 1 },
-  recentWord: { color: '#F0EEFF', fontSize: 15, fontWeight: '600' },
-  recentHebrew: { color: '#7A7A9A', fontSize: 12, textAlign: 'right', marginTop: 2 },
-  recentSong: { color: '#7A7A9A', fontSize: 11, maxWidth: 120, textAlign: 'right' },
+  recentWord: { color: theme.colors.text, fontSize: 15, fontWeight: '600' },
+  recentHebrew: { color: theme.colors.muted, fontSize: 12, textAlign: 'right', marginTop: 2 },
+  recentRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginLeft: 8,
+  },
+  recentSong: { color: theme.colors.muted, fontSize: 11, maxWidth: 100, textAlign: 'right' },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
 });

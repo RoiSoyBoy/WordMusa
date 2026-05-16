@@ -240,6 +240,14 @@ reported_by: string (uid)
 reported_at: timestamp
 ```
 
+### `word_translations/{word}`
+```
+translation: string  (Hebrew translation of the English word)
+source: string       (e.g. 'gpt-4o-mini')
+created_at: timestamp
+```
+Written by backend Admin SDK only. Frontend reads via `/translateWord` endpoint.
+
 ---
 
 ## Key Algorithms
@@ -412,10 +420,11 @@ Emulator ports:
 ```
 users/{uid}/** — read/write: own uid only
 translations/{id} — read: authenticated; write: false (backend Admin SDK only)
-lyrics_cache/{id} — read: authenticated; write: false
+lyrics_cache/{id} — read: authenticated; write: false (frontend create allowed on cache miss)
 psychometric_words/{id} — read: authenticated; write: false
+word_translations/{id} — read: authenticated; write: false (backend Admin SDK only)
 rate_limits/{id} — read/write: false
-missing_tracks/{id} — read/write: false
+missing_tracks/{id} — read: false; write: authenticated
 ```
 
 ---

@@ -1,18 +1,30 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Image,
+  View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Image, Animated,
 } from 'react-native';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useLyricSync } from '../hooks/useLyricSync';
 import { useWordTracking } from '../hooks/useWordTracking';
 import useWordStore from '../store/useWordStore';
-import { psychometricWordSet, psychometricWordMap } from '../utils/psychometricWords';
+import { psychometricWordMap, basicWordSet } from '../utils/psychometricWords';
+import { useDifficulty } from '../hooks/useDifficulty';
 import WordCard from '../components/WordCard';
 import PlaybackControls from '../components/PlaybackControls';
+import { theme } from '../styles/theme';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const POLL_INTERVAL_MS = 1000;
+
+function getLineOpacity(index, activeIdx) {
+  if (activeIdx < 0) return 0.5;
+  const distance = Math.abs(index - activeIdx);
+  if (distance === 0) return 1;
+  if (distance === 1) return 0.75;
+  if (distance === 2) return 0.5;
+  if (distance === 3) return 0.25;
+  return 0.05;
+}
 
 export default function NowPlayingScreen() {
   const [currentTrack, setCurrentTrack] = useState(null);
@@ -23,10 +35,27 @@ export default function NowPlayingScreen() {
   const userScrollingRef = useRef(false);
   const scrollResumeTimerRef = useRef(null);
   const activeIndexRef = useRef(-1);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  const { lines, activeIndex, status } = useLyricSync(currentTrack);
-  const { recordWordEncounter, recordWordTap, recordTrackSeen } = useWordTracking();
+  const { lines, activeIndex, status, translationsReady } = useLyricSync(currentTrack);
+  const { recordWordEncounter, recordWordTap, recordTrackSeen, learnedWordSet } = useWordTracking();
   const { setActiveWords, setSelectedWord } = useWordStore();
+  const { wordCap } = useDifficulty();
+  const songWordBudget = useRef(new Set());
+
+  // ── Spotify live badge pulse ──────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!currentTrack?.is_playing) return;
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 0.25, duration: 900, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
+      ])
+    );
+    anim.start();
+    return () => anim.stop();
+  }, [currentTrack?.is_playing, pulseAnim]);
 
   // ── Spotify polling ──────────────────────────────────────────────────────────
 
@@ -39,7 +68,6 @@ export default function NowPlayingScreen() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.status === 401) {
-        // Token invalid or user record gone (e.g. emulator restart) — force re-auth
         signOut(auth).catch(() => {});
         return;
       }
@@ -63,9 +91,13 @@ export default function NowPlayingScreen() {
     return () => clearInterval(pollIntervalRef.current);
   }, [pollSpotify]);
 
-  // Track new songs for stats
   useEffect(() => {
     if (currentTrack?.track_id) recordTrackSeen(currentTrack.track_id);
+  }, [currentTrack?.track_id]);
+
+  // Reset word budget on every new song so 3-word cap applies fresh each time
+  useEffect(() => {
+    songWordBudget.current = new Set();
   }, [currentTrack?.track_id]);
 
   // ── Word scanning ─────────────────────────────────────────────────────────────
@@ -77,15 +109,30 @@ export default function NowPlayingScreen() {
       return;
     }
     const text = lines[activeIndex].text;
+    // LOW tier = rarest in exam = hardest for the student
+    const TIER_RANK = { LOW: 0, MEDIUM: 1, HIGH: 2 };
     const seen = new Set();
-    const matched = [];
+    const eligible = [];
 
+    // Collect all eligible words in this line
     text.split(/\b/).forEach(part => {
       const clean = part.toLowerCase().replace(/[^a-z]/g, '');
-      if (clean && psychometricWordMap.has(clean) && !seen.has(clean)) {
-        seen.add(clean);
-        matched.push(psychometricWordMap.get(clean));
-      }
+      if (!clean || !psychometricWordMap.has(clean) || seen.has(clean)) return;
+      if (basicWordSet.has(clean)) return;     // CEFR A1-A2: student already knows it
+      if (learnedWordSet.has(clean)) return;   // already learned: skip
+      seen.add(clean);
+      eligible.push(psychometricWordMap.get(clean));
+    });
+
+    // Sort hardest first, then apply the per-song budget
+    eligible.sort((a, b) => TIER_RANK[a.frequencyTier] - TIER_RANK[b.frequencyTier]);
+
+    const matched = [];
+    eligible.forEach(wordData => {
+      const key = wordData.word.toLowerCase();
+      if (songWordBudget.current.size >= wordCap && !songWordBudget.current.has(key)) return;
+      songWordBudget.current.add(key);
+      matched.push(wordData);
     });
 
     setActiveWords(matched);
@@ -100,11 +147,14 @@ export default function NowPlayingScreen() {
         });
       });
     }
-  }, [activeIndex]);
+  }, [activeIndex, wordCap, learnedWordSet]);
 
   // ── Auto-scroll (Spotify-style) ───────────────────────────────────────────────
 
   useEffect(() => { activeIndexRef.current = activeIndex; }, [activeIndex]);
+
+  const translationsReadyRef = useRef(false);
+  useEffect(() => { translationsReadyRef.current = translationsReady; }, [translationsReady]);
 
   useEffect(() => () => clearTimeout(scrollResumeTimerRef.current), []);
 
@@ -142,29 +192,27 @@ export default function NowPlayingScreen() {
       (_x, lineY) => {
         const targetY = Math.max(0, lineY - 180);
         if (Math.abs(currentY - targetY) < 250) {
-          // Near the playing segment — resume auto-scroll after a short pause
           scrollResumeTimerRef.current = setTimeout(resumeAutoScroll, 2000);
         }
-        // Far away — stay where the user scrolled, don't resume
       },
       () => {}
     );
   }, [resumeAutoScroll]);
 
-  // Auto-scroll fires only when user isn't manually scrolling
+  // Auto-scroll suppressed during streaming — measureLayout returns unstable Y while
+  // translations are filling in, causing scroll flicker.
   useEffect(() => {
     if (userScrollingRef.current) return;
+    if (!translationsReadyRef.current) return;
     scrollToActive(activeIndex);
   }, [activeIndex, scrollToActive]);
 
-  // Re-center once when translations first arrive — their added height shifts all
-  // line positions, making the initial English-only scroll measurement stale.
-  const hasTranslations = useMemo(() => lines.some(l => l.translation != null), [lines]);
+  // Re-center once when all translations settle. Delayed 150ms so layout is stable.
   useEffect(() => {
-    if (!hasTranslations || userScrollingRef.current) return;
+    if (!translationsReady || userScrollingRef.current) return;
     const t = setTimeout(() => scrollToActive(activeIndexRef.current), 150);
     return () => clearTimeout(t);
-  }, [hasTranslations, scrollToActive]);
+  }, [translationsReady, scrollToActive]);
 
   // ── Lyric seek ───────────────────────────────────────────────────────────────
 
@@ -210,7 +258,7 @@ export default function NowPlayingScreen() {
         {parts.map((part, idx) => {
           const clean = part.toLowerCase().replace(/[^a-z]/g, '');
           if (!clean) return <Text key={idx}>{part}</Text>;
-          if (psychometricWordSet.has(clean)) {
+          if (songWordBudget.current.has(clean)) {
             return (
               <Text key={idx} style={styles.highlightedWord} onLongPress={() => handleWordLongPress(part, line)} suppressHighlighting>
                 {part}
@@ -229,14 +277,11 @@ export default function NowPlayingScreen() {
 
   const renderLyricLine = (line, index) => {
     const isActive = index === activeIndex;
-    const isPast = index < activeIndex;
-    const isFuture = index > activeIndex;
+    const opacity = getLineOpacity(index, activeIndex);
 
     const englishStyle = [
       styles.lyricEnglish,
-      isPast && styles.textPast,
       isActive && styles.textActive,
-      isFuture && styles.textFuture,
     ];
 
     return (
@@ -248,16 +293,12 @@ export default function NowPlayingScreen() {
           styles.lyricLine,
           isActive && styles.lyricLineActive,
           pressed && styles.lyricLinePressed,
+          { opacity },
         ]}
       >
         {renderHighlightedLine(line.text, englishStyle, line)}
         {line.translation ? (
-          <Text style={[
-            styles.lyricHebrew,
-            isPast && styles.textPast,
-            isActive && styles.hebrewActive,
-            isFuture && styles.textFuture,
-          ]}>
+          <Text style={[styles.lyricHebrew, isActive && styles.hebrewActive]}>
             {line.translation}
           </Text>
         ) : (
@@ -296,12 +337,18 @@ export default function NowPlayingScreen() {
           <Text style={styles.trackName} numberOfLines={1}>{currentTrack.track_name}</Text>
           <Text style={styles.artistName} numberOfLines={1}>{currentTrack.artist}</Text>
         </View>
+        {currentTrack.is_playing && (
+          <View style={styles.spotifyBadge}>
+            <Animated.View style={[styles.spotifyDot, { opacity: pulseAnim }]} />
+            <Text style={styles.spotifyLabel}>Spotify</Text>
+          </View>
+        )}
       </View>
 
       {/* Lyrics area */}
       {status === 'loading' && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#7C6AF7" />
+          <ActivityIndicator color={theme.colors.accent} />
           <Text style={styles.loadingText}>טוען מילים...</Text>
         </View>
       )}
@@ -331,7 +378,7 @@ export default function NowPlayingScreen() {
         </ScrollView>
       )}
 
-      {/* Word card — sits between lyrics and playback controls */}
+      {/* Word card */}
       <WordCard
         lyricContext={activeLyricContext}
         onWordTap={(wordData) => recordWordTap(wordData)}
@@ -343,30 +390,61 @@ export default function NowPlayingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A0A0F' },
+  container: { flex: 1, backgroundColor: theme.colors.bg },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: theme.spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.06)',
   },
-  albumArt: { width: 48, height: 48, borderRadius: 8, marginRight: 12 },
+  albumArt: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    marginRight: 12,
+    shadowColor: 'rgba(124,106,247,0.3)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 8,
+  },
   trackInfo: { flex: 1 },
-  trackName: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
-  artistName: { color: '#7A7A9A', fontSize: 13, marginTop: 2 },
+  trackName: { color: theme.colors.text, fontSize: 15, fontWeight: '700' },
+  artistName: { color: theme.colors.muted, fontSize: 13, marginTop: 2 },
+  spotifyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(29,185,84,0.1)',
+    borderRadius: theme.radii.sm,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 8,
+  },
+  spotifyDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: theme.colors.spotify,
+  },
+  spotifyLabel: {
+    color: theme.colors.spotify,
+    fontSize: 11,
+    fontWeight: '600',
+  },
   lyricsScroll: { flex: 1 },
   lyricsContent: { paddingTop: 24, paddingHorizontal: 20 },
   lyricLine: {
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 14,
+    borderRadius: theme.radii.md,
     marginBottom: 8,
   },
   lyricLineActive: {
-    backgroundColor: 'rgba(124,106,247,0.15)',
+    backgroundColor: theme.colors.highlight,
     borderWidth: 1,
-    borderColor: 'rgba(124,106,247,0.3)',
+    borderColor: theme.colors.highlightBorder,
   },
   lyricLinePressed: {
     backgroundColor: 'rgba(255,255,255,0.06)',
@@ -379,22 +457,20 @@ const styles = StyleSheet.create({
   },
   lyricHebrew: {
     fontSize: 15,
-    color: '#7A7A9A',
+    color: theme.colors.muted,
     textAlign: 'right',
     marginTop: 6,
     fontStyle: 'italic',
     lineHeight: 21,
   },
   highlightedWord: {
-    color: '#6AF7C8',
+    color: theme.colors.accentGreen,
     fontWeight: '600',
   },
-  textPast: { opacity: 0.3 },
-  textActive: { color: '#FFFFFF', fontWeight: '600' },
-  textFuture: { opacity: 0.45 },
+  textActive: { color: theme.colors.text, fontWeight: '600' },
   hebrewActive: { color: 'rgba(200,195,255,0.8)' },
   translationPlaceholder: {
-    height: 15,
+    height: 21,
     width: '60%',
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 4,
@@ -407,14 +483,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 12,
   },
-  loadingText: { color: '#7A7A9A', fontSize: 14 },
+  loadingText: { color: theme.colors.muted, fontSize: 14 },
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
+    padding: theme.spacing.xl,
   },
-  emptyText: { color: '#7A7A9A', fontSize: 16, textAlign: 'center' },
+  emptyText: { color: theme.colors.muted, fontSize: 16, textAlign: 'center' },
   emptySubtext: {
     color: 'rgba(122,122,154,0.6)',
     fontSize: 13,

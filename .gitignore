@@ -1,2 +1,4 @@
 node_modules
 firestore-debug.log
+scripts/enriched_checkpoint.json
+scripts/extracted_words.json

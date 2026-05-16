@@ -7,6 +7,7 @@ import useWordStore from '../store/useWordStore';
 import { psychometricWordMap } from '../utils/psychometricWords';
 import { useWordTracking } from '../hooks/useWordTracking';
 import { auth } from '../firebase';
+import { theme } from '../styles/theme';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -127,7 +128,7 @@ export default function WordDetailModal() {
             {isPsychometric ? (
               <Text style={styles.defText}>{selectedWord.hebrewFull || selectedWord.hebrewShort}</Text>
             ) : translationLoading ? (
-              <ActivityIndicator color="#7C6AF7" style={{ marginBottom: 18 }} />
+              <ActivityIndicator color={theme.colors.accent} style={{ marginBottom: 18 }} />
             ) : wordTranslation ? (
               <Text style={styles.defText}>{wordTranslation}</Text>
             ) : null}
@@ -212,9 +213,9 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#13131A',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    backgroundColor: theme.colors.surface,
+    borderTopLeftRadius: theme.radii.xl,
+    borderTopRightRadius: theme.radii.xl,
     maxHeight: '85%',
     borderTopWidth: 1,
     borderColor: 'rgba(255,255,255,0.07)',
@@ -238,7 +239,7 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   wordTitle: {
-    color: '#F0EEFF',
+    color: theme.colors.text,
     fontSize: 30,
     fontWeight: '700',
     flex: 1,
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   closeBtnText: {
-    color: '#7A7A9A',
+    color: theme.colors.muted,
     fontSize: 20,
   },
   metaRow: {
@@ -261,12 +262,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   ipaText: {
-    color: '#7A7A9A',
+    color: theme.colors.muted,
     fontSize: 14,
     fontFamily: 'monospace',
   },
   posText: {
-    color: '#6AF7C8',
+    color: theme.colors.accentGreen,
     fontSize: 14,
     fontStyle: 'italic',
   },
@@ -277,7 +278,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   badgeText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -290,22 +291,22 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   defText: {
-    color: '#F0EEFF',
+    color: theme.colors.text,
     fontSize: 20,
     textAlign: 'right',
     lineHeight: 30,
     marginBottom: 18,
   },
   section: {
-    backgroundColor: '#1C1C28',
+    backgroundColor: theme.colors.surface2,
     padding: 14,
-    borderRadius: 16,
+    borderRadius: theme.radii.md,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
   },
   sectionLabel: {
-    color: '#7A7A9A',
+    color: theme.colors.muted,
     fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -347,23 +348,23 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   chipHighlighted: {
-    backgroundColor: 'rgba(124,106,247,0.15)',
-    borderColor: 'rgba(124,106,247,0.35)',
+    backgroundColor: theme.colors.highlight,
+    borderColor: theme.colors.highlightBorder,
   },
   chipText: {
-    color: '#7A7A9A',
+    color: theme.colors.muted,
     fontSize: 14,
   },
   chipTextHighlighted: {
-    color: '#7C6AF7',
+    color: theme.colors.accent,
   },
   bottomSpacer: {
     height: 32,
   },
   addBtn: {
     marginTop: 20,
-    backgroundColor: 'rgba(124,106,247,0.15)',
-    borderRadius: 14,
+    backgroundColor: theme.colors.highlight,
+    borderRadius: theme.radii.md,
     borderWidth: 1,
     borderColor: 'rgba(124,106,247,0.4)',
     paddingVertical: 14,
@@ -374,11 +375,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(106,247,200,0.3)',
   },
   addBtnText: {
-    color: '#7C6AF7',
+    color: theme.colors.accent,
     fontSize: 15,
     fontWeight: '600',
   },
   addBtnTextDone: {
-    color: '#6AF7C8',
+    color: theme.colors.accentGreen,
   },
 });

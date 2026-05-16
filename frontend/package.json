@@ -17,6 +17,7 @@
     "expo": "~54.0.33",
     "expo-auth-session": "~55.0.15",
     "expo-crypto": "~15.0.9",
+    "expo-linear-gradient": "~15.0.8",
     "expo-notifications": "~0.29.11",
     "expo-status-bar": "~3.0.9",
     "expo-web-browser": "~14.0.2",

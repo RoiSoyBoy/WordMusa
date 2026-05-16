@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import NowPlayingScreen from '../screens/NowPlayingScreen';
 import DictionaryScreen from '../screens/DictionaryScreen';
 import ProgressScreen from '../screens/ProgressScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -51,6 +52,16 @@ export default function AppNavigator() {
             tabBarLabel: 'התקדמות',
             tabBarIcon: ({ color }) => (
               <Text style={{ fontSize: 18 }}>📊</Text>
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            tabBarLabel: 'הגדרות',
+            tabBarIcon: ({ color }) => (
+              <Text style={{ fontSize: 18 }}>⚙️</Text>
             ),
           }}
         />

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Pressable, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { auth } from '../firebase';
+import { theme } from '../styles/theme';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -82,16 +84,15 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
 
   return (
     <View style={styles.container}>
-      {/* Progress bar — large hit area, measure-based seek */}
-      <Pressable
-        hitSlop={{ top: 12, bottom: 12 }}
-        onPress={handleSeekPress}
-      >
-        <View
-          ref={progressBarRef}
-          style={styles.progressTrack}
-        >
-          <View style={[styles.progressFill, { width: `${Math.min(progress * 100, 100)}%` }]} />
+      {/* Progress bar */}
+      <Pressable hitSlop={{ top: 12, bottom: 12 }} onPress={handleSeekPress}>
+        <View ref={progressBarRef} style={styles.progressTrack}>
+          <LinearGradient
+            colors={[theme.colors.accent, theme.colors.accentPink]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.progressFill, { width: `${Math.min(progress * 100, 100)}%` }]}
+          />
         </View>
       </Pressable>
 
@@ -138,7 +139,7 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#0A0A0F',
+    backgroundColor: theme.colors.bg,
     paddingHorizontal: 20,
     paddingBottom: 16,
     paddingTop: 10,
@@ -146,15 +147,13 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255,255,255,0.06)',
   },
   progressTrack: {
-    height: 8,
+    height: 3,
     backgroundColor: 'rgba(255,255,255,0.12)',
-    borderRadius: 4,
+    borderRadius: 2,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#7C6AF7',
-    borderRadius: 2,
   },
   timeRow: {
     flexDirection: 'row',
@@ -163,7 +162,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   timeText: {
-    color: '#7A7A9A',
+    color: theme.colors.muted,
     fontSize: 11,
   },
   controls: {
@@ -178,10 +177,10 @@ const styles = StyleSheet.create({
   },
   btnIcon: {
     fontSize: 22,
-    color: '#F0EEFF',
+    color: theme.colors.text,
   },
   playBtn: {
-    backgroundColor: '#7C6AF7',
+    backgroundColor: theme.colors.accent,
     borderRadius: 28,
     width: 56,
     height: 56,

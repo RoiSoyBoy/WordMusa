@@ -14,7 +14,8 @@ export function parseLRC(lrcString) {
 
   for (const line of lines) {
     const text = line.replace(/\[.*?\]/g, '').trim();
-    if (!text) continue;
+    // Skip empty lines and lines with no alphabetic content (e.g. bare apostrophes, symbols)
+    if (!text || !/[a-zA-Z]/.test(text)) continue;
 
     let match;
     timeRegex.lastIndex = 0;

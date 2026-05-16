@@ -376,6 +376,12 @@ exports.lyricsFetch = onRequest((req, res) => {
       track_name = track_name.replace(/<[^>]*>?/gm, '').trim();
       artist_name = artist_name.replace(/<[^>]*>?/gm, '').trim();
 
+      const cacheKey = `${track_name.toLowerCase().replace(/\s+/g, '_')}_${artist_name.toLowerCase().replace(/\s+/g, '_')}`;
+      const lyricsCache = await db.collection('lyrics_cache').doc(cacheKey).get();
+      if (lyricsCache.exists) {
+        return res.status(200).json(lyricsCache.data().lyrics);
+      }
+
       const params = new URLSearchParams({
         track_name,
         artist_name
@@ -391,7 +397,7 @@ exports.lyricsFetch = onRequest((req, res) => {
           'User-Agent': 'LyricLearn/1.0'
         }
       });
-      
+
       if (response.status === 404) {
         return res.status(404).json({ error: 'Lyrics not found', synced: null, plain: null });
       }
@@ -401,11 +407,19 @@ exports.lyricsFetch = onRequest((req, res) => {
       }
 
       const data = await response.json();
-
-      res.status(200).json({
+      const lyricsPayload = {
         synced: data.syncedLyrics || null,
         plain: data.plainLyrics || null,
-      });
+      };
+
+      db.collection('lyrics_cache').doc(cacheKey).set({
+        lyrics: lyricsPayload,
+        track_name,
+        artist_name,
+        cached_at: FieldValue.serverTimestamp(),
+      }).catch(e => console.error('Failed to cache lyrics:', e));
+
+      res.status(200).json(lyricsPayload);
 
     } catch (error) {
       console.error('Error in lyricsFetch:', error);
@@ -426,11 +440,14 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
       const allowed = await checkRateLimit(user.uid, 'translate_lyrics', 20);
       if (!allowed) return res.status(429).send('Too Many Requests');
 
-      const { track_id, lyrics } = req.body;
+      const { track_id, lyrics, track_name, artist_name } = req.body;
       if (!validateTrackId(track_id)) return res.status(400).send('Invalid track ID');
 
       const sanitizedLyrics = validateAndSanitizeLyrics(lyrics);
       if (!sanitizedLyrics) return res.status(400).send('Invalid lyrics payload');
+
+      const safeTrackName = typeof track_name === 'string' ? track_name.substring(0, 200) : 'Unknown';
+      const safeArtistName = typeof artist_name === 'string' ? artist_name.substring(0, 200) : 'Unknown';
 
       // Set SSE headers before any async work
       res.setHeader('Content-Type', 'text/event-stream');
@@ -442,6 +459,7 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
       const cacheDoc = await cacheRef.get();
       if (cacheDoc.exists) {
         res.write(`data: ${JSON.stringify({ translated_lyrics: cacheDoc.data().translated_lyrics })}\n\n`);
+        res.write('data: [DONE]\n\n');
         res.end();
         return;
       }
@@ -455,16 +473,18 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
       // System prompt: lyric lines are passed as data in the user message,
       // never interpolated into the system string (prevents prompt injection).
      const systemPrompt =
-  'You are a Hebrew song lyrics translator. ' +
-  'INPUT: a JSON array of English lyric lines. ' +
-  'OUTPUT: a JSON array of Hebrew strings, identical length, same order. ' +
+  'You are a professional Hebrew song lyrics translator with deep knowledge of music genres, cultural slang, and idiomatic English expressions. ' +
+  'INPUT: a JSON object with "artist", "track", and "lyrics" (array of lines from that song). ' +
+  'OUTPUT: a JSON array of Hebrew strings — one per input lyric line, identical length, same order. ' +
   'RULES: ' +
-  '1. Translate to natural, spoken Israeli Hebrew (not formal/biblical). ' +
-  '2. Preserve emotional tone, slang, and poetic rhythm where possible. ' +
-  '3. Keep proper nouns, brand names, and English slang untranslated. ' +
-  '4. If a line is empty or instrumental (e.g. "[Chorus]"), return an empty string for that index. ' +
-  '5. Output raw JSON only — no markdown fences, no keys, no explanation, no preamble. ' +
-  'EXAMPLE INPUT: ["I\'ve been alone all night","She\'s touching my elusive heart"] ' +
+  '1. Use the artist and track name to understand the genre, era, and cultural context (e.g. hip-hop AAVE, pop, R&B, rock). Use this to correctly interpret slang and idioms. ' +
+  '2. Translate the MEANING, not the words. Treat multi-word phrases, idioms, and slang as a whole unit — never translate them word-by-word. E.g. "ride or die" → loyalty concept in Hebrew, not literally "ride" and "die". ' +
+  '3. Use the surrounding lyric lines in the array for context — they are from the same song and help clarify ambiguous phrases. ' +
+  '4. Translate to natural, spoken Israeli Hebrew (not formal or biblical). Preserve emotional tone and poetic rhythm. ' +
+  '5. Every output string MUST contain ONLY Hebrew characters and spaces. No other language characters (not English, Malay, Chinese, Arabic, French, or any other). Proper nouns may be transliterated into Hebrew letters. ' +
+  '6. If a line is empty or a section marker (e.g. "[Chorus]"), return an empty string for that index. ' +
+  '7. Output a raw JSON array only — no markdown fences, no object keys, no explanation, no preamble. ' +
+  'EXAMPLE INPUT: {"artist":"The Weeknd","track":"Blinding Lights","lyrics":["I\'ve been alone all night","She\'s touching my elusive heart"]} ' +
   'EXAMPLE OUTPUT: ["הייתי לבד כל הלילה","היא נוגעת בלבי החמקמק"]';
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -476,10 +496,11 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
         body: JSON.stringify({
           model: 'gpt-4o-mini',
           max_tokens: 4096,
+          temperature: 0.3,
           stream: true,
           messages: [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: JSON.stringify(sanitizedLyrics) },
+            { role: 'user', content: JSON.stringify({ artist: safeArtistName, track: safeTrackName, lyrics: sanitizedLyrics }) },
           ],
         }),
         signal: controller.signal,
@@ -528,10 +549,24 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
       // Write to cache after streaming completes (non-blocking for client)
       try {
         const translatedArray = JSON.parse(fullText);
-        await cacheRef.set({
-          translated_lyrics: translatedArray,
-          updated_at: FieldValue.serverTimestamp(),
-        });
+        // Reject translations that contain non-Hebrew/non-Latin scripts (Malay, Chinese, Arabic, etc.)
+        // Hebrew: ֐-׿, Latin:  -ɏ, spaces/punctuation allowed
+        const hasForeignScript = translatedArray.some(
+          line => typeof line === 'string' && /[؀-ۿ一-鿿　-〿Ѐ-ӿ]/.test(line)
+        );
+        if (hasForeignScript) {
+          console.error('Translation rejected — contains non-Hebrew foreign script:', translatedArray);
+        } else {
+          // Optimistic check: skip write if a concurrent request already populated the cache
+          const existingCache = await cacheRef.get();
+          if (!existingCache.exists) {
+            await cacheRef.set({
+              translated_lyrics: translatedArray,
+              updated_at: FieldValue.serverTimestamp(),
+              model: 'gpt-4o-mini',
+            });
+          }
+        }
       } catch (e) {
         console.error('Failed to parse OpenAI output or save to cache:', fullText);
       }
@@ -602,6 +637,12 @@ exports.translateWord = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
       const sanitized = word.replace(/[^a-zA-Z\s'-]/g, '').substring(0, 60).trim();
       if (!sanitized) return res.status(400).send('Invalid word');
 
+      const wordCacheKey = sanitized.toLowerCase().replace(/\s+/g, '_');
+      const wordCacheDoc = await db.collection('word_translations').doc(wordCacheKey).get();
+      if (wordCacheDoc.exists) {
+        return res.json({ translation: wordCacheDoc.data().translation });
+      }
+
       const apiKey = process.env.OPENAI_API_KEY || openaiApiKey.value();
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -626,6 +667,14 @@ exports.translateWord = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
 
       const data = await response.json();
       const translation = data.choices?.[0]?.message?.content?.trim() || '';
+
+      if (translation) {
+        db.collection('word_translations').doc(wordCacheKey).set({
+          translation,
+          cached_at: FieldValue.serverTimestamp(),
+        }).catch(e => console.error('Failed to cache word translation:', e));
+      }
+
       res.json({ translation });
 
     } catch (error) {

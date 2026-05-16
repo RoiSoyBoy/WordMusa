@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import useWordStore from '../store/useWordStore';
+import { theme } from '../styles/theme';
 
 const FREQ_COLOR = { HIGH: '#F76A8A', MEDIUM: '#FFC832', LOW: '#6AF7C8' };
 const FREQ_BG = {
@@ -69,9 +70,6 @@ export default function WordCard({ onWordTap, lyricContext }) {
           onWordTap?.(word);
         }}
       >
-        {/* Top accent line */}
-        <View style={styles.accentLine} />
-
         <View style={styles.inner}>
           {/* Row 1 — word + frequency badge */}
           <View style={styles.headerRow}>
@@ -113,22 +111,16 @@ export default function WordCard({ onWordTap, lyricContext }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#13131A',
+    backgroundColor: theme.colors.surface2,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.07)',
+    borderLeftWidth: 3,
+    borderLeftColor: theme.colors.accent,
     overflow: 'hidden',
-  },
-  accentLine: {
-    height: 2,
-    backgroundColor: '#7C6AF7',
-    opacity: 0.5,
-    marginHorizontal: 16,
-    marginTop: 12,
-    borderRadius: 1,
   },
   inner: {
     paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingTop: 14,
     paddingBottom: 14,
   },
   headerRow: {
@@ -138,7 +130,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   wordText: {
-    color: '#F0EEFF',
+    color: theme.colors.text,
     fontSize: 22,
     fontWeight: '700',
     letterSpacing: 0.2,
@@ -174,12 +166,12 @@ const styles = StyleSheet.create({
     marginBottom: 7,
   },
   ipaText: {
-    color: '#7A7A9A',
+    color: theme.colors.muted,
     fontSize: 13,
     fontFamily: 'monospace',
   },
   posText: {
-    color: '#6AF7C8',
+    color: theme.colors.accentGreen,
     fontSize: 12,
     fontStyle: 'italic',
     opacity: 0.85,
@@ -203,7 +195,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.12)',
   },
   dotActive: {
-    backgroundColor: '#7C6AF7',
+    backgroundColor: theme.colors.accent,
     width: 14,
     borderRadius: 3,
   },

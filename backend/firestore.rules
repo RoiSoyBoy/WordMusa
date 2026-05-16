@@ -8,9 +8,17 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if false; // backend only via Admin SDK
     }
+    match /lyrics_cache/{cacheKey} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null; // frontend writes on LRCLIB cache miss
+    }
     match /psychometric_words/{wordId} {
       allow read: if request.auth != null;
       allow write: if false;
+    }
+    match /word_translations/{word} {
+      allow read: if request.auth != null;
+      allow write: if false; // backend only via Admin SDK
     }
     match /missing_tracks/{trackId} {
       allow read: if false;
