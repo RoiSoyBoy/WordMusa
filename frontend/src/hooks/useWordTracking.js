@@ -27,6 +27,7 @@ export function useWordTracking() {
   const seenTrackIds = useRef(new Set());
   const streakUpdated = useRef(false);
   const [learnedWordSet, setLearnedWordSet] = useState(new Set());
+  const [flaggedWordSet, setFlaggedWordSet] = useState(new Set());
 
   // Run streak check once per mount (app open / foreground)
   useEffect(() => {
@@ -52,6 +53,20 @@ export function useWordTracking() {
       });
       setLearnedWordSet(words);
     }, err => console.warn('learnedWordSet snapshot error:', err.message));
+    return unsub;
+  }, []);
+
+  // Live subscription to focus words (flagged === true)
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) return;
+    const q = query(
+      collection(db, 'users', user.uid, 'wordHistory'),
+      where('flagged', '==', true)
+    );
+    const unsub = onSnapshot(q, snapshot => {
+      setFlaggedWordSet(new Set(snapshot.docs.map(d => d.id)));
+    }, err => console.warn('flaggedWordSet snapshot error:', err.message));
     return unsub;
   }, []);
 
@@ -252,5 +267,5 @@ export function useWordTracking() {
     }
   }
 
-  return { recordWordEncounter, recordWordTap, recordTrackSeen, recordWordFlag, learnedWordSet };
+  return { recordWordEncounter, recordWordTap, recordTrackSeen, recordWordFlag, learnedWordSet, flaggedWordSet };
 }

@@ -8,13 +8,14 @@ import { useLyricSync } from '../hooks/useLyricSync';
 import { useWordTracking } from '../hooks/useWordTracking';
 import useWordStore from '../store/useWordStore';
 import { psychometricWordMap, basicWordSet } from '../utils/psychometricWords';
-import { useDifficulty } from '../hooks/useDifficulty';
 import WordCard from '../components/WordCard';
+import SongWordsSheet from '../components/SongWordsSheet';
 import PlaybackControls from '../components/PlaybackControls';
 import { theme } from '../styles/theme';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const POLL_INTERVAL_MS = 1000;
+const TIER_RANK = { LOW: 0, MEDIUM: 1, HIGH: 2 };
 
 function getLineOpacity(index, activeIdx) {
   if (activeIdx < 0) return 0.5;
@@ -37,11 +38,13 @@ export default function NowPlayingScreen() {
   const activeIndexRef = useRef(-1);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
+  const [sheetWords, setSheetWords] = useState([]);
+  const [sheetVisible, setSheetVisible] = useState(false);
+  const songWordsRef = useRef([]);
+
   const { lines, activeIndex, status, translationsReady } = useLyricSync(currentTrack);
-  const { recordWordEncounter, recordWordTap, recordTrackSeen, learnedWordSet } = useWordTracking();
+  const { recordWordTap, recordTrackSeen, recordWordFlag, flaggedWordSet } = useWordTracking();
   const { setActiveWords, setSelectedWord } = useWordStore();
-  const { wordCap } = useDifficulty();
-  const songWordBudget = useRef(new Set());
 
   // ── Spotify live badge pulse ──────────────────────────────────────────────────
 
@@ -95,9 +98,16 @@ export default function NowPlayingScreen() {
     if (currentTrack?.track_id) recordTrackSeen(currentTrack.track_id);
   }, [currentTrack?.track_id]);
 
-  // Reset word budget on every new song so 3-word cap applies fresh each time
+  // When song changes: show bottom sheet with top 5 words from the previous song
   useEffect(() => {
-    songWordBudget.current = new Set();
+    const sorted = [...songWordsRef.current]
+      .sort((a, b) => TIER_RANK[a.frequencyTier] - TIER_RANK[b.frequencyTier])
+      .slice(0, 5);
+    if (sorted.length > 0) {
+      setSheetWords(sorted);
+      setSheetVisible(true);
+    }
+    songWordsRef.current = [];
   }, [currentTrack?.track_id]);
 
   // ── Word scanning ─────────────────────────────────────────────────────────────
@@ -109,45 +119,29 @@ export default function NowPlayingScreen() {
       return;
     }
     const text = lines[activeIndex].text;
-    // LOW tier = rarest in exam = hardest for the student
-    const TIER_RANK = { LOW: 0, MEDIUM: 1, HIGH: 2 };
-    const seen = new Set();
-    const eligible = [];
+    const focusMatched = [];
 
-    // Collect all eligible words in this line
     text.split(/\b/).forEach(part => {
       const clean = part.toLowerCase().replace(/[^a-z]/g, '');
-      if (!clean || !psychometricWordMap.has(clean) || seen.has(clean)) return;
-      if (basicWordSet.has(clean)) return;     // CEFR A1-A2: student already knows it
-      if (learnedWordSet.has(clean)) return;   // already learned: skip
-      seen.add(clean);
-      eligible.push(psychometricWordMap.get(clean));
+      if (!clean || !psychometricWordMap.has(clean)) return;
+      const wordData = psychometricWordMap.get(clean);
+
+      // Accumulate eligible words for the end-of-song sheet
+      if (!basicWordSet.has(clean) && !flaggedWordSet.has(clean)) {
+        if (!songWordsRef.current.find(w => w.word.toLowerCase() === clean)) {
+          songWordsRef.current.push(wordData);
+        }
+      }
+
+      // Focus words (user-chosen) → highlight and show WordCard
+      if (flaggedWordSet.has(clean) && !focusMatched.find(w => w.word.toLowerCase() === clean)) {
+        focusMatched.push(wordData);
+      }
     });
 
-    // Sort hardest first, then apply the per-song budget
-    eligible.sort((a, b) => TIER_RANK[a.frequencyTier] - TIER_RANK[b.frequencyTier]);
-
-    const matched = [];
-    eligible.forEach(wordData => {
-      const key = wordData.word.toLowerCase();
-      if (songWordBudget.current.size >= wordCap && !songWordBudget.current.has(key)) return;
-      songWordBudget.current.add(key);
-      matched.push(wordData);
-    });
-
-    setActiveWords(matched);
-    setHighlightedWord(matched[0] || null);
-
-    if (matched.length > 0 && currentTrack) {
-      matched.forEach(wordData => {
-        recordWordEncounter(wordData, {
-          trackName: currentTrack.track_name,
-          artistName: currentTrack.artist,
-          lyricLine: text,
-        });
-      });
-    }
-  }, [activeIndex, wordCap, learnedWordSet]);
+    setActiveWords(focusMatched);
+    setHighlightedWord(focusMatched[0] || null);
+  }, [activeIndex, flaggedWordSet]);
 
   // ── Auto-scroll (Spotify-style) ───────────────────────────────────────────────
 
@@ -258,7 +252,7 @@ export default function NowPlayingScreen() {
         {parts.map((part, idx) => {
           const clean = part.toLowerCase().replace(/[^a-z]/g, '');
           if (!clean) return <Text key={idx}>{part}</Text>;
-          if (songWordBudget.current.has(clean)) {
+          if (flaggedWordSet.has(clean)) {
             return (
               <Text key={idx} style={styles.highlightedWord} onLongPress={() => handleWordLongPress(part, line)} suppressHighlighting>
                 {part}
@@ -385,6 +379,13 @@ export default function NowPlayingScreen() {
       />
 
       <PlaybackControls currentTrack={currentTrack} onPollNow={pollSpotify} />
+
+      <SongWordsSheet
+        visible={sheetVisible}
+        words={sheetWords}
+        onAdd={(wordData) => recordWordFlag(wordData.word, null, null, wordData.hebrewShort)}
+        onDismiss={() => setSheetVisible(false)}
+      />
     </View>
   );
 }
