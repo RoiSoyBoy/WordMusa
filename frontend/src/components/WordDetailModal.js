@@ -21,12 +21,14 @@ const FREQ_LABEL = { HIGH: 'נפוץ', MEDIUM: 'בינוני', LOW: 'נדיר' }
 
 export default function WordDetailModal() {
   const { selectedWord, closeModal, setSelectedWord } = useWordStore();
-  const { recordWordFlag } = useWordTracking();
+  const { recordWordFlag, flaggedWordSet } = useWordTracking();
   const [added, setAdded] = useState(false);
   const [wordTranslation, setWordTranslation] = useState(null);
   const [translationLoading, setTranslationLoading] = useState(false);
 
   const isPsychometric = !!(selectedWord?.frequencyTier || selectedWord?.hebrewShort || selectedWord?.hebrewFull);
+  const wordId = selectedWord?.word?.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  const isAlreadyFlagged = !!(wordId && flaggedWordSet.has(wordId));
 
   useEffect(() => {
     setAdded(false);
@@ -178,26 +180,24 @@ export default function WordDetailModal() {
               </View>
             ) : null}
 
-            {!isPsychometric && (
-              <TouchableOpacity
-                style={[styles.addBtn, added && styles.addBtnDone]}
-                activeOpacity={0.7}
-                onPress={() => {
-                  if (added) return;
-                  recordWordFlag(
-                    selectedWord.word,
-                    selectedWord.lyricContext,
-                    { trackName: selectedWord.trackName, artistName: selectedWord.artistName },
-                    wordTranslation
-                  );
-                  setAdded(true);
-                }}
-              >
-                <Text style={[styles.addBtnText, added && styles.addBtnTextDone]}>
-                  {added ? 'נוסף למילון ✓' : 'הוסף למילון'}
-                </Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              style={[styles.addBtn, (added || isAlreadyFlagged) && styles.addBtnDone]}
+              activeOpacity={(added || isAlreadyFlagged) ? 1 : 0.7}
+              onPress={() => {
+                if (added || isAlreadyFlagged) return;
+                recordWordFlag(
+                  selectedWord.word,
+                  selectedWord.lyricContext,
+                  { trackName: selectedWord.trackName, artistName: selectedWord.artistName },
+                  isPsychometric ? (selectedWord.hebrewShort || selectedWord.hebrewFull) : wordTranslation
+                );
+                setAdded(true);
+              }}
+            >
+              <Text style={[styles.addBtnText, (added || isAlreadyFlagged) && styles.addBtnTextDone]}>
+                {(added || isAlreadyFlagged) ? 'בפוקוס ✓' : 'הוסף לפוקוס'}
+              </Text>
+            </TouchableOpacity>
 
             <View style={styles.bottomSpacer} />
           </ScrollView>

@@ -104,7 +104,21 @@ export default function ReviewScreen() {
       where('flagged', '==', true)
     );
     const unsub = onSnapshot(q, snap => {
-      const words = snap.docs.map(d => WORD_MAP.get(d.id)).filter(Boolean);
+      const words = snap.docs.map(d => {
+        const lookup = WORD_MAP.get(d.id);
+        if (lookup) return lookup;
+        const data = d.data();
+        if (!data.word) return null;
+        return {
+          word: data.word,
+          hebrewShort: data.flagContext?.wordTranslation || null,
+          hebrewFull: null,
+          partOfSpeech: null,
+          level: null,
+          frequencyTier: null,
+          exampleSentence: null,
+        };
+      }).filter(Boolean);
       setFocusWords(words);
     }, () => setFocusWords([]));
     return unsub;
@@ -154,7 +168,6 @@ export default function ReviewScreen() {
   if (focusWords.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.screenTitle}>קלפים</Text>
         <View style={styles.center}>
           <Text style={styles.emptyIcon}>📚</Text>
           <Text style={styles.emptyTitle}>אין מילים לחזרה</Text>
@@ -173,7 +186,6 @@ export default function ReviewScreen() {
     const scoreColor = pct >= 70 ? theme.colors.accentGreen : pct >= 40 ? '#FFC832' : theme.colors.accentPink;
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.screenTitle}>קלפים</Text>
         <View style={styles.center}>
           <Text style={[styles.doneScore, { color: scoreColor }]}>{pct}%</Text>
           <Text style={styles.doneTitle}>ידעת {correct} מתוך {total} מילים</Text>
@@ -198,7 +210,6 @@ export default function ReviewScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.progress}>{cardIndex + 1} / {queue.length}</Text>
-        <Text style={styles.screenTitle}>קלפים</Text>
       </View>
 
       {/* Progress bar */}

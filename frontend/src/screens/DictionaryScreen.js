@@ -75,7 +75,11 @@ export default function DictionaryScreen() {
       where('flagged', '==', true)
     );
     const unsub = onSnapshot(q, snap => {
-      setFlaggedDocs(snap.docs.map(d => ({ id: d.id, word: d.data().word || d.id })));
+      setFlaggedDocs(snap.docs.map(d => ({
+        id: d.id,
+        word: d.data().word || d.id,
+        hebrewShort: d.data().flagContext?.wordTranslation || null,
+      })));
       setLoadingFocus(false);
     }, err => {
       console.warn('flaggedIds snapshot error:', err.message);
@@ -99,7 +103,7 @@ export default function DictionaryScreen() {
 
   const focusWords = useMemo(() => {
     return flaggedDocs
-      .map(({ id, word }) => psychometricWordMap.get(id) ?? { word, hebrewShort: null, frequencyTier: null, level: null })
+      .map(({ id, word, hebrewShort }) => psychometricWordMap.get(id) ?? { word, hebrewShort, frequencyTier: null, level: null })
       .filter(w => !search || w.word.toLowerCase().includes(search.toLowerCase()))
       .sort((a, b) => a.word.localeCompare(b.word));
   }, [flaggedDocs, search]);
