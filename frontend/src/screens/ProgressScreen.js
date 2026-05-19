@@ -10,6 +10,7 @@ import { db, auth } from '../firebase';
 import useWordStore from '../store/useWordStore';
 import { psychometricWordMap } from '../utils/psychometricWords';
 import { theme } from '../styles/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const DAYS_HE = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 
@@ -23,6 +24,7 @@ function getDayLabel(daysAgo) {
 }
 
 export default function ProgressScreen() {
+  const insets = useSafeAreaInsets();
   const [userData, setUserData] = useState(null);
   const [recentWords, setRecentWords] = useState([]);
   const [weeklyData, setWeeklyData] = useState(Array(7).fill(0));
@@ -103,10 +105,10 @@ export default function ProgressScreen() {
   const maxBar = Math.max(...weeklyData, 1);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + theme.spacing.md }]}>
       {/* Streak card */}
       <LinearGradient
-        colors={['rgba(247,106,138,0.2)', 'rgba(124,106,247,0.15)']}
+        colors={['rgba(29,185,84,0.18)', 'rgba(29,185,84,0.06)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.streakCard}
@@ -199,54 +201,61 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   streakCard: {
     borderRadius: theme.radii.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(247,106,138,0.25)',
     padding: 24,
     alignItems: 'center',
     marginBottom: theme.spacing.md,
   },
-  streakFlame: { fontSize: 40, marginBottom: 8 },
-  streakCount: { color: theme.colors.accentPink, fontSize: 52, fontWeight: '800', lineHeight: 60 },
-  streakLabel: { color: theme.colors.accentPink, fontSize: 15, opacity: 0.8, marginTop: 4, textAlign: 'right' },
+  streakFlame: { fontSize: 36, marginBottom: 6 },
+  streakCount: {
+    color: theme.colors.accent,
+    fontSize: 56,
+    fontWeight: '900',
+    lineHeight: 64,
+    letterSpacing: -1,
+  },
+  streakLabel: {
+    color: theme.colors.muted,
+    fontSize: 14,
+    marginTop: 4,
+    textAlign: 'right',
+    fontWeight: '500',
+  },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
     marginBottom: theme.spacing.md,
   },
   statCell: {
     flex: 1,
     minWidth: '45%',
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
     padding: theme.spacing.md,
     alignItems: 'center',
   },
-  statValue: { fontSize: 32, fontWeight: '800', marginBottom: 4 },
-  statLabel: { color: theme.colors.muted, fontSize: 12, textAlign: 'right' },
+  statValue: { fontSize: 30, fontWeight: '800', marginBottom: 4, letterSpacing: -0.5 },
+  statLabel: { color: theme.colors.muted, fontSize: 11, textAlign: 'right', fontWeight: '500' },
   section: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
     padding: theme.spacing.md,
     marginBottom: theme.spacing.md,
   },
   sectionTitle: {
     color: theme.colors.muted,
-    fontSize: 12,
+    fontSize: 11,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     marginBottom: theme.spacing.md,
     textAlign: 'right',
+    fontWeight: '600',
   },
   chart: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    height: 120,
+    height: 110,
     gap: 6,
   },
   barColumn: {
@@ -260,33 +269,34 @@ const styles = StyleSheet.create({
     fontSize: 10,
     marginBottom: 2,
     height: 14,
+    fontWeight: '600',
   },
   barTrack: {
     width: '100%',
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 4,
+    backgroundColor: theme.colors.surface2,
+    borderRadius: 3,
     justifyContent: 'flex-end',
     overflow: 'hidden',
   },
   barFill: {
     width: '100%',
     backgroundColor: theme.colors.accent,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
+    borderTopLeftRadius: 3,
+    borderTopRightRadius: 3,
   },
   barEmpty: { backgroundColor: 'transparent' },
-  barLabel: { color: theme.colors.muted, fontSize: 9, marginTop: 6, textAlign: 'center' },
+  barLabel: { color: theme.colors.muted, fontSize: 9, marginTop: 5, textAlign: 'center' },
   recentRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   recentLeft: { flex: 1 },
-  recentWord: { color: theme.colors.text, fontSize: 15, fontWeight: '600' },
+  recentWord: { color: theme.colors.text, fontSize: 14, fontWeight: '600' },
   recentHebrew: { color: theme.colors.muted, fontSize: 12, textAlign: 'right', marginTop: 2 },
   recentRight: {
     flexDirection: 'row',
@@ -296,8 +306,8 @@ const styles = StyleSheet.create({
   },
   recentSong: { color: theme.colors.muted, fontSize: 11, maxWidth: 100, textAlign: 'right' },
   statusDot: {
-    width: 8,
-    height: 8,
+    width: 7,
+    height: 7,
     borderRadius: 4,
   },
 });

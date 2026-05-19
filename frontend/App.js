@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { onAuthStateChanged } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth } from './src/firebase';
@@ -28,10 +29,10 @@ export default function App() {
   }
 
   return (
-    <>
+    <SafeAreaProvider>
       <AppNavigator />
       <WordDetailModal />
       <StatusBar style="light" />
-    </>
+    </SafeAreaProvider>
   );
 }

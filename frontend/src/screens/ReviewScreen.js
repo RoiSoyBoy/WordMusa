@@ -154,7 +154,7 @@ export default function ReviewScreen() {
   if (focusWords.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.screenTitle}>חזרה</Text>
+        <Text style={styles.screenTitle}>קלפים</Text>
         <View style={styles.center}>
           <Text style={styles.emptyIcon}>📚</Text>
           <Text style={styles.emptyTitle}>אין מילים לחזרה</Text>
@@ -173,7 +173,7 @@ export default function ReviewScreen() {
     const scoreColor = pct >= 70 ? theme.colors.accentGreen : pct >= 40 ? '#FFC832' : theme.colors.accentPink;
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.screenTitle}>חזרה</Text>
+        <Text style={styles.screenTitle}>קלפים</Text>
         <View style={styles.center}>
           <Text style={[styles.doneScore, { color: scoreColor }]}>{pct}%</Text>
           <Text style={styles.doneTitle}>ידעת {correct} מתוך {total} מילים</Text>
@@ -198,7 +198,7 @@ export default function ReviewScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.progress}>{cardIndex + 1} / {queue.length}</Text>
-        <Text style={styles.screenTitle}>חזרה</Text>
+        <Text style={styles.screenTitle}>קלפים</Text>
       </View>
 
       {/* Progress bar */}
@@ -303,21 +303,22 @@ const styles = StyleSheet.create({
   },
   screenTitle: {
     color: theme.colors.text,
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: -0.3,
   },
-  progress: { color: theme.colors.muted, fontSize: 14, fontWeight: '500' },
+  progress: { color: theme.colors.muted, fontSize: 13, fontWeight: '500' },
   progressBg: {
-    height: 3,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    height: 2,
+    backgroundColor: theme.colors.surface2,
     marginHorizontal: theme.spacing.md,
-    borderRadius: 2,
+    borderRadius: 1,
     marginBottom: theme.spacing.sm,
   },
   progressFill: {
-    height: 3,
+    height: 2,
     backgroundColor: theme.colors.accent,
-    borderRadius: 2,
+    borderRadius: 1,
   },
   hintsRow: {
     flexDirection: 'row',
@@ -325,16 +326,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
     marginBottom: theme.spacing.sm,
   },
-  hintLeft: { color: 'rgba(247,106,138,0.4)', fontSize: 12 },
-  hintRight: { color: 'rgba(106,247,200,0.4)', fontSize: 12 },
+  hintLeft: { color: 'rgba(255,255,255,0.2)', fontSize: 11 },
+  hintRight: { color: 'rgba(255,255,255,0.2)', fontSize: 11 },
   card: {
     flex: 1,
     marginHorizontal: theme.spacing.md,
     marginBottom: theme.spacing.md,
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.radii.xl,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
+    borderRadius: 12,
     overflow: 'hidden',
   },
   cardInner: {
@@ -346,69 +345,69 @@ const styles = StyleSheet.create({
   },
   swipeLabel: {
     position: 'absolute',
-    top: 32,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 3,
+    top: 28,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 6,
+    borderWidth: 2,
     zIndex: 10,
   },
   swipeLabelYes: {
-    right: 24,
-    borderColor: theme.colors.accentGreen,
-    backgroundColor: 'rgba(106,247,200,0.1)',
+    right: 20,
+    borderColor: theme.colors.accent,
+    backgroundColor: 'rgba(29,185,84,0.1)',
     transform: [{ rotate: '12deg' }],
   },
   swipeLabelNo: {
-    left: 24,
+    left: 20,
     borderColor: theme.colors.accentPink,
     backgroundColor: 'rgba(247,106,138,0.1)',
     transform: [{ rotate: '-12deg' }],
   },
-  swipeLabelTextYes: { color: theme.colors.accentGreen, fontSize: 18, fontWeight: '900' },
-  swipeLabelTextNo: { color: theme.colors.accentPink, fontSize: 18, fontWeight: '900' },
+  swipeLabelTextYes: { color: theme.colors.accent, fontSize: 16, fontWeight: '800' },
+  swipeLabelTextNo: { color: theme.colors.accentPink, fontSize: 16, fontWeight: '800' },
   levelBadge: {
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 4,
     marginBottom: theme.spacing.sm,
   },
-  levelBadgeText: { fontSize: 12, fontWeight: '700' },
+  levelBadgeText: { fontSize: 11, fontWeight: '700' },
   wordEn: {
     color: theme.colors.text,
-    fontSize: 42,
+    fontSize: 40,
     fontWeight: '800',
     textAlign: 'center',
     letterSpacing: -0.5,
   },
-  pos: { color: theme.colors.muted, fontSize: 14, fontStyle: 'italic' },
+  pos: { color: theme.colors.muted, fontSize: 13, fontStyle: 'italic' },
   tapHint: {
-    color: 'rgba(122,122,154,0.45)',
-    fontSize: 12,
+    color: 'rgba(179,179,179,0.35)',
+    fontSize: 11,
     marginTop: theme.spacing.xl,
     textAlign: 'center',
   },
   wordEnSmall: {
     color: theme.colors.muted,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     marginBottom: theme.spacing.sm,
   },
   wordHe: {
     color: theme.colors.text,
-    fontSize: 36,
+    fontSize: 34,
     fontWeight: '800',
     textAlign: 'center',
   },
   wordHeFull: {
     color: theme.colors.muted,
-    fontSize: 15,
+    fontSize: 14,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 21,
     marginTop: 4,
   },
   example: {
-    color: 'rgba(122,122,154,0.65)',
+    color: 'rgba(179,179,179,0.55)',
     fontSize: 13,
     textAlign: 'center',
     fontStyle: 'italic',
@@ -428,9 +427,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(247,106,138,0.12)',
-    borderWidth: 2,
-    borderColor: 'rgba(247,106,138,0.4)',
+    backgroundColor: 'rgba(255,255,255,0.07)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -438,29 +435,30 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(106,247,200,0.12)',
-    borderWidth: 2,
-    borderColor: 'rgba(106,247,200,0.4)',
+    backgroundColor: theme.colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
   flipBtn: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: theme.radii.md,
+    paddingHorizontal: 28,
+    paddingVertical: 13,
+    borderRadius: 500,
     backgroundColor: theme.colors.surface2,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
   },
-  noBtnText: { color: theme.colors.accentPink, fontSize: 22, fontWeight: '700' },
-  yesBtnText: { color: theme.colors.accentGreen, fontSize: 22, fontWeight: '700' },
-  flipBtnText: { color: theme.colors.muted, fontSize: 14, fontWeight: '600' },
+  noBtnText: { color: theme.colors.text, fontSize: 20, fontWeight: '700' },
+  yesBtnText: { color: '#000000', fontSize: 20, fontWeight: '700' },
+  flipBtnText: { color: theme.colors.text, fontSize: 14, fontWeight: '600' },
   // Empty / done
-  emptyIcon: { fontSize: 48, marginBottom: theme.spacing.md },
-  emptyTitle: { color: theme.colors.text, fontSize: 20, fontWeight: '700', textAlign: 'center', marginBottom: theme.spacing.sm },
+  emptyIcon: { fontSize: 44, marginBottom: theme.spacing.md },
+  emptyTitle: { color: theme.colors.text, fontSize: 19, fontWeight: '700', textAlign: 'center', marginBottom: theme.spacing.sm },
   emptySubtitle: { color: theme.colors.muted, fontSize: 14, textAlign: 'center', lineHeight: 22 },
-  doneScore: { fontSize: 72, fontWeight: '900', marginBottom: theme.spacing.sm },
-  doneTitle: { color: theme.colors.text, fontSize: 18, fontWeight: '600', marginBottom: theme.spacing.xl },
-  restartBtn: { backgroundColor: theme.colors.accent, paddingHorizontal: 32, paddingVertical: 14, borderRadius: theme.radii.lg },
-  restartText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  doneScore: { fontSize: 68, fontWeight: '900', marginBottom: theme.spacing.sm, letterSpacing: -1 },
+  doneTitle: { color: theme.colors.muted, fontSize: 16, fontWeight: '500', marginBottom: theme.spacing.xl, textAlign: 'center' },
+  restartBtn: {
+    backgroundColor: theme.colors.accent,
+    paddingHorizontal: 40,
+    paddingVertical: 14,
+    borderRadius: 500,
+  },
+  restartText: { color: '#000000', fontSize: 16, fontWeight: '700' },
 });

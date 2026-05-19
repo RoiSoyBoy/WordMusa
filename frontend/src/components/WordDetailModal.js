@@ -17,6 +17,7 @@ const FREQ_BG = {
   MEDIUM: 'rgba(255,200,50,0.15)',
   LOW: 'rgba(106,247,200,0.15)',
 };
+const FREQ_LABEL = { HIGH: 'נפוץ', MEDIUM: 'בינוני', LOW: 'נדיר' };
 
 export default function WordDetailModal() {
   const { selectedWord, closeModal, setSelectedWord } = useWordStore();
@@ -114,7 +115,7 @@ export default function WordDetailModal() {
             ) : null}
             {freq ? (
               <View style={[styles.badge, { borderColor: FREQ_COLOR[freq], backgroundColor: FREQ_BG[freq] }]}>
-                <Text style={[styles.badgeText, { color: FREQ_COLOR[freq] }]}>{freq}</Text>
+                <Text style={[styles.badgeText, { color: FREQ_COLOR[freq] }]}>{FREQ_LABEL[freq] ?? freq}</Text>
               </View>
             ) : null}
           </View>
@@ -209,66 +210,71 @@ export default function WordDetailModal() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.65)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: theme.radii.xl,
-    borderTopRightRadius: theme.radii.xl,
+    backgroundColor: theme.colors.surface2,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
     maxHeight: '85%',
-    borderTopWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
   },
   dragArea: {
     alignItems: 'center',
-    paddingTop: 14,
-    paddingBottom: 6,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
   handle: {
-    width: 40,
+    width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.3)',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingBottom: 6,
+    paddingBottom: 8,
+    paddingTop: 4,
   },
   wordTitle: {
     color: theme.colors.text,
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: '700',
     flex: 1,
-    letterSpacing: 0.3,
+    letterSpacing: -0.3,
   },
   closeBtn: {
-    padding: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: 8,
   },
   closeBtnText: {
-    color: theme.colors.muted,
-    fontSize: 20,
+    color: theme.colors.text,
+    fontSize: 16,
+    lineHeight: 18,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     paddingHorizontal: 20,
-    paddingBottom: 14,
+    paddingBottom: 12,
     flexWrap: 'wrap',
   },
   ipaText: {
     color: theme.colors.muted,
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'monospace',
   },
   posText: {
     color: theme.colors.accentGreen,
-    fontSize: 14,
+    fontSize: 13,
     fontStyle: 'italic',
   },
   badge: {
@@ -278,58 +284,58 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   scroll: {
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.06)',
+    borderTopWidth: 0.5,
+    borderTopColor: 'rgba(255,255,255,0.1)',
   },
   scrollContent: {
     padding: 20,
   },
   defText: {
     color: theme.colors.text,
-    fontSize: 20,
+    fontSize: 19,
     textAlign: 'right',
-    lineHeight: 30,
-    marginBottom: 18,
+    lineHeight: 28,
+    marginBottom: 16,
+    fontWeight: '500',
   },
   section: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: '#121212',
     padding: 14,
     borderRadius: theme.radii.md,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    marginBottom: 10,
   },
   sectionLabel: {
     color: theme.colors.muted,
-    fontSize: 11,
+    fontSize: 10,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     marginBottom: 8,
     textAlign: 'right',
+    fontWeight: '600',
   },
   contextEnglish: {
-    color: '#C8C2FF',
-    fontSize: 15,
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 14,
     fontStyle: 'italic',
     textAlign: 'left',
     lineHeight: 22,
     marginBottom: 6,
   },
   contextHebrew: {
-    color: '#9890CC',
+    color: theme.colors.muted,
     fontSize: 13,
     textAlign: 'right',
     lineHeight: 20,
   },
   exampleText: {
-    color: '#C8C2FF',
-    fontSize: 15,
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 14,
     textAlign: 'left',
     lineHeight: 22,
   },
@@ -340,12 +346,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   chip: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(255,255,255,0.07)',
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.12)',
   },
   chipHighlighted: {
     backgroundColor: theme.colors.highlight,
@@ -353,33 +359,32 @@ const styles = StyleSheet.create({
   },
   chipText: {
     color: theme.colors.muted,
-    fontSize: 14,
+    fontSize: 13,
   },
   chipTextHighlighted: {
     color: theme.colors.accent,
+    fontWeight: '600',
   },
   bottomSpacer: {
     height: 32,
   },
   addBtn: {
-    marginTop: 20,
-    backgroundColor: theme.colors.highlight,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: 'rgba(124,106,247,0.4)',
+    marginTop: 16,
+    backgroundColor: theme.colors.accent,
+    borderRadius: 500,
     paddingVertical: 14,
     alignItems: 'center',
   },
   addBtnDone: {
-    backgroundColor: 'rgba(106,247,200,0.1)',
-    borderColor: 'rgba(106,247,200,0.3)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
   addBtnText: {
-    color: theme.colors.accent,
+    color: '#000000',
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   addBtnTextDone: {
-    color: theme.colors.accentGreen,
+    color: theme.colors.muted,
+    fontWeight: '600',
   },
 });

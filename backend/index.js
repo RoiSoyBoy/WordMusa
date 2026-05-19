@@ -1,4 +1,4 @@
-// REMOVED: require('dotenv').config()
+﻿// REMOVED: require('dotenv').config()
 // Firebase Functions v2 loads .env automatically. Calling dotenv on top
 // causes a double-parse conflict that can crash the emulator.
 

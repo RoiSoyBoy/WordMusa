@@ -5,9 +5,9 @@ import {
 import { theme } from '../styles/theme';
 
 const TIER_STYLE = {
-  LOW:    { bg: 'rgba(106,247,200,0.15)', text: '#6AF7C8', label: 'LOW' },
-  MEDIUM: { bg: 'rgba(255,200,50,0.15)',  text: '#FFC832', label: 'MED' },
-  HIGH:   { bg: 'rgba(247,106,138,0.15)', text: '#F76A8A', label: 'HIGH' },
+  LOW:    { bg: 'rgba(106,247,200,0.15)', text: '#6AF7C8', label: 'נדיר' },
+  MEDIUM: { bg: 'rgba(255,200,50,0.15)',  text: '#FFC832', label: 'בינוני' },
+  HIGH:   { bg: 'rgba(247,106,138,0.15)', text: '#F76A8A', label: 'נפוץ' },
 };
 
 export default function SongWordsSheet({ visible, words, onAdd, onDismiss }) {
@@ -95,25 +95,22 @@ export default function SongWordsSheet({ visible, words, onAdd, onDismiss }) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   sheet: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: theme.radii.xl,
-    borderTopRightRadius: theme.radii.xl,
+    backgroundColor: theme.colors.surface2,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
     paddingHorizontal: theme.spacing.md,
     paddingBottom: theme.spacing.xl,
-    borderWidth: 1,
-    borderBottomWidth: 0,
-    borderColor: 'rgba(255,255,255,0.08)',
   },
   handle: {
-    width: 40,
+    width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.3)',
     alignSelf: 'center',
-    marginTop: theme.spacing.sm,
+    marginTop: 10,
     marginBottom: theme.spacing.md,
   },
   header: {
@@ -125,35 +122,35 @@ const styles = StyleSheet.create({
   headerText: { alignItems: 'flex-end' },
   title: {
     color: theme.colors.text,
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     textAlign: 'right',
   },
   subtitle: {
     color: theme.colors.muted,
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'right',
     marginTop: 2,
   },
   closeBtn: {
     color: theme.colors.muted,
-    fontSize: 16,
+    fontSize: 18,
     padding: 4,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: theme.spacing.sm,
+    paddingVertical: 10,
   },
   rowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.06)',
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(255,255,255,0.08)',
   },
   rowLeft: { flex: 1, alignItems: 'flex-start' },
   wordEn: {
     color: theme.colors.text,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   wordHe: {
@@ -174,15 +171,13 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 10,
     fontWeight: '700',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
   },
   addBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: theme.colors.accent,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 1.5,
+    borderColor: theme.colors.muted,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -191,27 +186,26 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.accent,
   },
   addBtnText: {
-    color: theme.colors.accent,
-    fontSize: 18,
-    lineHeight: 20,
-    fontWeight: '600',
+    color: theme.colors.muted,
+    fontSize: 17,
+    lineHeight: 19,
+    fontWeight: '400',
   },
   addBtnTextDone: {
-    color: '#fff',
+    color: '#000000',
     fontSize: 14,
+    fontWeight: '700',
   },
   addAllBtn: {
     marginTop: theme.spacing.md,
-    backgroundColor: 'rgba(124,106,247,0.15)',
-    borderRadius: theme.radii.md,
-    padding: theme.spacing.md,
+    backgroundColor: theme.colors.accent,
+    borderRadius: 500,
+    paddingVertical: 14,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(124,106,247,0.3)',
   },
   addAllText: {
-    color: theme.colors.accent,
+    color: '#000000',
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

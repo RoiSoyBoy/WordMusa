@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, TouchableOpacity, Pressable, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { auth } from '../firebase';
 import { theme } from '../styles/theme';
 
@@ -17,10 +17,11 @@ function formatMs(ms) {
 export default function PlaybackControls({ currentTrack, onPollNow }) {
   const [loadingAction, setLoadingAction] = useState(null);
   const [displayPositionMs, setDisplayPositionMs] = useState(0);
+  const [dragDisplay, setDragDisplay] = useState(null);
   const progressBarRef = useRef(null);
+  const barLayoutRef = useRef(null);
   const lastPollRef = useRef({ positionMs: 0, timestamp: Date.now(), isPlaying: false });
 
-  // Snap interpolation base when poll brings a new position or track
   useEffect(() => {
     if (!currentTrack) return;
     lastPollRef.current = {
@@ -31,7 +32,6 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
     setDisplayPositionMs(currentTrack.position_ms);
   }, [currentTrack?.position_ms, currentTrack?.track_id]);
 
-  // Smooth progress interpolation — ticks every 200ms while playing
   useEffect(() => {
     const interval = setInterval(() => {
       const { positionMs, timestamp, isPlaying } = lastPollRef.current;
@@ -49,16 +49,11 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
       const token = await auth.currentUser.getIdToken();
       const body = { action };
       if (action === 'seek') body.position_ms = positionMs;
-
       const res = await fetch(`${BACKEND_URL}/spotifyControl`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-
       if (res.ok) onPollNow?.();
     } catch (err) {
       console.warn('spotifyControl error:', err.message);
@@ -67,70 +62,112 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
     }
   }, [loadingAction, onPollNow]);
 
-  const handleSeekPress = useCallback((evt) => {
-    const durationMs = currentTrack?.duration_ms;
-    if (!progressBarRef.current || !durationMs) return;
-    progressBarRef.current.measure((_x, _y, width, _h, _pageX) => {
-      const locationX = evt.nativeEvent.pageX - _pageX;
-      const pct = Math.max(0, Math.min(1, locationX / width));
-      handleControl('seek', Math.floor(pct * durationMs));
+  const getMsFromPageX = useCallback((pageX) => {
+    if (!barLayoutRef.current || !currentTrack?.duration_ms) return null;
+    const { barPageX, barWidth } = barLayoutRef.current;
+    const pct = Math.max(0, Math.min(1, (pageX - barPageX) / barWidth));
+    return Math.floor(pct * currentTrack.duration_ms);
+  }, [currentTrack?.duration_ms]);
+
+  const onSeekGrant = useCallback((e) => {
+    const pageX = e.nativeEvent.pageX;
+    progressBarRef.current?.measure((_x, _y, w, _h, px) => {
+      barLayoutRef.current = { barPageX: px, barWidth: w };
+      if (!currentTrack?.duration_ms) return;
+      const pct = Math.max(0, Math.min(1, (pageX - px) / w));
+      setDragDisplay(Math.floor(pct * currentTrack.duration_ms));
     });
-  }, [currentTrack?.duration_ms, handleControl]);
+  }, [currentTrack?.duration_ms]);
+
+  const onSeekMove = useCallback((e) => {
+    const ms = getMsFromPageX(e.nativeEvent.pageX);
+    if (ms !== null) setDragDisplay(ms);
+  }, [getMsFromPageX]);
+
+  const onSeekRelease = useCallback((e) => {
+    const ms = getMsFromPageX(e.nativeEvent.pageX);
+    setDragDisplay(null);
+    if (ms !== null) handleControl('seek', ms);
+  }, [getMsFromPageX, handleControl]);
 
   if (!currentTrack) return null;
 
   const { is_playing, duration_ms } = currentTrack;
-  const progress = duration_ms > 0 ? displayPositionMs / duration_ms : 0;
+  const isDragging = dragDisplay !== null;
+  const seekMs = isDragging ? dragDisplay : displayPositionMs;
+  const progress = duration_ms > 0 ? seekMs / duration_ms : 0;
+  const progressPct = `${Math.min(progress * 100, 100)}%`;
 
   return (
     <View style={styles.container}>
-      {/* Progress bar */}
-      <Pressable hitSlop={{ top: 12, bottom: 12 }} onPress={handleSeekPress}>
-        <View ref={progressBarRef} style={styles.progressTrack}>
-          <LinearGradient
-            colors={[theme.colors.accent, theme.colors.accentPink]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[styles.progressFill, { width: `${Math.min(progress * 100, 100)}%` }]}
-          />
+      {/* Progress bar — draggable */}
+      <View
+        style={styles.progressWrapper}
+        onStartShouldSetResponder={() => !!duration_ms}
+        onMoveShouldSetResponder={() => !!duration_ms}
+        onResponderGrant={onSeekGrant}
+        onResponderMove={onSeekMove}
+        onResponderRelease={onSeekRelease}
+        onResponderTerminate={() => setDragDisplay(null)}
+      >
+        <View
+          ref={progressBarRef}
+          style={[styles.progressTrack, isDragging && styles.progressTrackActive]}
+        >
+          <View style={[styles.progressFill, { width: progressPct }]}>
+            {isDragging && <View style={styles.progressThumb} />}
+          </View>
         </View>
-      </Pressable>
+      </View>
 
       {/* Time labels */}
       <View style={styles.timeRow}>
-        <Text style={styles.timeText}>{formatMs(displayPositionMs)}</Text>
+        <Text style={[styles.timeText, isDragging && styles.timeTextActive]}>
+          {formatMs(seekMs)}
+        </Text>
         <Text style={styles.timeText}>{formatMs(duration_ms)}</Text>
       </View>
 
       {/* Transport buttons */}
       <View style={styles.controls}>
         <TouchableOpacity
-          style={styles.btn}
+          style={styles.sideBtn}
           activeOpacity={0.7}
           onPress={() => handleControl('previous')}
           disabled={!!loadingAction}
         >
-          <Text style={[styles.btnIcon, loadingAction === 'previous' && styles.dimmed]}>⏮</Text>
+          <Ionicons
+            name="play-skip-back"
+            size={26}
+            color={loadingAction === 'previous' ? 'rgba(255,255,255,0.3)' : theme.colors.text}
+          />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.btn, styles.playBtn]}
-          activeOpacity={0.7}
+          style={styles.playBtn}
+          activeOpacity={0.85}
           onPress={() => handleControl(is_playing ? 'pause' : 'play')}
           disabled={!!loadingAction}
         >
-          <Text style={[styles.playIcon, loadingAction && styles.dimmed]}>
-            {is_playing ? '⏸' : '▶'}
-          </Text>
+          <Ionicons
+            name={is_playing ? 'pause' : 'play'}
+            size={28}
+            color={loadingAction ? 'rgba(0,0,0,0.4)' : '#000000'}
+            style={!is_playing && { marginLeft: 3 }}
+          />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.btn}
+          style={styles.sideBtn}
           activeOpacity={0.7}
           onPress={() => handleControl('next')}
           disabled={!!loadingAction}
         >
-          <Text style={[styles.btnIcon, loadingAction === 'next' && styles.dimmed]}>⏭</Text>
+          <Ionicons
+            name="play-skip-forward"
+            size={26}
+            color={loadingAction === 'next' ? 'rgba(255,255,255,0.3)' : theme.colors.text}
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -140,59 +177,76 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.bg,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.06)',
+    paddingHorizontal: 24,
+    paddingBottom: 14,
+    paddingTop: 8,
+  },
+  progressWrapper: {
+    paddingVertical: 12,
+    justifyContent: 'center',
   },
   progressTrack: {
-    height: 3,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderRadius: 2,
+    height: 6,
+    backgroundColor: '#535353',
+    borderRadius: 3,
     overflow: 'hidden',
+  },
+  progressTrackActive: {
+    height: 8,
+    overflow: 'visible',
   },
   progressFill: {
     height: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 2,
+  },
+  progressThumb: {
+    position: 'absolute',
+    right: -6,
+    top: -2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
   },
   timeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 6,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   timeText: {
     color: theme.colors.muted,
     fontSize: 11,
+    fontWeight: '400',
+  },
+  timeTextActive: {
+    color: theme.colors.text,
   },
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 32,
-    paddingTop: 6,
+    gap: 36,
+    paddingTop: 4,
+    paddingBottom: 4,
   },
-  btn: {
-    padding: 8,
-  },
-  btnIcon: {
-    fontSize: 22,
-    color: theme.colors.text,
-  },
-  playBtn: {
-    backgroundColor: theme.colors.accent,
-    borderRadius: 28,
-    width: 56,
-    height: 56,
+  sideBtn: {
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 0,
   },
-  playIcon: {
-    fontSize: 24,
-    color: '#FFFFFF',
-  },
-  dimmed: {
-    opacity: 0.4,
+  playBtn: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
 });

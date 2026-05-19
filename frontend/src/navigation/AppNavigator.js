@@ -1,7 +1,7 @@
 import React from 'react';
-import { Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import NowPlayingScreen from '../screens/NowPlayingScreen';
 import DictionaryScreen from '../screens/DictionaryScreen';
 import ProgressScreen from '../screens/ProgressScreen';
@@ -9,61 +9,56 @@ import ReviewScreen from '../screens/ReviewScreen';
 
 const Tab = createBottomTabNavigator();
 
+const TAB_ICONS = {
+  NowPlaying:  { focused: 'musical-notes',        unfocused: 'musical-notes-outline' },
+  Dictionary:  { focused: 'library',               unfocused: 'library-outline' },
+  Progress:    { focused: 'bar-chart',             unfocused: 'bar-chart-outline' },
+  Review:      { focused: 'albums',                unfocused: 'albums-outline' },
+};
+
 export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Tab.Navigator
-        screenOptions={{
+        screenOptions={({ route }) => ({
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: '#13131A',
-            borderTopColor: 'rgba(255,255,255,0.05)',
-            borderTopWidth: 1,
+            backgroundColor: '#000000',
+            borderTopColor: 'rgba(255,255,255,0.08)',
+            borderTopWidth: 0.5,
+            height: 62,
+            paddingBottom: 10,
+            paddingTop: 6,
           },
-          tabBarActiveTintColor: '#7C6AF7',
-          tabBarInactiveTintColor: '#7A7A9A',
-          tabBarLabelStyle: { fontSize: 12, textAlign: 'right' },
-        }}
+          tabBarActiveTintColor: '#1DB954',
+          tabBarInactiveTintColor: '#6A6A6A',
+          tabBarLabelStyle: { fontSize: 10, fontWeight: '600', letterSpacing: 0.2 },
+          tabBarIcon: ({ focused, color, size }) => {
+            const icons = TAB_ICONS[route.name];
+            const name = focused ? icons.focused : icons.unfocused;
+            return <Ionicons name={name} size={22} color={color} />;
+          },
+        })}
       >
         <Tab.Screen
           name="NowPlaying"
           component={NowPlayingScreen}
-          options={{
-            tabBarLabel: 'עכשיו',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 18 }}>🎵</Text>
-            ),
-          }}
+          options={{ tabBarLabel: 'עכשיו' }}
         />
         <Tab.Screen
           name="Dictionary"
           component={DictionaryScreen}
-          options={{
-            tabBarLabel: 'מילון',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 18 }}>📚</Text>
-            ),
-          }}
+          options={{ tabBarLabel: 'מילון' }}
         />
         <Tab.Screen
           name="Progress"
           component={ProgressScreen}
-          options={{
-            tabBarLabel: 'התקדמות',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 18 }}>📊</Text>
-            ),
-          }}
+          options={{ tabBarLabel: 'התקדמות' }}
         />
         <Tab.Screen
           name="Review"
           component={ReviewScreen}
-          options={{
-            tabBarLabel: 'חזרה',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 18 }}>🃏</Text>
-            ),
-          }}
+          options={{ tabBarLabel: 'קלפים' }}
         />
       </Tab.Navigator>
     </NavigationContainer>

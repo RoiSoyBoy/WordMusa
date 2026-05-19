@@ -11,6 +11,7 @@ import { db, auth } from '../firebase';
 import useWordStore from '../store/useWordStore';
 import { psychometricWordMap, psychometricWordList } from '../utils/psychometricWords';
 import { theme } from '../styles/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const TIER_RANK = { LOW: 0, MEDIUM: 1, HIGH: 2 };
 const TABS = ['כל המילים', 'הפוקוס שלי'];
@@ -57,10 +58,11 @@ async function addToFocusList(wordData) {
 }
 
 export default function DictionaryScreen() {
+  const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState('כל המילים');
   const [levelFilter, setLevelFilter] = useState(0); // 0 = all levels
   const [search, setSearch] = useState('');
-  const [flaggedIds, setFlaggedIds] = useState(new Set());
+  const [flaggedDocs, setFlaggedDocs] = useState([]);
   const [loadingFocus, setLoadingFocus] = useState(true);
   const { setSelectedWord } = useWordStore();
 
@@ -73,7 +75,7 @@ export default function DictionaryScreen() {
       where('flagged', '==', true)
     );
     const unsub = onSnapshot(q, snap => {
-      setFlaggedIds(new Set(snap.docs.map(d => d.id)));
+      setFlaggedDocs(snap.docs.map(d => ({ id: d.id, word: d.data().word || d.id })));
       setLoadingFocus(false);
     }, err => {
       console.warn('flaggedIds snapshot error:', err.message);
@@ -82,25 +84,25 @@ export default function DictionaryScreen() {
     return unsub;
   }, []);
 
+  const flaggedIds = useMemo(() => new Set(flaggedDocs.map(d => d.id)), [flaggedDocs]);
+
   const allFiltered = useMemo(() => {
     const s = search.toLowerCase();
-    return ALL_WORDS.filter(w => {
-      if (levelFilter !== 0 && w.level !== levelFilter) return false;
-      if (s) return w.word.toLowerCase().includes(s) || w.hebrewShort?.toLowerCase().includes(s);
-      return true;
-    });
+    return ALL_WORDS
+      .filter(w => {
+        if (levelFilter !== 0 && w.level !== levelFilter) return false;
+        if (s) return w.word.toLowerCase().includes(s) || w.hebrewShort?.toLowerCase().includes(s);
+        return true;
+      })
+      .sort((a, b) => a.word.localeCompare(b.word));
   }, [search, levelFilter]);
 
   const focusWords = useMemo(() => {
-    return [...flaggedIds]
-      .map(id => psychometricWordMap.get(id))
-      .filter(Boolean)
-      .sort((a, b) => {
-        const td = TIER_RANK[a.frequencyTier] - TIER_RANK[b.frequencyTier];
-        return td !== 0 ? td : a.word.localeCompare(b.word);
-      })
-      .filter(w => !search || w.word.toLowerCase().includes(search.toLowerCase()));
-  }, [flaggedIds, search]);
+    return flaggedDocs
+      .map(({ id, word }) => psychometricWordMap.get(id) ?? { word, hebrewShort: null, frequencyTier: null, level: null })
+      .filter(w => !search || w.word.toLowerCase().includes(search.toLowerCase()))
+      .sort((a, b) => a.word.localeCompare(b.word));
+  }, [flaggedDocs, search]);
 
   const listData = activeTab === 'כל המילים' ? allFiltered : focusWords;
   const isLoading = activeTab === 'הפוקוס שלי' && loadingFocus;
@@ -143,7 +145,7 @@ export default function DictionaryScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 12 }]}>
       <TextInput
         style={styles.searchInput}
         placeholder="חפש מילה..."
@@ -179,6 +181,7 @@ export default function DictionaryScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={styles.levelScroll}
           contentContainerStyle={styles.levelRow}
         >
           {LEVEL_FILTERS.map(lvl => {
@@ -188,11 +191,11 @@ export default function DictionaryScreen() {
             return (
               <TouchableOpacity
                 key={lvl}
-                style={[styles.levelPill, isActive && { borderColor: color, backgroundColor: bg }]}
+                style={[styles.levelPill, isActive && { backgroundColor: '#FFFFFF' }]}
                 activeOpacity={0.7}
                 onPress={() => setLevelFilter(lvl)}
               >
-                <Text style={[styles.levelText, isActive && { color }]}>
+                <Text style={[styles.levelText, isActive && { color: '#000000' }]}>
                   {lvl === 0 ? 'הכל' : `${lvl}`}
                 </Text>
               </TouchableOpacity>
@@ -232,79 +235,76 @@ const styles = StyleSheet.create({
   searchInput: {
     backgroundColor: theme.colors.surface2,
     color: theme.colors.text,
-    borderRadius: theme.radii.md,
+    borderRadius: 8,
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: 10,
+    paddingVertical: 11,
     marginHorizontal: theme.spacing.md,
     marginBottom: 12,
-    fontSize: 15,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    fontSize: 14,
+    fontWeight: '400',
   },
   tabRow: {
     flexDirection: 'row-reverse',
     paddingHorizontal: theme.spacing.md,
     gap: theme.spacing.sm,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 7,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: theme.colors.surface2,
   },
   tabActive: {
-    borderColor: theme.colors.accent,
-    backgroundColor: theme.colors.highlight,
+    backgroundColor: '#FFFFFF',
   },
-  tabText: { color: theme.colors.muted, fontSize: 14, fontWeight: '500' },
-  tabTextActive: { color: theme.colors.accent, fontWeight: '600' },
+  tabText: { color: theme.colors.muted, fontSize: 13, fontWeight: '600' },
+  tabTextActive: { color: '#000000', fontWeight: '700' },
+  levelScroll: { height: 46, marginBottom: 8 },
   levelRow: {
     flexDirection: 'row',
     paddingHorizontal: theme.spacing.md,
-    gap: theme.spacing.sm,
-    marginBottom: 10,
-    paddingVertical: 2,
+    gap: 6,
+    alignItems: 'center',
   },
   levelPill: {
+    height: 32,
     paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
+    borderRadius: 16,
+    backgroundColor: theme.colors.surface2,
     minWidth: 44,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   levelText: { color: theme.colors.muted, fontSize: 13, fontWeight: '600' },
   tabBadge: {
     backgroundColor: theme.colors.accent,
     borderRadius: 10,
-    minWidth: 20,
-    height: 20,
+    minWidth: 18,
+    height: 18,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
   },
-  tabBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  tabBadgeText: { color: '#000', fontSize: 10, fontWeight: '700' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: 13,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
+    paddingVertical: 12,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   rowLeft: { flex: 1 },
   wordText: {
     color: theme.colors.text,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    marginBottom: 3,
+    marginBottom: 2,
     textAlign: 'left',
   },
   hebrewText: { color: theme.colors.muted, fontSize: 13, textAlign: 'left' },
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 20,
   },
-  badgeText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' },
+  badgeText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.3, textTransform: 'uppercase' },
   focusBtn: {
     width: 30,
     height: 30,
@@ -322,9 +322,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   focusBtnActive: {},
-  focusBtnText: { color: theme.colors.muted, fontSize: 20 },
+  focusBtnText: { color: 'rgba(255,255,255,0.25)', fontSize: 20 },
   focusBtnTextActive: { color: theme.colors.accent },
   spinner: { marginTop: 40 },
   empty: { marginTop: 50, paddingHorizontal: 40 },
-  emptyText: { color: theme.colors.muted, fontSize: 15, textAlign: 'center', lineHeight: 24 },
+  emptyText: { color: theme.colors.muted, fontSize: 14, textAlign: 'center', lineHeight: 22 },
 });
