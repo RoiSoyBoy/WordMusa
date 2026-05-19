@@ -39,18 +39,19 @@ export default function SongWordsSheet({ visible, words, onAdd, onDismiss }) {
       onRequestClose={handleDismiss}
     >
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={handleDismiss} />
-      <SafeAreaView style={styles.sheet}>
-        <View style={styles.handle} />
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.sheet}>
+          <View style={styles.handle} />
 
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleDismiss} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-            <Text style={styles.closeBtn}>✕</Text>
-          </TouchableOpacity>
-          <View style={styles.headerText}>
-            <Text style={styles.title}>מילים מהשיר</Text>
-            <Text style={styles.subtitle}>{words.length} מילים פסיכומטריות</Text>
+          <View style={styles.header}>
+            <View style={styles.headerText}>
+              <Text style={styles.title}>מילים מהשיר</Text>
+              <Text style={styles.subtitle}>{words.length} מילים פסיכומטריות</Text>
+            </View>
+            <TouchableOpacity onPress={handleDismiss} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+              <Text style={styles.closeBtn}>✕</Text>
+            </TouchableOpacity>
           </View>
-        </View>
 
         {words.map((wordData, i) => {
           const key = wordData.word.toLowerCase();
@@ -80,13 +81,14 @@ export default function SongWordsSheet({ visible, words, onAdd, onDismiss }) {
           );
         })}
 
-        <TouchableOpacity
-          style={styles.addAllBtn}
-          activeOpacity={0.7}
-          onPress={handleAddAll}
-        >
-          <Text style={styles.addAllText}>הוסף את כולן לרשימת הפוקוס</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.addAllBtn}
+            activeOpacity={0.7}
+            onPress={handleAddAll}
+          >
+            <Text style={styles.addAllText}>הוסף את כולן לרשימת הפוקוס</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     </Modal>
   );
@@ -97,11 +99,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
   },
-  sheet: {
+  safeArea: {
     backgroundColor: theme.colors.surface2,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
-    paddingHorizontal: theme.spacing.md,
+  },
+  sheet: {
+    paddingHorizontal: 20,
     paddingBottom: theme.spacing.xl,
   },
   handle: {
@@ -114,12 +118,12 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   header: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     marginBottom: theme.spacing.md,
   },
-  headerText: { alignItems: 'flex-end' },
+  headerText: { alignItems: 'flex-end', flex: 1, marginRight: 12 },
   title: {
     color: theme.colors.text,
     fontSize: 17,

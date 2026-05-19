@@ -176,13 +176,15 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: theme.colors.bg,
+    backgroundColor: theme.colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.06)',
     paddingHorizontal: 24,
     paddingBottom: 14,
     paddingTop: 8,
   },
   progressWrapper: {
-    paddingVertical: 12,
+    paddingVertical: 6,
     justifyContent: 'center',
   },
   progressTrack: {
@@ -212,7 +214,7 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   timeText: {
     color: theme.colors.muted,
@@ -227,8 +229,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 36,
-    paddingTop: 4,
-    paddingBottom: 4,
+    paddingTop: 2,
+    paddingBottom: 2,
   },
   sideBtn: {
     width: 44,
