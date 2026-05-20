@@ -42,6 +42,7 @@ export default function NowPlayingScreen() {
   const pollIntervalRef = useRef(null);
   const scrollViewRef = useRef(null);
   const itemRefs = useRef({});
+  const itemYOffsets = useRef({});
   const userScrollingRef = useRef(false);
   const scrollResumeTimerRef = useRef(null);
   const activeIndexRef = useRef(-1);
@@ -176,12 +177,18 @@ export default function NowPlayingScreen() {
 
   const scrollToActive = useCallback((idx) => {
     if (idx < 0 || !scrollViewRef.current) return;
+    const y = itemYOffsets.current[idx];
+    if (y != null) {
+      scrollViewRef.current.scrollTo({ y: Math.max(0, y - 180), animated: true });
+      return;
+    }
+    // Fallback: measureLayout if onLayout hasn't fired yet (first render)
     const item = itemRefs.current[idx];
     if (!item) return;
     item.measureLayout(
       scrollViewRef.current,
-      (_x, y) => {
-        scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 180), animated: true });
+      (_x, measuredY) => {
+        scrollViewRef.current?.scrollTo({ y: Math.max(0, measuredY - 180), animated: true });
       },
       () => {}
     );
@@ -201,26 +208,25 @@ export default function NowPlayingScreen() {
     clearTimeout(scrollResumeTimerRef.current);
     const currentY = e.nativeEvent.contentOffset.y;
     const idx = activeIndexRef.current;
-    const item = itemRefs.current[idx];
-    if (!item || !scrollViewRef.current) return;
-    item.measureLayout(
-      scrollViewRef.current,
-      (_x, lineY) => {
-        const targetY = Math.max(0, lineY - 180);
-        if (Math.abs(currentY - targetY) < 250) {
-          scrollResumeTimerRef.current = setTimeout(resumeAutoScroll, 2000);
-        }
-      },
-      () => {}
-    );
+    const y = itemYOffsets.current[idx];
+    if (y == null) return;
+    const targetY = Math.max(0, y - 180);
+    if (Math.abs(currentY - targetY) < 250) {
+      scrollResumeTimerRef.current = setTimeout(resumeAutoScroll, 2000);
+    }
   }, [resumeAutoScroll]);
 
-  // Auto-scroll suppressed during streaming — measureLayout returns unstable Y while
+  // Auto-scroll suppressed during streaming — Y positions are unstable while
   // translations are filling in, causing scroll flicker.
   useEffect(() => {
     if (userScrollingRef.current) return;
     if (!translationsReadyRef.current) return;
-    scrollToActive(activeIndex);
+    const y = itemYOffsets.current[activeIndex];
+    if (y != null) {
+      scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 180), animated: true });
+    } else {
+      scrollToActive(activeIndex); // fallback: measureLayout (first render)
+    }
   }, [activeIndex, scrollToActive]);
 
   // Re-center once when all translations settle. Delayed 150ms so layout is stable.
@@ -304,6 +310,7 @@ export default function NowPlayingScreen() {
       <Pressable
         key={index}
         ref={(r) => { itemRefs.current[index] = r; }}
+        onLayout={(e) => { itemYOffsets.current[index] = e.nativeEvent.layout.y; }}
         onPress={() => seekToLine(line.time_ms)}
         style={({ pressed }) => [
           styles.lyricLine,
@@ -330,7 +337,7 @@ export default function NowPlayingScreen() {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>פתח את ספוטיפיי והתחל להאזין</Text>
-        <Text style={styles.emptySubtext}>LyricLearn יסנכרן אוטומטית</Text>
+        <Text style={styles.emptySubtext}>PsychoLyrics יסנכרן אוטומטית</Text>
       </View>
     );
   }

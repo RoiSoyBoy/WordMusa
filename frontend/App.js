@@ -7,10 +7,12 @@ import { auth } from './src/firebase';
 import OnboardingFlow from './src/components/OnboardingFlow';
 import AppNavigator from './src/navigation/AppNavigator';
 import WordDetailModal from './src/components/WordDetailModal';
+import WelcomeTourModal from './src/components/WelcomeTourModal';
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [showOnboarding, setShowOnboarding] = useState(null);
+  const [hasSeenTour, setHasSeenTour] = useState(null);
 
   useEffect(() => {
     AsyncStorage.getItem('hasCompletedOnboarding')
@@ -19,19 +21,34 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    AsyncStorage.getItem('hasSeenTour')
+      .then(v => setHasSeenTour(v === 'true'))
+      .catch(() => setHasSeenTour(false));
+  }, []);
+
+  useEffect(() => {
     return onAuthStateChanged(auth, setUser);
   }, []);
 
-  if (showOnboarding === null) return null;
+  // Wait for both async reads before rendering anything
+  if (showOnboarding === null || hasSeenTour === null) return null;
 
   if (showOnboarding || !user) {
-    return <OnboardingFlow onComplete={() => setShowOnboarding(false)} />;
+    return (
+      <SafeAreaProvider>
+        <OnboardingFlow onComplete={() => setShowOnboarding(false)} />
+      </SafeAreaProvider>
+    );
   }
 
   return (
     <SafeAreaProvider>
       <AppNavigator />
       <WordDetailModal />
+      <WelcomeTourModal
+        visible={hasSeenTour === false}
+        onClose={() => setHasSeenTour(true)}
+      />
       <StatusBar style="light" />
     </SafeAreaProvider>
   );
