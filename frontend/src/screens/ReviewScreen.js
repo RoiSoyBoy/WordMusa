@@ -44,9 +44,8 @@ export default function ReviewScreen() {
 
   // Keep handler refs current every render
   actionsRef.current.flip = () => {
-    if (flippedRef.current) return;
-    flippedRef.current = true;
-    setFlipped(true);
+    flippedRef.current = !flippedRef.current;
+    setFlipped(f => !f);
   };
   actionsRef.current.swipeOff = (direction) => {
     const toX = direction === 'right' ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5;

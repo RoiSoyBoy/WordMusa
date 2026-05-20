@@ -30,6 +30,17 @@ function levelBg(level) {
 
 const ALL_WORDS = psychometricWordList;
 
+async function removeFromFocusList(wordData) {
+  const user = auth.currentUser;
+  if (!user) return;
+  const wordId = wordData.word.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  try {
+    await updateDoc(doc(db, 'users', user.uid, 'wordHistory', wordId), { flagged: false });
+  } catch (err) {
+    console.warn('removeFromFocusList error:', err.message);
+  }
+}
+
 async function addToFocusList(wordData) {
   const user = auth.currentUser;
   if (!user) return;
@@ -134,8 +145,8 @@ export default function DictionaryScreen() {
             </View>
           ) : null}
           <TouchableOpacity
-            onPress={() => { if (!isInFocus) addToFocusList(item); }}
-            activeOpacity={isInFocus ? 1 : 0.7}
+            onPress={() => isInFocus ? removeFromFocusList(item) : addToFocusList(item)}
+            activeOpacity={0.7}
             style={[styles.focusBtn, isInFocus && styles.focusBtnActive]}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
