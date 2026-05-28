@@ -23,14 +23,14 @@ export default function WordCard({ onWordTap, lyricContext }) {
       Animated.parallel([
         Animated.spring(slideAnim, {
           toValue: 0,
-          useNativeDriver: true,
+          useNativeDriver: false,
           tension: 65,
           friction: 11,
         }),
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 180,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
       ]).start();
     } else {

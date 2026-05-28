@@ -1,5 +1,11 @@
+import { Platform } from 'react-native';
 import { initializeApp } from 'firebase/app';
-import { initializeAuth, getReactNativePersistence, connectAuthEmulator } from 'firebase/auth';
+import {
+  initializeAuth,
+  browserLocalPersistence,
+  getReactNativePersistence,
+  connectAuthEmulator,
+} from 'firebase/auth';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
@@ -10,19 +16,21 @@ const firebaseConfig = {
   storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
 
 export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+  persistence: Platform.OS === 'web'
+    ? browserLocalPersistence
+    : getReactNativePersistence(ReactNativeAsyncStorage),
 });
 
 export const db = getFirestore(app);
 
-// Connect to local emulators in development
 if (__DEV__) {
-  connectAuthEmulator(auth, 'http://10.0.0.28:9099', { disableWarnings: true });
-  connectFirestoreEmulator(db, '10.0.0.28', 8080);
+  const emulatorHost = Platform.OS === 'web' ? 'localhost' : '10.0.0.28';
+  connectAuthEmulator(auth, `http://${emulatorHost}:9099`, { disableWarnings: true });
+  connectFirestoreEmulator(db, emulatorHost, 8080);
 }

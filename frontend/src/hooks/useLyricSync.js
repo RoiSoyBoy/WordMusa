@@ -123,33 +123,46 @@ export function useLyricSync(currentTrack) {
         const lyricsParams = new URLSearchParams({ track_name: track.track_name, artist_name: track.artist });
         if (durationSecs > 0) lyricsParams.append('duration', durationSecs);
 
-        const lrclibRes = await fetch(`https://lrclib.net/api/get?${lyricsParams}`, {
-          headers: { 'User-Agent': 'LyricLearn/1.0' },
-          signal,
-        });
+        let fetchedViaBackend = false;
+        let rawData = null;
 
-        if (signal.aborted) return;
-
-        if (lrclibRes.status === 404) {
-          setStatus('no_lyrics');
-          return;
+        // Try direct LRCLIB first; fall back to backend on CORS/network failure (e.g. Safari)
+        try {
+          const lrclibRes = await fetch(`https://lrclib.net/api/get?${lyricsParams}`, {
+            headers: { 'User-Agent': 'LyricLearn/1.0' },
+            signal,
+          });
+          if (signal.aborted) return;
+          if (lrclibRes.status === 404) { setStatus('no_lyrics'); return; }
+          if (lrclibRes.ok) rawData = await lrclibRes.json();
+        } catch (lrclibErr) {
+          console.warn('[useLyricSync] Direct LRCLIB failed, trying backend:', lrclibErr.message);
         }
 
-        if (!lrclibRes.ok) {
-          setStatus('error');
-          return;
+        // Backend fallback (handles CORS, sets proper User-Agent server-side)
+        if (!rawData) {
+          if (signal.aborted) return;
+          const backendRes = await fetch(
+            `${BACKEND_URL}/lyricsFetch?${lyricsParams}`,
+            { headers: { Authorization: `Bearer ${token}` }, signal }
+          );
+          if (signal.aborted) return;
+          if (backendRes.status === 404) { setStatus('no_lyrics'); return; }
+          if (!backendRes.ok) { setStatus('error'); return; }
+          rawData = await backendRes.json();
+          fetchedViaBackend = true;
         }
 
-        const lrclibData = await lrclibRes.json();
-        lyricsData = { synced: lrclibData.syncedLyrics || null, plain: lrclibData.plainLyrics || null };
+        lyricsData = { synced: rawData.syncedLyrics || rawData.synced || null, plain: rawData.plainLyrics || rawData.plain || null };
 
-        // Cache for future loads — fire and forget, create only (rule: allow create)
-        setDoc(doc(db, 'lyrics_cache', cacheKey), {
-          lyrics: lyricsData,
-          track_name: track.track_name,
-          artist_name: track.artist,
-          cached_at: serverTimestamp(),
-        }).catch(() => {});
+        if (!fetchedViaBackend) {
+          setDoc(doc(db, 'lyrics_cache', cacheKey), {
+            lyrics: lyricsData,
+            track_name: track.track_name,
+            artist_name: track.artist,
+            cached_at: serverTimestamp(),
+          }).catch(() => {});
+        }
       }
 
       if (!lyricsData.synced) {

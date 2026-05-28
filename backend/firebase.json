@@ -12,6 +12,23 @@
       "firebase-debug.*.log"
     ]
   },
+  "hosting": {
+    "site": "psycholyrics",
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "headers": [
+      {
+        "source": "/index.html",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
     "emulators": {
         "auth": {
       "host": "0.0.0.0",

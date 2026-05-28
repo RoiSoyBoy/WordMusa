@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View, Text, FlatList, TextInput, TouchableOpacity,
-  StyleSheet, ActivityIndicator, ScrollView,
+  StyleSheet, ActivityIndicator, ScrollView, Platform,
 } from 'react-native';
 import {
   doc, getDoc, setDoc, updateDoc, collection, query,
@@ -193,30 +193,30 @@ export default function DictionaryScreen() {
       </View>
 
       {activeTab === 'כל המילים' && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.levelScroll}
-          contentContainerStyle={styles.levelRow}
-        >
-          {LEVEL_FILTERS.map(lvl => {
-            const isActive = levelFilter === lvl;
-            const color = lvl === 0 ? theme.colors.accent : levelColor(lvl);
-            const bg = lvl === 0 ? theme.colors.highlight : levelBg(lvl);
-            return (
-              <TouchableOpacity
-                key={lvl}
-                style={[styles.levelPill, isActive && { backgroundColor: '#FFFFFF' }]}
-                activeOpacity={0.7}
-                onPress={() => setLevelFilter(lvl)}
-              >
-                <Text style={[styles.levelText, isActive && { color: '#000000' }]}>
-                  {lvl === 0 ? 'הכל' : `${lvl}`}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+        <View style={styles.levelScroll}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.levelRow}
+          >
+            {LEVEL_FILTERS.map(lvl => {
+              const isActive = levelFilter === lvl;
+              return (
+                <TouchableOpacity
+                  key={lvl}
+                  style={[styles.levelPill, isActive && { backgroundColor: '#FFFFFF' }]}
+                  activeOpacity={0.7}
+                  onPress={() => setLevelFilter(lvl)}
+                >
+                  <Text style={[styles.levelText, isActive && { color: '#000000' }]}>
+                    {lvl === 0 ? 'הכל' : `${lvl}`}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
       )}
 
       {isLoading ? (
@@ -278,23 +278,23 @@ const styles = StyleSheet.create({
   },
   tabText: { color: theme.colors.muted, fontSize: 13, fontWeight: '600' },
   tabTextActive: { color: '#000000', fontWeight: '700' },
-  levelScroll: { height: 46, marginBottom: 8 },
+  levelScroll: { height: Platform.OS === 'web' ? 56 : 46, marginBottom: 8 },
   levelRow: {
     flexDirection: 'row',
     paddingHorizontal: theme.spacing.md,
-    gap: 6,
+    gap: Platform.OS === 'web' ? 8 : 6,
     alignItems: 'center',
   },
   levelPill: {
-    height: 32,
-    paddingHorizontal: 14,
-    borderRadius: 16,
+    height: Platform.OS === 'web' ? 40 : 32,
+    paddingHorizontal: Platform.OS === 'web' ? 18 : 14,
+    borderRadius: Platform.OS === 'web' ? 20 : 16,
     backgroundColor: theme.colors.surface2,
-    minWidth: 44,
+    minWidth: Platform.OS === 'web' ? 52 : 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  levelText: { color: theme.colors.muted, fontSize: 13, fontWeight: '600' },
+  levelText: { color: theme.colors.muted, fontSize: Platform.OS === 'web' ? 15 : 13, fontWeight: '600' },
   tabBadge: {
     backgroundColor: theme.colors.accent,
     borderRadius: 10,

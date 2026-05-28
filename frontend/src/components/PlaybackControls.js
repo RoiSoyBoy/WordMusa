@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from './Icon';
 import { auth } from '../firebase';
 import { theme } from '../styles/theme';
 
@@ -136,7 +136,7 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
           onPress={() => handleControl('previous')}
           disabled={!!loadingAction}
         >
-          <Ionicons
+          <Icon
             name="play-skip-back"
             size={26}
             color={loadingAction === 'previous' ? 'rgba(255,255,255,0.3)' : theme.colors.text}
@@ -149,7 +149,7 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
           onPress={() => handleControl(is_playing ? 'pause' : 'play')}
           disabled={!!loadingAction}
         >
-          <Ionicons
+          <Icon
             name={is_playing ? 'pause' : 'play'}
             size={28}
             color={loadingAction ? 'rgba(0,0,0,0.4)' : '#000000'}
@@ -163,7 +163,7 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
           onPress={() => handleControl('next')}
           disabled={!!loadingAction}
         >
-          <Ionicons
+          <Icon
             name="play-skip-forward"
             size={26}
             color={loadingAction === 'next' ? 'rgba(255,255,255,0.3)' : theme.colors.text}

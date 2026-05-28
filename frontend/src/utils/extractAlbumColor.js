@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { inflate } from 'pako';
@@ -60,7 +61,37 @@ function darkenColor(r, g, b, factor = 0.55) {
   return toHex(Math.round(r * factor), Math.round(g * factor), Math.round(b * factor));
 }
 
+function extractAlbumColorWeb(imageUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 10;
+        canvas.height = 10;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, 10, 10);
+        const data = ctx.getImageData(0, 0, 10, 10).data;
+        let r = 0, g = 0, b = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          r += data[i]; g += data[i + 1]; b += data[i + 2];
+        }
+        const n = data.length / 4;
+        resolve(darkenColor(Math.round(r / n), Math.round(g / n), Math.round(b / n)));
+      } catch (e) {
+        console.log('[color] Canvas error:', e.message);
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = imageUrl;
+  });
+}
+
 export async function extractAlbumColor(imageUrl) {
+  if (Platform.OS === 'web') return extractAlbumColorWeb(imageUrl);
+
   let localUri = null;
   try {
     // 1. Download to local cache (ImageManipulator can't read remote URLs)

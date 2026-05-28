@@ -1,7 +1,8 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import NowPlayingScreen from '../screens/NowPlayingScreen';
 import DictionaryScreen from '../screens/DictionaryScreen';
 import ProgressScreen from '../screens/ProgressScreen';
@@ -26,8 +27,8 @@ export default function AppNavigator() {
             backgroundColor: '#000000',
             borderTopColor: 'rgba(255,255,255,0.08)',
             borderTopWidth: 0.5,
-            height: 62,
-            paddingBottom: 10,
+            height: Platform.OS === 'web' ? 80 : 62,
+            paddingBottom: Platform.OS === 'web' ? 20 : 10,
             paddingTop: 6,
           },
           tabBarActiveTintColor: '#1DB954',
@@ -36,7 +37,7 @@ export default function AppNavigator() {
           tabBarIcon: ({ focused, color, size }) => {
             const icons = TAB_ICONS[route.name];
             const name = focused ? icons.focused : icons.unfocused;
-            return <Ionicons name={name} size={22} color={color} />;
+            return <Icon name={name} size={22} color={color} />;
           },
         })}
       >

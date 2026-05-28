@@ -2,3 +2,8 @@ node_modules
 firestore-debug.log
 scripts/enriched_checkpoint.json
 scripts/extracted_words.json
+frontend/.env.production
+**/.env.local
+**/.env.*.local
+backend/.firebase/
+backend/dist/

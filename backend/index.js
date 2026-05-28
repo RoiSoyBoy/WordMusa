@@ -30,28 +30,6 @@ const spotifyClientId = defineSecret('SPOTIFY_CLIENT_ID');
 const spotifyClientSecret = defineSecret('SPOTIFY_CLIENT_SECRET');
 const openaiApiKey = defineSecret('OPENAI_API_KEY');
 
-// Helper to verify App Check token
-async function verifyAppCheck(req, res) {
-  // Bypass App Check in local emulator environment
-  if (process.env.FUNCTIONS_EMULATOR === 'true') {
-    return true;
-  }
-
-  const appCheckToken = req.header('X-Firebase-AppCheck');
-  if (!appCheckToken) {
-    res.status(401).send('Unauthorized: App Check token missing.');
-    return false;
-  }
-  try {
-    await admin.appCheck().verifyToken(appCheckToken);
-    return true;
-  } catch (err) {
-    console.error('App Check Error:', err);
-    res.status(401).send('Unauthorized: App Check token invalid.');
-    return false;
-  }
-}
-
 // Helper to verify auth token
 async function verifyAuth(req, res) {
   const authHeader = req.headers.authorization;
@@ -215,8 +193,6 @@ exports.spotifyAuth = onRequest({ secrets: [spotifyClientId, spotifyClientSecret
         return res.status(405).send('Method Not Allowed');
       }
       
-      if (!(await verifyAppCheck(req, res))) return;
-
       const { code, redirectUri } = req.body;
       if (!code || !redirectUri) {
         return res.status(400).send('Missing code or redirectUri');
@@ -259,7 +235,8 @@ exports.spotifyAuth = onRequest({ secrets: [spotifyClientId, spotifyClientSecret
       });
 
       if (!userResponse.ok) {
-        console.error('Failed to get Spotify user profile');
+        const profileErrorBody = await userResponse.text();
+        console.error('Failed to get Spotify user profile:', userResponse.status, profileErrorBody);
         return res.status(400).send('Failed to get user profile');
       }
 
@@ -305,8 +282,6 @@ exports.spotifyAuth = onRequest({ secrets: [spotifyClientId, spotifyClientSecret
 exports.spotifyPlayer = onRequest({ secrets: [spotifyClientId, spotifyClientSecret] }, (req, res) => {
   cors(req, res, async () => {
     try {
-      if (!(await verifyAppCheck(req, res))) return;
-      
       const user = await verifyAuth(req, res);
       if (!user) return;
 
@@ -357,8 +332,6 @@ exports.spotifyPlayer = onRequest({ secrets: [spotifyClientId, spotifyClientSecr
 exports.lyricsFetch = onRequest((req, res) => {
   cors(req, res, async () => {
     try {
-      if (!(await verifyAppCheck(req, res))) return;
-
       const user = await verifyAuth(req, res);
       if (!user) return;
 
@@ -432,7 +405,6 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
   cors(req, res, async () => {
     try {
       if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
-      if (!(await verifyAppCheck(req, res))) return;
 
       const user = await verifyAuth(req, res);
       if (!user) return;
@@ -587,7 +559,6 @@ exports.tracksMissing = onRequest((req, res) => {
   cors(req, res, async () => {
     try {
       if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
-      if (!(await verifyAppCheck(req, res))) return;
 
       const user = await verifyAuth(req, res);
       if (!user) return;
@@ -625,7 +596,6 @@ exports.translateWord = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
   cors(req, res, async () => {
     try {
       if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
-      if (!(await verifyAppCheck(req, res))) return;
       const user = await verifyAuth(req, res);
       if (!user) return;
 
@@ -688,7 +658,6 @@ exports.spotifyControl = onRequest({ secrets: [spotifyClientId, spotifyClientSec
   cors(req, res, async () => {
     try {
       if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
-      if (!(await verifyAppCheck(req, res))) return;
       const user = await verifyAuth(req, res);
       if (!user) return;
 

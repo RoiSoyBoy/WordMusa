@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Image, Animated,
-  Dimensions,
+  Dimensions, Platform,
 } from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -47,13 +47,15 @@ export default function NowPlayingScreen() {
   const scrollResumeTimerRef = useRef(null);
   const activeIndexRef = useRef(-1);
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const currentTrackRef = useRef(null);
+  const encounteredRef = useRef(new Set());
 
   const [sheetWords, setSheetWords] = useState([]);
   const [sheetVisible, setSheetVisible] = useState(false);
   const songWordsRef = useRef([]);
 
   const { lines, activeIndex, status, translationsReady } = useLyricSync(currentTrack);
-  const { recordWordTap, recordTrackSeen, recordWordFlag, flaggedWordSet } = useWordTracking();
+  const { recordWordEncounter, recordWordTap, recordTrackSeen, recordWordFlag, flaggedWordSet } = useWordTracking();
   const { setActiveWords, setSelectedWord } = useWordStore();
 
   // ── Spotify live badge pulse ──────────────────────────────────────────────────
@@ -62,8 +64,8 @@ export default function NowPlayingScreen() {
     if (!currentTrack?.is_playing) return;
     const anim = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 0.25, duration: 900, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 0.25, duration: 900, useNativeDriver: false }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 900, useNativeDriver: false }),
       ])
     );
     anim.start();
@@ -79,7 +81,7 @@ export default function NowPlayingScreen() {
       .then(color => {
         if (!color) return;
         setHeaderColor(color);
-        Animated.timing(gradientOpacity, { toValue: 1, duration: 900, useNativeDriver: true }).start();
+        Animated.timing(gradientOpacity, { toValue: 1, duration: 900, useNativeDriver: false }).start();
       });
   }, [currentTrack?.album_art]);
 
@@ -118,7 +120,10 @@ export default function NowPlayingScreen() {
   }, [pollSpotify]);
 
   useEffect(() => {
-    if (currentTrack?.track_id) recordTrackSeen(currentTrack.track_id);
+    if (currentTrack?.track_id) {
+      recordTrackSeen(currentTrack.track_id);
+      encounteredRef.current.clear();
+    }
   }, [currentTrack?.track_id]);
 
   // When song changes: show bottom sheet with top 5 words from the previous song
@@ -156,6 +161,18 @@ export default function NowPlayingScreen() {
         }
       }
 
+      // Record encounter once per word per line per track
+      const encounterKey = `${activeIndex}:${clean}`;
+      if (!encounteredRef.current.has(encounterKey)) {
+        encounteredRef.current.add(encounterKey);
+        const track = currentTrackRef.current;
+        recordWordEncounter(wordData, {
+          trackName: track?.track_name || '',
+          artistName: track?.artist || '',
+          lyricLine: text,
+        });
+      }
+
       // Focus words (user-chosen) → highlight and show WordCard
       if (flaggedWordSet.has(clean) && !focusMatched.find(w => w.word.toLowerCase() === clean)) {
         focusMatched.push(wordData);
@@ -172,6 +189,7 @@ export default function NowPlayingScreen() {
 
   const translationsReadyRef = useRef(false);
   useEffect(() => { translationsReadyRef.current = translationsReady; }, [translationsReady]);
+  useEffect(() => { currentTrackRef.current = currentTrack; }, [currentTrack]);
 
   useEffect(() => () => clearTimeout(scrollResumeTimerRef.current), []);
 
@@ -275,6 +293,9 @@ export default function NowPlayingScreen() {
   const renderHighlightedLine = (text, baseStyle, line) => {
     if (!text) return <Text style={baseStyle} />;
     const parts = text.split(/(\b[a-zA-Z']+\b)/);
+    const wordPress = (part) => Platform.OS === 'web'
+      ? { onPress: () => handleWordLongPress(part, line) }
+      : { onLongPress: () => handleWordLongPress(part, line) };
     return (
       <Text style={baseStyle}>
         {parts.map((part, idx) => {
@@ -282,13 +303,13 @@ export default function NowPlayingScreen() {
           if (!clean) return <Text key={idx}>{part}</Text>;
           if (flaggedWordSet.has(clean)) {
             return (
-              <Text key={idx} style={styles.highlightedWord} onLongPress={() => handleWordLongPress(part, line)} suppressHighlighting>
+              <Text key={idx} style={styles.highlightedWord} {...wordPress(part)} suppressHighlighting>
                 {part}
               </Text>
             );
           }
           return (
-            <Text key={idx} onLongPress={() => handleWordLongPress(part, line)} suppressHighlighting>
+            <Text key={idx} {...wordPress(part)} suppressHighlighting>
               {part}
             </Text>
           );

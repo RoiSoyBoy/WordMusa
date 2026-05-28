@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator, Dimensions,
+  ActivityIndicator, Dimensions, Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as WebBrowser from 'expo-web-browser';
@@ -26,10 +26,11 @@ export default function SpotifyAuth({ onAuthComplete }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const redirectUri = makeRedirectUri({
-    scheme: 'lyriclearn',
-    preferLocalhost: true,
-  });
+  const redirectUri = Platform.OS !== 'web'
+    ? makeRedirectUri({ scheme: 'lyriclearn', preferLocalhost: true })
+    : __DEV__
+      ? `${window.location.origin}/spotify-callback`
+      : 'https://psycholyrics.web.app/spotify-callback';
 
   const [request, response, promptAsync] = useAuthRequest(
     {
@@ -54,10 +55,15 @@ export default function SpotifyAuth({ onAuthComplete }) {
     setError(null);
     try {
       if (!SPOTIFY_AUTH_URL) throw new Error('EXPO_PUBLIC_SPOTIFY_AUTH_URL is not set.');
-      const currentRedirectUri = makeRedirectUri({ scheme: 'lyriclearn', preferLocalhost: true });
+      const currentRedirectUri = Platform.OS !== 'web'
+        ? makeRedirectUri({ scheme: 'lyriclearn', preferLocalhost: true })
+        : __DEV__
+          ? `${window.location.origin}/spotify-callback`
+          : 'https://psycholyrics.web.app/spotify-callback';
+      const headers = { 'Content-Type': 'application/json' };
       const res = await fetch(SPOTIFY_AUTH_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ code, redirectUri: currentRedirectUri }),
       });
       if (!res.ok) {

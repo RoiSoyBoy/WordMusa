@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { onAuthStateChanged } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFonts } from 'expo-font';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { auth } from './src/firebase';
 import OnboardingFlow from './src/components/OnboardingFlow';
 import AppNavigator from './src/navigation/AppNavigator';
@@ -10,6 +12,7 @@ import WordDetailModal from './src/components/WordDetailModal';
 import WelcomeTourModal from './src/components/WelcomeTourModal';
 
 export default function App() {
+  const [fontsLoaded] = useFonts(Ionicons.font);
   const [user, setUser] = useState(null);
   const [showOnboarding, setShowOnboarding] = useState(null);
   const [hasSeenTour, setHasSeenTour] = useState(null);
@@ -30,7 +33,7 @@ export default function App() {
     return onAuthStateChanged(auth, setUser);
   }, []);
 
-  // Wait for both async reads before rendering anything
+  // Wait for data reads before rendering anything (fonts load in background)
   if (showOnboarding === null || hasSeenTour === null) return null;
 
   if (showOnboarding || !user) {
