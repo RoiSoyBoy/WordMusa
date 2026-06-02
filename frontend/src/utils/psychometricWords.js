@@ -25,19 +25,17 @@ export const psychometricWordMap = new Map(
 export const basicWordSet = new Set(basicWordsData);
 
 // All valid English psychometric words, each with a `level` 1-10.
-// Level 1 = hardest/rarest (LOW tier), Level 10 = most common (HIGH tier).
+// Level = unit number from the Campus dictionary (1 = easiest, 10 = hardest).
+// Words not in the Campus dictionary fall back to frequencyTier estimate.
 // Sorted by level then A-Z within each level.
 export const psychometricWordList = (() => {
-  const TIER_RANK = { LOW: 0, MEDIUM: 1, HIGH: 2 };
+  const TIER_FALLBACK = { HIGH: 3, MEDIUM: 6, LOW: 9 };
   const arr = deduped
     .filter(w => /^[a-zA-Z'-]+$/.test(w.word))
-    .map(w => ({ ...w }));
-  arr.sort((a, b) => {
-    const td = TIER_RANK[a.frequencyTier] - TIER_RANK[b.frequencyTier];
-    return td !== 0 ? td : a.word.localeCompare(b.word);
-  });
-  const total = arr.length;
-  arr.forEach((w, i) => { w.level = Math.min(10, Math.floor((i / total) * 10) + 1); });
+    .map(w => ({
+      ...w,
+      level: w.unit != null ? w.unit : (TIER_FALLBACK[w.frequencyTier] ?? 5),
+    }));
   arr.sort((a, b) => a.level !== b.level ? a.level - b.level : a.word.localeCompare(b.word));
   return arr;
 })();
