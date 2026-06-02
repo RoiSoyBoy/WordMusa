@@ -4,6 +4,7 @@ import {
   Animated, PanResponder, Dimensions, ActivityIndicator,
 } from 'react-native';
 import { TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { psychometricWordList } from '../utils/psychometricWords';
@@ -11,6 +12,9 @@ import { theme } from '../styles/theme';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.32;
+
+const STORAGE_FILTER_ON = 'FLASHCARD_FILTER_ON';
+const STORAGE_WORDS_LEARNT = 'FLASHCARD_WORDS_LEARNT';
 
 function shuffle(arr) {
   const a = [...arr];
@@ -36,11 +40,29 @@ export default function ReviewScreen() {
   const [flipped, setFlipped] = useState(false);
   const [correct, setCorrect] = useState(0);
   const [done, setDone] = useState(false);
+  const [filterKnown, setFilterKnown] = useState(false);
+  const [asyncLoaded, setAsyncLoaded] = useState(false);
 
   const cardPosition = useRef(new Animated.ValueXY()).current;
   const flippedRef = useRef(false);
-  // Handler refs to avoid stale closures inside PanResponder
   const actionsRef = useRef({});
+  const filterKnownRef = useRef(false);
+  const wordsLearntRef = useRef(new Set());
+
+  // Load filter preference and learnt words from AsyncStorage
+  useEffect(() => {
+    async function load() {
+      const [filterVal, learntVal] = await Promise.all([
+        AsyncStorage.getItem(STORAGE_FILTER_ON),
+        AsyncStorage.getItem(STORAGE_WORDS_LEARNT),
+      ]);
+      filterKnownRef.current = filterVal === 'true';
+      wordsLearntRef.current = learntVal ? new Set(JSON.parse(learntVal)) : new Set();
+      setFilterKnown(filterKnownRef.current);
+      setAsyncLoaded(true);
+    }
+    load();
+  }, []);
 
   // Keep handler refs current every render
   actionsRef.current.flip = () => {
@@ -61,7 +83,17 @@ export default function ReviewScreen() {
     });
   };
   actionsRef.current.advance = (knew) => {
-    if (knew) setCorrect(c => c + 1);
+    if (knew) {
+      const currentWord = queue[cardIndex];
+      if (currentWord?.word && !wordsLearntRef.current.has(currentWord.word)) {
+        wordsLearntRef.current.add(currentWord.word);
+        AsyncStorage.setItem(
+          STORAGE_WORDS_LEARNT,
+          JSON.stringify([...wordsLearntRef.current])
+        );
+      }
+      setCorrect(c => c + 1);
+    }
     setCardIndex(i => {
       if (i + 1 >= queue.length) { setDone(true); return i; }
       return i + 1;
@@ -123,18 +155,30 @@ export default function ReviewScreen() {
     return unsub;
   }, []);
 
+  // Wait for both focusWords and AsyncStorage before starting session
   useEffect(() => {
-    if (focusWords?.length > 0) startSession(focusWords);
-  }, [focusWords]);
+    if (focusWords?.length > 0 && asyncLoaded) startSession(focusWords);
+  }, [focusWords, asyncLoaded]);
 
   function startSession(words) {
-    setQueue(shuffle(words));
+    const filtered = filterKnownRef.current
+      ? words.filter(w => !wordsLearntRef.current.has(w.word))
+      : words;
+    setQueue(shuffle(filtered));
     setCardIndex(0);
     setFlipped(false);
     flippedRef.current = false;
     setCorrect(0);
     setDone(false);
     cardPosition.setValue({ x: 0, y: 0 });
+  }
+
+  function toggleFilter() {
+    const newVal = !filterKnownRef.current;
+    filterKnownRef.current = newVal;
+    setFilterKnown(newVal);
+    AsyncStorage.setItem(STORAGE_FILTER_ON, newVal ? 'true' : 'false');
+    if (focusWords?.length > 0) startSession(focusWords);
   }
 
   // Animated values derived from card position
@@ -155,7 +199,7 @@ export default function ReviewScreen() {
   });
 
   // ── Loading ──────────────────────────────────────────────────────────────────
-  if (focusWords === null) {
+  if (focusWords === null || !asyncLoaded) {
     return (
       <View style={styles.center}>
         <ActivityIndicator color={theme.colors.accent} />
@@ -163,7 +207,7 @@ export default function ReviewScreen() {
     );
   }
 
-  // ── Empty ────────────────────────────────────────────────────────────────────
+  // ── Empty (no focus words) ───────────────────────────────────────────────────
   if (focusWords.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
@@ -173,6 +217,34 @@ export default function ReviewScreen() {
           <Text style={styles.emptySubtitle}>
             הוסף מילים לרשימת הפוקוס מהמילון{'\n'}או מגיליון השיר
           </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Empty (all focus words are in wordsLearnt and filter is ON) ──────────────
+  if (filterKnown && queue.length === 0) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.center}>
+          <Text style={styles.emptyIcon}>🎉</Text>
+          <Text style={styles.emptyTitle}>ידעת את כל המילים!</Text>
+          <Text style={styles.emptySubtitle}>
+            סימנת את כל מילות הפוקוס כ"ידועות"{'\n'}
+            עבור ל"כל המילים" לתרגול מחדש
+          </Text>
+          <TouchableOpacity
+            style={[styles.restartBtn, { marginTop: 28 }]}
+            activeOpacity={0.7}
+            onPress={() => {
+              filterKnownRef.current = false;
+              setFilterKnown(false);
+              AsyncStorage.setItem(STORAGE_FILTER_ON, 'false');
+              startSession(focusWords);
+            }}
+          >
+            <Text style={styles.restartText}>כל המילים</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -209,6 +281,15 @@ export default function ReviewScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.progress}>{cardIndex + 1} / {queue.length}</Text>
+        <TouchableOpacity
+          style={[styles.filterPill, filterKnown && styles.filterPillActive]}
+          activeOpacity={0.7}
+          onPress={toggleFilter}
+        >
+          <Text style={[styles.filterPillText, filterKnown && styles.filterPillTextActive]}>
+            {filterKnown ? 'מילים שאני עדיין לא יודע' : 'כל המילים'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Progress bar */}
@@ -318,6 +399,19 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   progress: { color: theme.colors.muted, fontSize: 13, fontWeight: '500' },
+  filterPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+  },
+  filterPillActive: {
+    borderColor: theme.colors.accent,
+    backgroundColor: `${theme.colors.accent}22`,
+  },
+  filterPillText: { color: theme.colors.muted, fontSize: 11, fontWeight: '600' },
+  filterPillTextActive: { color: theme.colors.accent },
   progressBg: {
     height: 2,
     backgroundColor: theme.colors.surface2,
