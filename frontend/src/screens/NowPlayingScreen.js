@@ -124,6 +124,13 @@ export default function NowPlayingScreen() {
       recordTrackSeen(currentTrack.track_id);
       encounteredRef.current.clear();
     }
+    // Reset scroll state on every track change so stale Y offsets and
+    // a previous user-scroll lock don't break auto-scroll for the new song.
+    itemYOffsets.current = {};
+    itemRefs.current = {};
+    userScrollingRef.current = false;
+    clearTimeout(scrollResumeTimerRef.current);
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
   }, [currentTrack?.track_id]);
 
   // When song changes: show bottom sheet with top 5 words from the previous song

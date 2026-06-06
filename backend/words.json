@@ -1,20 +1,5 @@
 [
   {
-    "word": "(םירפסמ",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מיקום (",
-    "hebrewFull": "מקום גיאוגרפי או מרחבי מסוים",
-    "ipa": "ˈmɪkɔm",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "location",
-      "site",
-      "place",
-      "position"
-    ],
-    "exampleSentence": "The location of the event is still undecided."
-  },
-  {
     "word": "abduct",
     "partOfSpeech": "verb",
     "hebrewShort": "חטיפה, לחטוף",
@@ -998,22 +983,6 @@
     "unit": 5
   },
   {
-    "word": "admire",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להעריץ",
-    "hebrewFull": "להעריך או לכבד מישהו",
-    "ipa": "ədˈmaɪər",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "appreciate",
-      "respect",
-      "regard",
-      "esteem"
-    ],
-    "exampleSentence": "I admire her dedication to her work.",
-    "unit": 5
-  },
-  {
     "word": "admit",
     "partOfSpeech": "verb",
     "hebrewShort": "להודות",
@@ -1027,22 +996,6 @@
       "grant"
     ],
     "exampleSentence": "She had to admit that she was wrong.",
-    "unit": 3
-  },
-  {
-    "word": "admit",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להודות",
-    "hebrewFull": "להשלים או להודות במשהו",
-    "ipa": "ədˈmɪt",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "confess",
-      "acknowledge",
-      "accept",
-      "allow"
-    ],
-    "exampleSentence": "He admitted his mistake in the report.",
     "unit": 3
   },
   {
@@ -1074,22 +1027,6 @@
       "young adulthood"
     ],
     "exampleSentence": "Adolescence can be a challenging time for many.",
-    "unit": 9
-  },
-  {
-    "word": "adolescence",
-    "partOfSpeech": "noun",
-    "hebrewShort": "גיל ההתבגרות",
-    "hebrewFull": "שלב החיים בין ילדות לבגרות",
-    "ipa": "ˌædəˈlɛsəns",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "teenage",
-      "youth",
-      "puberty",
-      "young adulthood"
-    ],
-    "exampleSentence": "Adolescence can be a turbulent time for many.",
     "unit": 9
   },
   {
@@ -1125,22 +1062,6 @@
     "unit": 5
   },
   {
-    "word": "adore",
-    "partOfSpeech": "verb",
-    "hebrewShort": "העריץ, אהב",
-    "hebrewFull": "להעריץ או לאהוב מאוד",
-    "ipa": "əˈdɔːr",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "worship",
-      "love",
-      "cherish",
-      "idolize"
-    ],
-    "exampleSentence": "She adores her pet and takes care of it daily.",
-    "unit": 5
-  },
-  {
     "word": "adorn",
     "partOfSpeech": "verb",
     "hebrewShort": "לקשט",
@@ -1173,22 +1094,6 @@
     "unit": 3
   },
   {
-    "word": "adult",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מבוגר",
-    "hebrewFull": "אדם בוגר, מעל גיל 18",
-    "ipa": "əˈdʌlt",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "grown-up",
-      "mature",
-      "full-grown",
-      "independent"
-    ],
-    "exampleSentence": "As an adult, he has many responsibilities.",
-    "unit": 3
-  },
-  {
     "word": "adulthood",
     "partOfSpeech": "noun",
     "hebrewShort": "בגרות",
@@ -1202,22 +1107,6 @@
       "responsibility"
     ],
     "exampleSentence": "Adulthood brings new challenges and choices.",
-    "unit": 3
-  },
-  {
-    "word": "adulthood",
-    "partOfSpeech": "noun",
-    "hebrewShort": "בגרות",
-    "hebrewFull": "שלב החיים של אחריות ובגרות",
-    "ipa": "əˈdʌlt.hʊd",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "maturity",
-      "grown-up period",
-      "adulthood",
-      "maturity stage"
-    ],
-    "exampleSentence": "Adulthood brings new challenges and opportunities.",
     "unit": 3
   },
   {
@@ -1237,22 +1126,6 @@
     "unit": 3
   },
   {
-    "word": "advance",
-    "partOfSpeech": "verb",
-    "hebrewShort": "מתקדם",
-    "hebrewFull": "להתקדם או להתפתח",
-    "ipa": "ədˈvæns",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "progress",
-      "move forward",
-      "promote",
-      "improve"
-    ],
-    "exampleSentence": "She worked hard to advance in her career.",
-    "unit": 3
-  },
-  {
     "word": "advancement",
     "partOfSpeech": "noun",
     "hebrewShort": "התקדמות",
@@ -1266,22 +1139,6 @@
       "growth"
     ],
     "exampleSentence": "Advancement in technology has changed our lives.",
-    "unit": 3
-  },
-  {
-    "word": "advancement",
-    "partOfSpeech": "noun",
-    "hebrewShort": "התקדמות",
-    "hebrewFull": "התקדמות או שיפור במסלול קריירה",
-    "ipa": "ədˈvænsmənt",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "progression",
-      "promotion",
-      "improvement",
-      "development"
-    ],
-    "exampleSentence": "His advancement in the company was well-deserved.",
     "unit": 3
   },
   {
@@ -1301,22 +1158,6 @@
     "unit": 3
   },
   {
-    "word": "advantage",
-    "partOfSpeech": "noun",
-    "hebrewShort": "יתרון",
-    "hebrewFull": "יתרון במצב מסוים",
-    "ipa": "ədˈvæn.tɪdʒ",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "benefit",
-      "edge",
-      "profit",
-      "gain"
-    ],
-    "exampleSentence": "Having experience is a great advantage in this job.",
-    "unit": 3
-  },
-  {
     "word": "adventure",
     "partOfSpeech": "noun",
     "hebrewShort": "הרפתקה",
@@ -1330,22 +1171,6 @@
       "excursion"
     ],
     "exampleSentence": "They went on an adventure in the mountains.",
-    "unit": 4
-  },
-  {
-    "word": "adventure",
-    "partOfSpeech": "noun",
-    "hebrewShort": "הרפתקה",
-    "hebrewFull": "חוויה מלהיבה או מסוכנת",
-    "ipa": "ədˈvɛn.tʃər",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "excursion",
-      "journey",
-      "expedition",
-      "escapade"
-    ],
-    "exampleSentence": "They went on an exciting adventure in the mountains.",
     "unit": 4
   },
   {
@@ -1365,22 +1190,6 @@
     "unit": 5
   },
   {
-    "word": "adverse",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "שלילי",
-    "hebrewFull": "שלילי או מזיק",
-    "ipa": "ˈæd.vɜrs",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "unfavorable",
-      "harmful",
-      "detrimental",
-      "malicious"
-    ],
-    "exampleSentence": "Smoking has adverse effects on health.",
-    "unit": 5
-  },
-  {
     "word": "advertise",
     "partOfSpeech": "verb",
     "hebrewShort": "פרסום",
@@ -1394,22 +1203,6 @@
       "publicize"
     ],
     "exampleSentence": "Companies advertise their products to increase sales.",
-    "unit": 7
-  },
-  {
-    "word": "advertise",
-    "partOfSpeech": "verb",
-    "hebrewShort": "פרסום",
-    "hebrewFull": "לפרסם מוצר או שירות",
-    "ipa": "ˈæd.vər.taɪz",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "promote",
-      "publicize",
-      "market",
-      "announce"
-    ],
-    "exampleSentence": "They plan to advertise their new product online.",
     "unit": 7
   },
   {
@@ -1445,22 +1238,6 @@
     "unit": 3
   },
   {
-    "word": "advice",
-    "partOfSpeech": "noun",
-    "hebrewShort": "עצה",
-    "hebrewFull": "המלצה או הצעה כלשהי",
-    "ipa": "ədˈvaɪs",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "guidance",
-      "recommendation",
-      "counsel",
-      "suggestion"
-    ],
-    "exampleSentence": "I need some advice on how to study better.",
-    "unit": 3
-  },
-  {
     "word": "advise",
     "partOfSpeech": "verb",
     "hebrewShort": "לייעץ",
@@ -1474,22 +1251,6 @@
       "inform"
     ],
     "exampleSentence": "I advise you to review your notes before the exam.",
-    "unit": 3
-  },
-  {
-    "word": "advise",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לייעץ",
-    "hebrewFull": "לתת עצה או המלצה",
-    "ipa": "ədˈvaɪz",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "recommend",
-      "counsel",
-      "inform",
-      "suggest"
-    ],
-    "exampleSentence": "I would advise you to save some money.",
     "unit": 3
   },
   {
@@ -1509,22 +1270,6 @@
     "unit": 3
   },
   {
-    "word": "advisor",
-    "partOfSpeech": "noun",
-    "hebrewShort": "יועץ",
-    "hebrewFull": "יועץ או מייעץ",
-    "ipa": "ədˈvaɪ.zər",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "consultant",
-      "counselor",
-      "mentor",
-      "guide"
-    ],
-    "exampleSentence": "My advisor helped me choose the right courses.",
-    "unit": 3
-  },
-  {
     "word": "advocate",
     "partOfSpeech": "verb",
     "hebrewShort": "לתמוך בגלוי, לדגול",
@@ -1538,22 +1283,6 @@
       "endorse"
     ],
     "exampleSentence": "She advocates for environmental protection.",
-    "unit": 8
-  },
-  {
-    "word": "advocate",
-    "partOfSpeech": "noun",
-    "hebrewShort": "לייעץ",
-    "hebrewFull": "תומך במשהו או איש מקצוע",
-    "ipa": "ˈæd.və.keɪt",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "supporter",
-      "defender",
-      "champion",
-      "promoter"
-    ],
-    "exampleSentence": "She is an advocate for environmental protection.",
     "unit": 8
   },
   {
@@ -3811,22 +3540,6 @@
     "unit": 2
   },
   {
-    "word": "articulate",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לבטא, לנסח",
-    "hebrewFull": "לבטא בצורה ברורה ויעילה",
-    "ipa": "ɑːrˈtɪkjuleɪt",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "express",
-      "communicate",
-      "state",
-      "voice"
-    ],
-    "exampleSentence": "She articulated her ideas clearly.",
-    "unit": 2
-  },
-  {
     "word": "artifact",
     "partOfSpeech": "noun",
     "hebrewShort": "חפץ, פריט אומנות",
@@ -4299,22 +4012,6 @@
     "unit": 2
   },
   {
-    "word": "associate",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לקשר",
-    "hebrewFull": "לקשור או לשייך משהו",
-    "ipa": "əˈsoʊ.si.eɪt",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "connect",
-      "link",
-      "relate",
-      "collaborate"
-    ],
-    "exampleSentence": "I tend to associate summer with long vacations.",
-    "unit": 2
-  },
-  {
     "word": "association",
     "partOfSpeech": "noun",
     "hebrewShort": "אסוציאציה",
@@ -4328,22 +4025,6 @@
       "bond"
     ],
     "exampleSentence": "An association between stress and health issues is well documented.",
-    "unit": 2
-  },
-  {
-    "word": "association",
-    "partOfSpeech": "noun",
-    "hebrewShort": "אסוציאציה",
-    "hebrewFull": "קשר או ארגון של אנשים",
-    "ipa": "əˌsoʊ.siˈeɪ.ʃən",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "organization",
-      "group",
-      "relationship",
-      "affiliation"
-    ],
-    "exampleSentence": "She is part of a professional association.",
     "unit": 2
   },
   {
@@ -4363,38 +4044,6 @@
     "unit": 2
   },
   {
-    "word": "assume",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להניח",
-    "hebrewFull": "לקחת דבר כאילו הוא נכון מבלי הוכחה",
-    "ipa": "əˈsuːm",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "presume",
-      "suppose",
-      "infer",
-      "believe"
-    ],
-    "exampleSentence": "I assumed he would be late since he always is.",
-    "unit": 2
-  },
-  {
-    "word": "assume",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להניח",
-    "hebrewFull": "להניח או לקבל כעובדה",
-    "ipa": "əˈsjuːm",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "presume",
-      "suppose",
-      "take on",
-      "accept"
-    ],
-    "exampleSentence": "I assume you are coming to the party.",
-    "unit": 2
-  },
-  {
     "word": "assumption",
     "partOfSpeech": "noun",
     "hebrewShort": "הנחה",
@@ -4408,22 +4057,6 @@
       "theory"
     ],
     "exampleSentence": "His assumption was that everyone shared the same values.",
-    "unit": 2
-  },
-  {
-    "word": "assumption",
-    "partOfSpeech": "noun",
-    "hebrewShort": "הנחה",
-    "hebrewFull": "הנחה או השערה מבלי הוכחה",
-    "ipa": "əˈsʌmp.ʃən",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "presumption",
-      "supposition",
-      "belief",
-      "hypothesis"
-    ],
-    "exampleSentence": "The assumption was based on limited data.",
     "unit": 2
   },
   {
@@ -4443,22 +4076,6 @@
     "unit": 5
   },
   {
-    "word": "astonishment",
-    "partOfSpeech": "noun",
-    "hebrewShort": "תדהמה, השתאות",
-    "hebrewFull": "הפתעה או תדהמה",
-    "ipa": "əˈstɒn.ɪʃ.mənt",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "amazement",
-      "surprise",
-      "wonder",
-      "shock"
-    ],
-    "exampleSentence": "Her talent for singing was met with astonishment.",
-    "unit": 5
-  },
-  {
     "word": "astound",
     "partOfSpeech": "verb",
     "hebrewShort": "להדהים",
@@ -4475,22 +4092,6 @@
     "unit": 5
   },
   {
-    "word": "astound",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להדהים",
-    "hebrewFull": "להדהים או להפתיע מאוד",
-    "ipa": "əˈstaʊnd",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "shock",
-      "surprise",
-      "startle",
-      "daze"
-    ],
-    "exampleSentence": "The magician's trick astounded everyone in the audience.",
-    "unit": 5
-  },
-  {
     "word": "astronomy",
     "partOfSpeech": "noun",
     "hebrewShort": "אסטרונומיה",
@@ -4504,22 +4105,6 @@
       "celestial science"
     ],
     "exampleSentence": "Astronomy has always fascinated me since childhood.",
-    "unit": 3
-  },
-  {
-    "word": "astronomy",
-    "partOfSpeech": "noun",
-    "hebrewShort": "אסטרונומיה",
-    "hebrewFull": "המדע של כוכבים וחלל",
-    "ipa": "əˈstrɒn.ə.mi",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "stargazing",
-      "cosmology",
-      "celestial study",
-      "astrophysics"
-    ],
-    "exampleSentence": "She is studying astronomy at university.",
     "unit": 3
   },
   {
@@ -4553,21 +4138,6 @@
     "exampleSentence": "She is waiting at the bus stop."
   },
   {
-    "word": "at",
-    "partOfSpeech": "preposition",
-    "hebrewShort": "ב, ל, אצל",
-    "hebrewFull": "מציין מיקום או נקודה",
-    "ipa": "æt",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "in",
-      "on",
-      "near",
-      "by"
-    ],
-    "exampleSentence": "We will meet at the coffee shop."
-  },
-  {
     "word": "at first",
     "partOfSpeech": "adverb",
     "hebrewShort": "בהתחלה",
@@ -4581,22 +4151,6 @@
       "firstly"
     ],
     "exampleSentence": "At first, I was skeptical about the project.",
-    "unit": 1
-  },
-  {
-    "word": "at first",
-    "partOfSpeech": "phrase",
-    "hebrewShort": "בהתחלה",
-    "hebrewFull": "בהתחלה או בתחילה",
-    "ipa": "æt fɜrst",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "initially",
-      "originally",
-      "at the beginning",
-      "to start with"
-    ],
-    "exampleSentence": "At first, I didn't understand the problem.",
     "unit": 1
   },
   {
@@ -4616,22 +4170,6 @@
     "unit": 1
   },
   {
-    "word": "at last",
-    "partOfSpeech": "phrase",
-    "hebrewShort": "סוף סוף",
-    "hebrewFull": "לבסוף או בסוף",
-    "ipa": "æt læst",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "finally",
-      "at long last",
-      "eventually",
-      "in the end"
-    ],
-    "exampleSentence": "At last, the project was completed.",
-    "unit": 1
-  },
-  {
     "word": "at least",
     "partOfSpeech": "adverb",
     "hebrewShort": "לפחות",
@@ -4645,22 +4183,6 @@
       "at the very least"
     ],
     "exampleSentence": "You should exercise at least three times a week.",
-    "unit": 2
-  },
-  {
-    "word": "at least",
-    "partOfSpeech": "phrase",
-    "hebrewShort": "לפחות",
-    "hebrewFull": "לפחות או על כל פנים",
-    "ipa": "æt list",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "minimum",
-      "at the very least",
-      "in any case",
-      "anyway"
-    ],
-    "exampleSentence": "You should at least try your best.",
     "unit": 2
   },
   {
@@ -4680,22 +4202,6 @@
     "unit": 5
   },
   {
-    "word": "at your disposal",
-    "partOfSpeech": "phrase",
-    "hebrewShort": "לרשותך",
-    "hebrewFull": "זמין לשימושך או לרשותך",
-    "ipa": "æt jʊr dɪˈspoʊ.zəl",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "available to you",
-      "at your service",
-      "ready for use",
-      "at your convenience"
-    ],
-    "exampleSentence": "I am at your disposal for any questions.",
-    "unit": 5
-  },
-  {
     "word": "athlete",
     "partOfSpeech": "noun",
     "hebrewShort": "ספורטאי, אתלט",
@@ -4709,22 +4215,6 @@
       "competitor"
     ],
     "exampleSentence": "The athlete trained hard for the upcoming championship.",
-    "unit": 2
-  },
-  {
-    "word": "athlete",
-    "partOfSpeech": "noun",
-    "hebrewShort": "ספורטאי, אתלט",
-    "hebrewFull": "ספורטאי או אדם העוסק בספורט",
-    "ipa": "ˈæθ.liːt",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "sportsman",
-      "competitor",
-      "player",
-      "champion"
-    ],
-    "exampleSentence": "The athlete trained hard for the Olympic Games.",
     "unit": 2
   },
   {
@@ -4744,22 +4234,6 @@
     "unit": 8
   },
   {
-    "word": "atrocity",
-    "partOfSpeech": "noun",
-    "hebrewShort": "זוועה",
-    "hebrewFull": "מעשה אכזרי או שאין לו תירוץ",
-    "ipa": "əˈtrɒs.ɪ.ti",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "horror",
-      "crime",
-      "act of violence",
-      "wickedness"
-    ],
-    "exampleSentence": "The war crimes committed were true atrocities.",
-    "unit": 8
-  },
-  {
     "word": "attach",
     "partOfSpeech": "verb",
     "hebrewShort": "לחבר, ליחס",
@@ -4773,22 +4247,6 @@
       "fasten"
     ],
     "exampleSentence": "Please attach the files before sending the email.",
-    "unit": 2
-  },
-  {
-    "word": "attach",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לחבר, ליחס",
-    "hebrewFull": "לצרף או לחבר דבר לדבר",
-    "ipa": "əˈtætʃ",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "join",
-      "connect",
-      "fasten",
-      "secure"
-    ],
-    "exampleSentence": "Please attach the document to your email.",
     "unit": 2
   },
   {
@@ -4808,22 +4266,6 @@
     "unit": 2
   },
   {
-    "word": "attack",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לתקוף, מתקפה",
-    "hebrewFull": "להתקיף או לפגוע במישהו",
-    "ipa": "əˈtæk",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "assault",
-      "strike",
-      "charge",
-      "hit"
-    ],
-    "exampleSentence": "The lion will attack its prey.",
-    "unit": 2
-  },
-  {
     "word": "attain",
     "partOfSpeech": "verb",
     "hebrewShort": "להשיג, להגיע",
@@ -4837,38 +4279,6 @@
       "gain"
     ],
     "exampleSentence": "He attained the highest score.",
-    "unit": 4
-  },
-  {
-    "word": "attain",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להשיג, להגיע",
-    "hebrewFull": "להשיג או להגיע למטרה",
-    "ipa": "əˈteɪn",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "achieve",
-      "obtain",
-      "reach",
-      "acquire"
-    ],
-    "exampleSentence": "She worked hard to attain her goals.",
-    "unit": 4
-  },
-  {
-    "word": "attain",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להשיג, להגיע",
-    "hebrewFull": "להשיג או להגיע למשהו",
-    "ipa": "əˈteɪn",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "achieve",
-      "reach",
-      "acquire",
-      "obtain"
-    ],
-    "exampleSentence": "She worked hard to attain her goals.",
     "unit": 4
   },
   {
@@ -4888,22 +4298,6 @@
     "unit": 2
   },
   {
-    "word": "attempt",
-    "partOfSpeech": "verb",
-    "hebrewShort": "ניסיון",
-    "hebrewFull": "לנסות להשיג דבר מה",
-    "ipa": "əˈtɛmpt",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "try",
-      "endeavor",
-      "strive",
-      "effort"
-    ],
-    "exampleSentence": "He will attempt to climb the mountain this weekend.",
-    "unit": 2
-  },
-  {
     "word": "attend",
     "partOfSpeech": "verb",
     "hebrewShort": "להשתתף, להיות נוכח",
@@ -4917,22 +4311,6 @@
       "appeal"
     ],
     "exampleSentence": "I will attend the meeting tomorrow at noon.",
-    "unit": 4
-  },
-  {
-    "word": "attend",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להשתתף, להיות נוכח",
-    "hebrewFull": "להשתתף באירוע או לבוא",
-    "ipa": "əˈtɛnd",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "join",
-      "participate",
-      "be present",
-      "show up"
-    ],
-    "exampleSentence": "I will attend the meeting tomorrow.",
     "unit": 4
   },
   {
@@ -4952,22 +4330,6 @@
     "unit": 4
   },
   {
-    "word": "attendant",
-    "partOfSpeech": "noun",
-    "hebrewShort": "משרת, מטפל, מלווה",
-    "hebrewFull": "אדם העוזר או משרת במקום כלשהו",
-    "ipa": "əˈtɛn.dənt",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "helper",
-      "assistant",
-      "server",
-      "staff member"
-    ],
-    "exampleSentence": "The attendant helped us find our seats.",
-    "unit": 4
-  },
-  {
     "word": "attention",
     "partOfSpeech": "noun",
     "hebrewShort": "תשומת לב",
@@ -4981,22 +4343,6 @@
       "notice"
     ],
     "exampleSentence": "Please pay attention to the instructions given.",
-    "unit": 3
-  },
-  {
-    "word": "attention",
-    "partOfSpeech": "noun",
-    "hebrewShort": "תשומת לב",
-    "hebrewFull": "ריכוז או תשומת לב",
-    "ipa": "əˈtɛn.ʃən",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "focus",
-      "notice",
-      "heed",
-      "consideration"
-    ],
-    "exampleSentence": "The teacher's attention was required during the lesson.",
     "unit": 3
   },
   {
@@ -5031,22 +4377,6 @@
     "unit": 8
   },
   {
-    "word": "attire",
-    "partOfSpeech": "noun",
-    "hebrewShort": "לבוש",
-    "hebrewFull": "לבוש או בגדים שנלבשים",
-    "ipa": "əˈtaɪər",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "clothing",
-      "apparel",
-      "garments",
-      "outfits"
-    ],
-    "exampleSentence": "She wore elegant attire to the wedding.",
-    "unit": 8
-  },
-  {
     "word": "attitude",
     "partOfSpeech": "noun",
     "hebrewShort": "גישה",
@@ -5060,22 +4390,6 @@
       "position"
     ],
     "exampleSentence": "Her positive attitude helped motivate the team.",
-    "unit": 2
-  },
-  {
-    "word": "attitude",
-    "partOfSpeech": "noun",
-    "hebrewShort": "גישה",
-    "hebrewFull": "גישה או מצב רוח כלפי משהו",
-    "ipa": "ˈæt.ɪ.tjuːd",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "stance",
-      "mindset",
-      "perspective",
-      "outlook"
-    ],
-    "exampleSentence": "His positive attitude helped the team succeed.",
     "unit": 2
   },
   {
@@ -5095,22 +4409,6 @@
     "unit": 9
   },
   {
-    "word": "attorney",
-    "partOfSpeech": "noun",
-    "hebrewShort": "עורך -דין",
-    "hebrewFull": "עורך דין המייצג לקוחות משפטיים",
-    "ipa": "əˈtɜr.ni",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "lawyer",
-      "counsel",
-      "advocate",
-      "legal advisor"
-    ],
-    "exampleSentence": "She hired an attorney to help with her case.",
-    "unit": 9
-  },
-  {
     "word": "attract",
     "partOfSpeech": "verb",
     "hebrewShort": "למשוך",
@@ -5124,22 +4422,6 @@
       "entice"
     ],
     "exampleSentence": "Colorful flowers attract many bees and butterflies.",
-    "unit": 2
-  },
-  {
-    "word": "attract",
-    "partOfSpeech": "verb",
-    "hebrewShort": "למשוך",
-    "hebrewFull": "למשוך או להפעיל תשומת לב",
-    "ipa": "əˈtrækt",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "draw",
-      "pull",
-      "entice",
-      "tempt"
-    ],
-    "exampleSentence": "Flowers attract bees and other pollinators.",
     "unit": 2
   },
   {
@@ -5159,22 +4441,6 @@
     "unit": 2
   },
   {
-    "word": "attraction",
-    "partOfSpeech": "noun",
-    "hebrewShort": "משיכה",
-    "hebrewFull": "רֶגַשׁ או קשר בין שני דברים",
-    "ipa": "əˈtræk.ʃən",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "appeal",
-      "charm",
-      "allure",
-      "magnetism"
-    ],
-    "exampleSentence": "There is a strong attraction between the two.",
-    "unit": 2
-  },
-  {
     "word": "attractive",
     "partOfSpeech": "adjective",
     "hebrewShort": "נאה, מושך",
@@ -5188,22 +4454,6 @@
       "alluring"
     ],
     "exampleSentence": "She wore an attractive dress to the event.",
-    "unit": 2
-  },
-  {
-    "word": "attractive",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "נאה, מושך",
-    "hebrewFull": "מושך או נעים לעין",
-    "ipa": "əˈtræk.tɪv",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "appealing",
-      "charming",
-      "alluring",
-      "captivating"
-    ],
-    "exampleSentence": "She has an attractive personality that draws people in.",
     "unit": 2
   },
   {
@@ -5223,38 +4473,6 @@
     "unit": 3
   },
   {
-    "word": "attribute",
-    "partOfSpeech": "noun",
-    "hebrewShort": "לייחס, לקשר",
-    "hebrewFull": "מאפיין או תכונה של משהו",
-    "ipa": "ˈætrɪbjut",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "trait",
-      "characteristic",
-      "feature",
-      "quality"
-    ],
-    "exampleSentence": "Honesty is an important attribute for a leader.",
-    "unit": 3
-  },
-  {
-    "word": "attribute",
-    "partOfSpeech": "noun",
-    "hebrewShort": "לייחס, לקשר",
-    "hebrewFull": "תכונה או מאפיין של דבר",
-    "ipa": "ˈæt.rɪ.bjuːt",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "quality",
-      "feature",
-      "trait",
-      "characteristic"
-    ],
-    "exampleSentence": "The main attribute of a good leader is empathy.",
-    "unit": 3
-  },
-  {
     "word": "auction",
     "partOfSpeech": "noun",
     "hebrewShort": "מכירה פומבית",
@@ -5268,22 +4486,6 @@
       "offering"
     ],
     "exampleSentence": "The painting will be sold at an auction next week.",
-    "unit": 7
-  },
-  {
-    "word": "auction",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מכירה פומבית",
-    "hebrewFull": "מכירה פומבית של פריטים",
-    "ipa": "ˈɔːk.ʃən",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "sale",
-      "bidding",
-      "tender",
-      "competition"
-    ],
-    "exampleSentence": "The auction raised a significant amount for charity.",
     "unit": 7
   },
   {
@@ -5303,22 +4505,6 @@
     "unit": 2
   },
   {
-    "word": "audience",
-    "partOfSpeech": "noun",
-    "hebrewShort": "קהל",
-    "hebrewFull": "קהל הצופים או המאזינים",
-    "ipa": "ˈɔː.di.əns",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "spectators",
-      "listeners",
-      "viewers",
-      "attendees"
-    ],
-    "exampleSentence": "The audience applauded after the performance.",
-    "unit": 2
-  },
-  {
     "word": "audit",
     "partOfSpeech": "noun",
     "hebrewShort": "ביקורת",
@@ -5332,22 +4518,6 @@
       "evaluation"
     ],
     "exampleSentence": "The company underwent a financial audit last year.",
-    "unit": 6
-  },
-  {
-    "word": "audit",
-    "partOfSpeech": "noun",
-    "hebrewShort": "ביקורת",
-    "hebrewFull": "בדיקה או סקירה של חשבונות",
-    "ipa": "ˈɔː.dɪt",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "review",
-      "inspection",
-      "examination",
-      "assessment"
-    ],
-    "exampleSentence": "The company underwent an audit last year to ensure compliance.",
     "unit": 6
   },
   {
@@ -5367,22 +4537,6 @@
     "unit": 7
   },
   {
-    "word": "augment",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להרחיב",
-    "hebrewFull": "להגדיל או להוסיף ערך",
-    "ipa": "ɔːɡˈmɛnt",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "increase",
-      "amplify",
-      "expand",
-      "enhance"
-    ],
-    "exampleSentence": "They plan to augment their income by starting a side business.",
-    "unit": 7
-  },
-  {
     "word": "aura",
     "partOfSpeech": "noun",
     "hebrewShort": "הילה",
@@ -5396,22 +4550,6 @@
       "feeling"
     ],
     "exampleSentence": "She had an aura of confidence that impressed everyone.",
-    "unit": 9
-  },
-  {
-    "word": "aura",
-    "partOfSpeech": "noun",
-    "hebrewShort": "הילה",
-    "hebrewFull": "תחושה או אווירה סביב דבר",
-    "ipa": "ˈɔː.rə",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "vibe",
-      "atmosphere",
-      "energy",
-      "halo"
-    ],
-    "exampleSentence": "He has a calm aura that puts people at ease.",
     "unit": 9
   },
   {
@@ -5446,38 +4584,6 @@
     "unit": 2
   },
   {
-    "word": "authentic",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "מקורי, אותנטי",
-    "hebrewFull": "אמיתי ולא מזויף, מקורי",
-    "ipa": "ɔˈθɛntɪk",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "genuine",
-      "real",
-      "true",
-      "veritable"
-    ],
-    "exampleSentence": "The museum displayed authentic artifacts from ancient Egypt.",
-    "unit": 2
-  },
-  {
-    "word": "authentic",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "מקורי, אותנטי",
-    "hebrewFull": "מקורי ואמיתי, לא מזויף",
-    "ipa": "ɔːˈθɛn.tɪk",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "genuine",
-      "real",
-      "true",
-      "trustworthy"
-    ],
-    "exampleSentence": "The restaurant serves authentic Italian cuisine.",
-    "unit": 2
-  },
-  {
     "word": "author",
     "partOfSpeech": "noun",
     "hebrewShort": "סופר, מחבר",
@@ -5494,22 +4600,6 @@
     "unit": 5
   },
   {
-    "word": "author",
-    "partOfSpeech": "noun",
-    "hebrewShort": "סופר, מחבר",
-    "hebrewFull": "אדם שכותב ספרים או מאמרים",
-    "ipa": "ˈɔː.θər",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "writer",
-      "creator",
-      "originator",
-      "founder"
-    ],
-    "exampleSentence": "She is the author of several bestselling novels.",
-    "unit": 5
-  },
-  {
     "word": "authority",
     "partOfSpeech": "noun",
     "hebrewShort": "סמכות",
@@ -5523,22 +4613,6 @@
       "supervision"
     ],
     "exampleSentence": "The teacher has the authority to make rules for the class.",
-    "unit": 4
-  },
-  {
-    "word": "authority",
-    "partOfSpeech": "noun",
-    "hebrewShort": "סמכות",
-    "hebrewFull": "כוח או סמכות מוסרית או חוקית",
-    "ipa": "əˈθɔːr.ɪ.ti",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "control",
-      "power",
-      "dominion",
-      "influence"
-    ],
-    "exampleSentence": "The committee has the authority to make final decisions.",
     "unit": 4
   },
   {
@@ -5956,22 +5030,6 @@
     "unit": 2
   },
   {
-    "word": "baker",
-    "partOfSpeech": "noun",
-    "hebrewShort": "אופה",
-    "hebrewFull": "אדם שעוסק באפייה",
-    "ipa": "ˈbeɪ.kər",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "bread maker",
-      "confectioner",
-      "pastry chef",
-      "caterer"
-    ],
-    "exampleSentence": "The baker prepared a fresh loaf of bread.",
-    "unit": 2
-  },
-  {
     "word": "balance",
     "partOfSpeech": "noun",
     "hebrewShort": "שיווי משקל",
@@ -6033,22 +5091,6 @@
       "orchestra"
     ],
     "exampleSentence": "The band played at the festival last weekend.",
-    "unit": 2
-  },
-  {
-    "word": "band",
-    "partOfSpeech": "noun",
-    "hebrewShort": "להקה",
-    "hebrewFull": "קבוצה של נגנים או זמרים",
-    "ipa": "bænd",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "group",
-      "ensemble",
-      "bandleader",
-      "musical group"
-    ],
-    "exampleSentence": "The band played at the local festival.",
     "unit": 2
   },
   {
@@ -6164,22 +5206,6 @@
     "unit": 8
   },
   {
-    "word": "barrier",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מחסום",
-    "hebrewFull": "מחסום או ת impediment",
-    "ipa": "ˈbæriər",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "obstacle",
-      "hindrance",
-      "restriction",
-      "blockade"
-    ],
-    "exampleSentence": "Language can be a barrier to communication.",
-    "unit": 8
-  },
-  {
     "word": "base",
     "partOfSpeech": "noun",
     "hebrewShort": "בסיס",
@@ -6241,22 +5267,6 @@
       "reservoir"
     ],
     "exampleSentence": "She filled the basin with water for washing.",
-    "unit": 9
-  },
-  {
-    "word": "basin",
-    "partOfSpeech": "noun",
-    "hebrewShort": "אגן, כיור",
-    "hebrewFull": "מיכל או קערה לאיסוף מים",
-    "ipa": "ˈbeɪ.sən",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "bowl",
-      "depression",
-      "container",
-      "vat"
-    ],
-    "exampleSentence": "The river flows into a large basin at the end.",
     "unit": 9
   },
   {
@@ -6353,22 +5363,6 @@
       "mouth"
     ],
     "exampleSentence": "The eagle's beak is sharp and curved.",
-    "unit": 10
-  },
-  {
-    "word": "beak",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מקור",
-    "hebrewFull": "חלק הפה של ציפור",
-    "ipa": "biːk",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "bill",
-      "mouth",
-      "snout",
-      "mandible"
-    ],
-    "exampleSentence": "The bird pecked at the seeds with its sharp beak.",
     "unit": 10
   },
   {
@@ -8686,22 +7680,6 @@
     "unit": 6
   },
   {
-    "word": "carve",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לחרוט",
-    "hebrewFull": "לחתוך או לפסל בחומר",
-    "ipa": "kɑːrv",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "etch",
-      "sculpt",
-      "chisel",
-      "engrave"
-    ],
-    "exampleSentence": "He decided to carve a statue from the block of wood.",
-    "unit": 6
-  },
-  {
     "word": "case",
     "partOfSpeech": "noun",
     "hebrewShort": "מקרה, טיעון",
@@ -8715,22 +7693,6 @@
       "circumstance"
     ],
     "exampleSentence": "In this case, we need to reconsider our decision.",
-    "unit": 4
-  },
-  {
-    "word": "case",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מקרה, טיעון",
-    "hebrewFull": "מקרה או אריזה לחפץ",
-    "ipa": "keɪs",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "instance",
-      "situation",
-      "box",
-      "container"
-    ],
-    "exampleSentence": "In this case, we will need more evidence.",
     "unit": 4
   },
   {
@@ -8750,22 +7712,6 @@
     "unit": 10
   },
   {
-    "word": "cash",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מזומן",
-    "hebrewFull": "כסף מזומן או נכס פיננסי",
-    "ipa": "kæʃ",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "money",
-      "liquid",
-      "currency",
-      "capital"
-    ],
-    "exampleSentence": "They prefer cash over credit for small purchases.",
-    "unit": 10
-  },
-  {
     "word": "cashier",
     "partOfSpeech": "noun",
     "hebrewShort": "קופאי",
@@ -8779,22 +7725,6 @@
       "worker"
     ],
     "exampleSentence": "The cashier greeted us with a smile.",
-    "unit": 10
-  },
-  {
-    "word": "cashier",
-    "partOfSpeech": "noun",
-    "hebrewShort": "קופאי",
-    "hebrewFull": "עובד שמנהל את קופות המזומנים",
-    "ipa": "kæˈʃɪr",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "teller",
-      "clerk",
-      "register",
-      "checkout"
-    ],
-    "exampleSentence": "The cashier processed my payment efficiently.",
     "unit": 10
   },
   {
@@ -8814,22 +7744,6 @@
     "unit": 10
   },
   {
-    "word": "casino",
-    "partOfSpeech": "noun",
-    "hebrewShort": "קזינו",
-    "hebrewFull": "מקום למשחקי מזל ובידור",
-    "ipa": "kəˈsiː.noʊ",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "gambling house",
-      "club",
-      "resort",
-      "entertainment center"
-    ],
-    "exampleSentence": "They spent the weekend at a luxurious casino.",
-    "unit": 10
-  },
-  {
     "word": "cast",
     "partOfSpeech": "verb",
     "hebrewShort": "להשליך, לגרש",
@@ -8843,22 +7757,6 @@
       "launch"
     ],
     "exampleSentence": "He cast his fishing line into the lake.",
-    "unit": 5
-  },
-  {
-    "word": "cast",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להשליך, לגרש",
-    "hebrewFull": "לשפוך חומר לתוך תבנית",
-    "ipa": "kæst",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "throw",
-      "hurl",
-      "project",
-      "toss"
-    ],
-    "exampleSentence": "She will cast the melted metal into the mold.",
     "unit": 5
   },
   {
@@ -8878,22 +7776,6 @@
     "unit": 5
   },
   {
-    "word": "caste",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מעמד חברתי",
-    "hebrewFull": "מערכת חברתית של שכבות",
-    "ipa": "kæst",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "class",
-      "social group",
-      "rank",
-      "hierarchy"
-    ],
-    "exampleSentence": "In some cultures, caste systems are very prominent.",
-    "unit": 5
-  },
-  {
     "word": "castle",
     "partOfSpeech": "noun",
     "hebrewShort": "טירה",
@@ -8907,22 +7789,6 @@
       "citadel"
     ],
     "exampleSentence": "The ancient castle attracts many tourists.",
-    "unit": 5
-  },
-  {
-    "word": "castle",
-    "partOfSpeech": "noun",
-    "hebrewShort": "טירה",
-    "hebrewFull": "מבנה מגונן עם מגדלים וחומות",
-    "ipa": "ˈkæs.əl",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "fortress",
-      "palace",
-      "stronghold",
-      "bastion"
-    ],
-    "exampleSentence": "The castle stood proudly on the hilltop.",
     "unit": 5
   },
   {
@@ -8942,22 +7808,6 @@
     "unit": 5
   },
   {
-    "word": "casual",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "אגבי, רגיל, יומיומי",
-    "hebrewFull": "לא פורמלי, נינוח ולא מחייב",
-    "ipa": "ˈkæʒ.u.əl",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "informal",
-      "relaxed",
-      "laid-back",
-      "nonchalant"
-    ],
-    "exampleSentence": "He wore casual clothes to the party.",
-    "unit": 5
-  },
-  {
     "word": "catalogue",
     "partOfSpeech": "noun",
     "hebrewShort": "קטלוג, רשימת פריטים",
@@ -8971,22 +7821,6 @@
       "register"
     ],
     "exampleSentence": "The library has a catalogue of all its books.",
-    "unit": 2
-  },
-  {
-    "word": "catalogue",
-    "partOfSpeech": "noun",
-    "hebrewShort": "קטלוג, רשימת פריטים",
-    "hebrewFull": "רשימה מסודרת של פריטים",
-    "ipa": "ˈkæt.əl.ɒɡ",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "list",
-      "inventory",
-      "directory",
-      "register"
-    ],
-    "exampleSentence": "The library issued a new catalogue of its books.",
     "unit": 2
   },
   {
@@ -9021,22 +7855,6 @@
     "unit": 2
   },
   {
-    "word": "catch, caught",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לתפוס, תפס",
-    "hebrewFull": "לתפוס משהו או מישהו בהצלחה",
-    "ipa": "kætʃ",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "grab",
-      "seize",
-      "capture",
-      "snag"
-    ],
-    "exampleSentence": "She managed to catch the ball thrown to her.",
-    "unit": 2
-  },
-  {
     "word": "categorize",
     "partOfSpeech": "verb",
     "hebrewShort": "לקטלג, למיין, לסווג",
@@ -9050,22 +7868,6 @@
       "organize"
     ],
     "exampleSentence": "We need to categorize the files for easier access.",
-    "unit": 4
-  },
-  {
-    "word": "categorize",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לקטלג, למיין, לסווג",
-    "hebrewFull": "למיין ולסווג דברים לקבוצות",
-    "ipa": "ˈkæt.ə.ɡə.raɪz",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "classify",
-      "sort",
-      "organize",
-      "label"
-    ],
-    "exampleSentence": "It's important to categorize the data correctly.",
     "unit": 4
   },
   {
@@ -9085,22 +7887,6 @@
     "unit": 7
   },
   {
-    "word": "cater",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לספק",
-    "hebrewFull": "לספק שירותים לקבוצה או אירוע",
-    "ipa": "ˈkeɪ.tər",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "provide",
-      "serve",
-      "supply",
-      "accommodate"
-    ],
-    "exampleSentence": "They will cater the wedding reception with various cuisines.",
-    "unit": 7
-  },
-  {
     "word": "caterpillar",
     "partOfSpeech": "noun",
     "hebrewShort": "זחל",
@@ -9114,22 +7900,6 @@
       "creature"
     ],
     "exampleSentence": "The caterpillar turned into a butterfly.",
-    "unit": 10
-  },
-  {
-    "word": "caterpillar",
-    "partOfSpeech": "noun",
-    "hebrewShort": "זחל",
-    "hebrewFull": "מין של חרק לפני שהופך לפרפר",
-    "ipa": "ˈkeɪ.tərˌpɪl.ər",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "larva",
-      "insect",
-      "worm",
-      "creature"
-    ],
-    "exampleSentence": "The caterpillar will transform into a butterfly after pupation.",
     "unit": 10
   },
   {
@@ -9149,22 +7919,6 @@
     "unit": 7
   },
   {
-    "word": "cathedral",
-    "partOfSpeech": "noun",
-    "hebrewShort": "קתדרלה",
-    "hebrewFull": "כנסייה גדולה ומרשימה מאוד",
-    "ipa": "kəˈθiː.drəl",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "church",
-      "basilica",
-      "temple",
-      "sanctuary"
-    ],
-    "exampleSentence": "The cathedral is known for its beautiful stained glass.",
-    "unit": 7
-  },
-  {
     "word": "cattle",
     "partOfSpeech": "noun",
     "hebrewShort": "בקר",
@@ -9178,22 +7932,6 @@
       "bovines"
     ],
     "exampleSentence": "The ranch has over a hundred head of cattle.",
-    "unit": 7
-  },
-  {
-    "word": "cattle",
-    "partOfSpeech": "noun",
-    "hebrewShort": "בקר",
-    "hebrewFull": "פרות ואילנות שמגודלות לחקלאות",
-    "ipa": "ˈkæt.əl",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "cows",
-      "livestock",
-      "beef",
-      "herd"
-    ],
-    "exampleSentence": "The rancher took care of his cattle daily.",
     "unit": 7
   },
   {
@@ -9213,22 +7951,6 @@
     "unit": 2
   },
   {
-    "word": "cause",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מטרה",
-    "hebrewFull": "סיבה או עילה לדבר מסוים",
-    "ipa": "kɔːz",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "reason",
-      "motive",
-      "foundation",
-      "basis"
-    ],
-    "exampleSentence": "They support the cause for environmental protection.",
-    "unit": 2
-  },
-  {
     "word": "cautious",
     "partOfSpeech": "adjective",
     "hebrewShort": "זהיר",
@@ -9242,22 +7964,6 @@
       "watchful"
     ],
     "exampleSentence": "He took a cautious approach to the investment.",
-    "unit": 4
-  },
-  {
-    "word": "cautious",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "זהיר",
-    "hebrewFull": "זהיר ולא מסוכן",
-    "ipa": "ˈkɔː.ʃəs",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "careful",
-      "prudent",
-      "sensible",
-      "wary"
-    ],
-    "exampleSentence": "He is always cautious when driving in bad weather.",
     "unit": 4
   },
   {
@@ -9277,22 +7983,6 @@
     "unit": 10
   },
   {
-    "word": "cave",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מערה",
-    "hebrewFull": "חלל טבעי באדמה או בסלעים",
-    "ipa": "keɪv",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "hollow",
-      "den",
-      "grotto",
-      "cavern"
-    ],
-    "exampleSentence": "They explored the dark cave with flashlights.",
-    "unit": 10
-  },
-  {
     "word": "caviar",
     "partOfSpeech": "noun",
     "hebrewShort": "קוויאר",
@@ -9306,22 +7996,6 @@
       "treat"
     ],
     "exampleSentence": "Caviar is often served on special occasions.",
-    "unit": 10
-  },
-  {
-    "word": "caviar",
-    "partOfSpeech": "noun",
-    "hebrewShort": "קוויאר",
-    "hebrewFull": "ביצי דגים יוקרתיות ואיכותיות",
-    "ipa": "ˈkæv.i.ɑːr",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "roe",
-      "delicacy",
-      "fish eggs",
-      "luxury"
-    ],
-    "exampleSentence": "Caviar is often served at upscale events.",
     "unit": 10
   },
   {
@@ -9341,22 +8015,6 @@
     "unit": 9
   },
   {
-    "word": "cavity",
-    "partOfSpeech": "noun",
-    "hebrewShort": "חור",
-    "hebrewFull": "חלל או חור בגוף או במשהו",
-    "ipa": "ˈkæv.ɪ.ti",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "hole",
-      "void",
-      "space",
-      "gap"
-    ],
-    "exampleSentence": "The dentist found a cavity in my tooth.",
-    "unit": 9
-  },
-  {
     "word": "celebrate",
     "partOfSpeech": "verb",
     "hebrewShort": "לחגוג",
@@ -9370,22 +8028,6 @@
       "rejoice"
     ],
     "exampleSentence": "We gather every year to celebrate her birthday.",
-    "unit": 9
-  },
-  {
-    "word": "celebrate",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לחגוג",
-    "hebrewFull": "לחגוג אירוע או הישג",
-    "ipa": "ˈsɛl.ə.breɪt",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "commemorate",
-      "observe",
-      "honor",
-      "rejoice"
-    ],
-    "exampleSentence": "They plan to celebrate their anniversary with a dinner.",
     "unit": 9
   },
   {
@@ -9405,22 +8047,6 @@
     "unit": 2
   },
   {
-    "word": "cell",
-    "partOfSpeech": "noun",
-    "hebrewShort": "תא",
-    "hebrewFull": "יחידת חיים בסיסית או תא בגוף",
-    "ipa": "sɛl",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "unit",
-      "compartment",
-      "room",
-      "chamber"
-    ],
-    "exampleSentence": "Each cell in our body serves a specific function.",
-    "unit": 2
-  },
-  {
     "word": "cemetery",
     "partOfSpeech": "noun",
     "hebrewShort": "בית קברות",
@@ -9434,22 +8060,6 @@
       "tombstone"
     ],
     "exampleSentence": "The old cemetery was full of historical graves.",
-    "unit": 6
-  },
-  {
-    "word": "cemetery",
-    "partOfSpeech": "noun",
-    "hebrewShort": "בית קברות",
-    "hebrewFull": "מקום קבורה המיועד למתים",
-    "ipa": "ˈsɛm.ɪˌtɛr.i",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "graveyard",
-      "burial ground",
-      "necropolis",
-      "vault"
-    ],
-    "exampleSentence": "The cemetery is beautifully maintained with flowers.",
     "unit": 6
   },
   {
@@ -9484,22 +8094,6 @@
     "unit": 2
   },
   {
-    "word": "center",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מרכז",
-    "hebrewFull": "המקום או הנקודה שממוקמת במרכז",
-    "ipa": "ˈsɛn.tər",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "middle",
-      "core",
-      "hub",
-      "nucleus"
-    ],
-    "exampleSentence": "The center of the city is always bustling with activity.",
-    "unit": 2
-  },
-  {
     "word": "central",
     "partOfSpeech": "adjective",
     "hebrewShort": "מרכזי",
@@ -9513,22 +8107,6 @@
       "heart"
     ],
     "exampleSentence": "The central idea of the story is love.",
-    "unit": 2
-  },
-  {
-    "word": "central",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "מרכזי",
-    "hebrewFull": "נמצא במרכז או קרוב למרכז",
-    "ipa": "ˈsɛn.trəl",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "middle",
-      "focal",
-      "main",
-      "primary"
-    ],
-    "exampleSentence": "The central park is a lovely place to relax.",
     "unit": 2
   },
   {
@@ -9548,22 +8126,6 @@
     "unit": 4
   },
   {
-    "word": "century",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מאה שנים",
-    "hebrewFull": "אחד ממאה השנים, עשור",
-    "ipa": "ˈsɛn.tʃʊr.i",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "hundred years",
-      "era",
-      "age",
-      "duration"
-    ],
-    "exampleSentence": "The city has changed dramatically over the last century.",
-    "unit": 4
-  },
-  {
     "word": "cereal",
     "partOfSpeech": "noun",
     "hebrewShort": "דגני בוקר",
@@ -9577,22 +8139,6 @@
       "food"
     ],
     "exampleSentence": "I eat cereal every morning for breakfast.",
-    "unit": 10
-  },
-  {
-    "word": "cereal",
-    "partOfSpeech": "noun",
-    "hebrewShort": "דגני בוקר",
-    "hebrewFull": "מזון עשוי דגנים מומלצם במיוחד בבוקר",
-    "ipa": "ˈsɪr.i.əl",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "grain",
-      "breakfast food",
-      "oatmeal",
-      "muesli"
-    ],
-    "exampleSentence": "Cereal is a popular breakfast choice for many.",
     "unit": 10
   },
   {
@@ -9612,22 +8158,6 @@
     "unit": 8
   },
   {
-    "word": "ceremony",
-    "partOfSpeech": "noun",
-    "hebrewShort": "טקס, מסכת",
-    "hebrewFull": "אירוע רשמי עם טקסים",
-    "ipa": "ˈsɛr.ɪ.mə.ni",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "event",
-      "ritual",
-      "celebration",
-      "observance"
-    ],
-    "exampleSentence": "The award ceremony was held at the auditorium.",
-    "unit": 8
-  },
-  {
     "word": "certain",
     "partOfSpeech": "adjective",
     "hebrewShort": "מסוים",
@@ -9641,22 +8171,6 @@
       "clear"
     ],
     "exampleSentence": "I have a certain feeling about this opportunity.",
-    "unit": 3
-  },
-  {
-    "word": "certain",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "מסוים",
-    "hebrewFull": "מדויק אך לא ספציפי או ברור לחלוטין",
-    "ipa": "ˈsɜːr.tən",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "specific",
-      "particular",
-      "definite",
-      "sure"
-    ],
-    "exampleSentence": "Are you certain this is the right address?",
     "unit": 3
   },
   {
@@ -9676,22 +8190,6 @@
     "unit": 1
   },
   {
-    "word": "certainly",
-    "partOfSpeech": "adverb",
-    "hebrewShort": "בהחלט, בוודאי",
-    "hebrewFull": "בהחלט ובצורה בטוחה",
-    "ipa": "ˈsɜːr.tən.li",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "definitely",
-      "surely",
-      "undoubtedly",
-      "without a doubt"
-    ],
-    "exampleSentence": "She will certainly attend the meeting tomorrow.",
-    "unit": 1
-  },
-  {
     "word": "certainty",
     "partOfSpeech": "noun",
     "hebrewShort": "וודאות",
@@ -9708,22 +8206,6 @@
     "unit": 3
   },
   {
-    "word": "certainty",
-    "partOfSpeech": "noun",
-    "hebrewShort": "וודאות",
-    "hebrewFull": "מצב של ידיעה ברורה וביטחון",
-    "ipa": "ˈsɜːr.tən.ti",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "confidence",
-      "assurance",
-      "surety",
-      "conviction"
-    ],
-    "exampleSentence": "There is certainty in her voice when she speaks.",
-    "unit": 3
-  },
-  {
     "word": "certify",
     "partOfSpeech": "verb",
     "hebrewShort": "להצהיר, לאשר",
@@ -9735,22 +8217,6 @@
       "validate",
       "authenticate",
       "endorse"
-    ],
-    "exampleSentence": "They will certify the documents before the meeting.",
-    "unit": 6
-  },
-  {
-    "word": "certify",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להצהיר, לאשר",
-    "hebrewFull": "לאשר או לקבוע דבר באופן רשמי",
-    "ipa": "ˈsɜːr.tɪ.faɪ",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "validate",
-      "confirm",
-      "approve",
-      "authenticate"
     ],
     "exampleSentence": "They will certify the documents before the meeting.",
     "unit": 6
@@ -9772,22 +8238,6 @@
     "unit": 2
   },
   {
-    "word": "challenge",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לאתגר",
-    "hebrewFull": "להתמודד עם קושי או לתבוע את האמת",
-    "ipa": "ˈtʃæl.ɪndʒ",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "contest",
-      "oppose",
-      "dare",
-      "question"
-    ],
-    "exampleSentence": "She decided to challenge the decision made by the committee.",
-    "unit": 2
-  },
-  {
     "word": "chance",
     "partOfSpeech": "noun",
     "hebrewShort": "סיכוי",
@@ -9801,22 +8251,6 @@
       "likelihood"
     ],
     "exampleSentence": "You have a good chance of winning the game.",
-    "unit": 2
-  },
-  {
-    "word": "chance",
-    "partOfSpeech": "noun",
-    "hebrewShort": "סיכוי",
-    "hebrewFull": "הזדמנות או סיכוי מסוים",
-    "ipa": "tʃæns",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "opportunity",
-      "risk",
-      "probability",
-      "possibility"
-    ],
-    "exampleSentence": "You should take the chance to apply for that job.",
     "unit": 2
   },
   {
@@ -9836,22 +8270,6 @@
     "unit": 2
   },
   {
-    "word": "change",
-    "partOfSpeech": "verb",
-    "hebrewShort": "עודף",
-    "hebrewFull": "לשנות דבר מה או להפוך למשהו אחר",
-    "ipa": "tʃeɪndʒ",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "alter",
-      "modify",
-      "transform",
-      "switch"
-    ],
-    "exampleSentence": "It's time to change the way we think.",
-    "unit": 2
-  },
-  {
     "word": "chapter",
     "partOfSpeech": "noun",
     "hebrewShort": "פרק",
@@ -9865,22 +8283,6 @@
       "segment"
     ],
     "exampleSentence": "I just finished reading the first chapter of the book.",
-    "unit": 6
-  },
-  {
-    "word": "chapter",
-    "partOfSpeech": "noun",
-    "hebrewShort": "פרק",
-    "hebrewFull": "חלק בספר או באירוע",
-    "ipa": "ˈtʃæp.tər",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "section",
-      "division",
-      "part",
-      "episode"
-    ],
-    "exampleSentence": "The first chapter introduces the main characters.",
     "unit": 6
   },
   {
@@ -9900,22 +8302,6 @@
     "unit": 3
   },
   {
-    "word": "character",
-    "partOfSpeech": "noun",
-    "hebrewShort": "אות, תו",
-    "hebrewFull": "דמות בסיפור או מאפיינים של אדם",
-    "ipa": "ˈkær.ɪk.tər",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "figure",
-      "personality",
-      "trait",
-      "individual"
-    ],
-    "exampleSentence": "The character development in this novel is profound.",
-    "unit": 3
-  },
-  {
     "word": "characteristic",
     "partOfSpeech": "noun",
     "hebrewShort": "מאפיין, תכונה",
@@ -9929,22 +8315,6 @@
       "attribute"
     ],
     "exampleSentence": "Curiosity is a key characteristic of scientists.",
-    "unit": 3
-  },
-  {
-    "word": "characteristic",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מאפיין",
-    "hebrewFull": "מאפיין או איכות ספציפיים",
-    "ipa": "ˌkær.ɪk.təˈrɪs.tɪk",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "trait",
-      "feature",
-      "attribute",
-      "quality"
-    ],
-    "exampleSentence": "Kindness is a characteristic that she values highly.",
     "unit": 3
   },
   {
@@ -13592,22 +11962,6 @@
     "unit": 4
   },
   {
-    "word": "conventional",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "שגרתי, קונבנציונאלי",
-    "hebrewFull": "רגיל או סטנדרטי",
-    "ipa": "kənˈvɛnʃənəl",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "traditional",
-      "standard",
-      "ordinary",
-      "commonplace"
-    ],
-    "exampleSentence": "His views are quite conventional for someone in his field.",
-    "unit": 4
-  },
-  {
     "word": "conversation",
     "partOfSpeech": "noun",
     "hebrewShort": "שיחה",
@@ -13669,22 +12023,6 @@
       "deliver"
     ],
     "exampleSentence": "His eyes conveyed sadness.",
-    "unit": 4
-  },
-  {
-    "word": "convey",
-    "partOfSpeech": "verb",
-    "hebrewShort": "למסור, להעביר",
-    "hebrewFull": "להעביר מסר או רעיון",
-    "ipa": "kənˈveɪ",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "communicate",
-      "express",
-      "transmit",
-      "relay"
-    ],
-    "exampleSentence": "Artists often convey emotions through their work.",
     "unit": 4
   },
   {
@@ -13988,22 +12326,6 @@
       "correspond"
     ],
     "exampleSentence": "Stress correlates with poor health.",
-    "unit": 7
-  },
-  {
-    "word": "correlate",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לתאם, לקשר",
-    "hebrewFull": "שני דברים שיש ביניהם קשר",
-    "ipa": "ˈkɔːrəˌleɪt",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "link",
-      "connect",
-      "associate",
-      "relate"
-    ],
-    "exampleSentence": "Researchers aim to correlate the two variables in the study.",
     "unit": 7
   },
   {
@@ -26073,22 +24395,6 @@
     "unit": 9
   },
   {
-    "word": "frugal",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "חסכני",
-    "hebrewFull": "חסכני ולא בזבזני",
-    "ipa": "ˈfruːɡl",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "thrifty",
-      "economical",
-      "sparing",
-      "parsimonious"
-    ],
-    "exampleSentence": "She lives a frugal lifestyle to save money.",
-    "unit": 9
-  },
-  {
     "word": "fruit",
     "partOfSpeech": "noun",
     "hebrewShort": "פרי",
@@ -26230,22 +24536,6 @@
       "core"
     ],
     "exampleSentence": "Freedom is a fundamental human right.",
-    "unit": 5
-  },
-  {
-    "word": "fundamental",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "בסיסי (פונדמנטלי)",
-    "hebrewFull": "יסודי או בסיסי מאוד, חיוני",
-    "ipa": "ˌfʌndəˈmɛntəl",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "essential",
-      "basic",
-      "foundational",
-      "core"
-    ],
-    "exampleSentence": "Understanding the basics is fundamental for success.",
     "unit": 5
   },
   {
@@ -30015,22 +28305,6 @@
     "unit": 2
   },
   {
-    "word": "impartial",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "אוביקטיבי, ללא צד",
-    "hebrewFull": "נייטרלי וללא משוא פנים",
-    "ipa": "ɪmˈpɑrʃəl",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "unbiased",
-      "fair",
-      "neutral",
-      "disinterested"
-    ],
-    "exampleSentence": "An impartial review of the evidence is essential.",
-    "unit": 2
-  },
-  {
     "word": "impartially",
     "partOfSpeech": "adverb",
     "hebrewShort": "באופן הוגן, ללא אפליה",
@@ -30231,22 +28505,6 @@
       "insinuate"
     ],
     "exampleSentence": "His silence implied disagreement.",
-    "unit": 8
-  },
-  {
-    "word": "imply",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לרמוז",
-    "hebrewFull": "לרמוז על משהו מבלי לומר אותו במפורש",
-    "ipa": "ɪmˈplaɪ",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "suggest",
-      "indicate",
-      "insinuate",
-      "hint"
-    ],
-    "exampleSentence": "Her tone seemed to imply that she was unhappy.",
     "unit": 8
   },
   {
@@ -45619,22 +43877,6 @@
     "unit": 4
   },
   {
-    "word": "prove",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להוכיח",
-    "hebrewFull": "להראות או להביא הוכחה למשהו",
-    "ipa": "pruːv",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "demonstrate",
-      "establish",
-      "verify",
-      "confirm"
-    ],
-    "exampleSentence": "You need to prove your identity to access the account.",
-    "unit": 4
-  },
-  {
     "word": "proverb",
     "partOfSpeech": "noun",
     "hebrewShort": "פתגם, אמרה",
@@ -49324,22 +47566,6 @@
     "unit": 5
   },
   {
-    "word": "retain",
-    "partOfSpeech": "verb",
-    "hebrewShort": "להחזיק, לשמור",
-    "hebrewFull": "לשמור או להחזיק דבר מה",
-    "ipa": "rɪˈteɪn",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "keep",
-      "hold",
-      "maintain",
-      "preserve"
-    ],
-    "exampleSentence": "It's important to retain key information during lectures.",
-    "unit": 5
-  },
-  {
     "word": "reticent",
     "partOfSpeech": "adjective",
     "hebrewShort": "שתקן, שמור",
@@ -49448,22 +47674,6 @@
       "show"
     ],
     "exampleSentence": "The report revealed shocking findings.",
-    "unit": 3
-  },
-  {
-    "word": "reveal",
-    "partOfSpeech": "verb",
-    "hebrewShort": "לחשוף",
-    "hebrewFull": "לחשוף דבר מה או סוד",
-    "ipa": "rɪˈviːl",
-    "frequencyTier": "HIGH",
-    "synonyms": [
-      "show",
-      "disclose",
-      "unveil",
-      "display"
-    ],
-    "exampleSentence": "She is about to reveal her secret project.",
     "unit": 3
   },
   {
@@ -49798,22 +48008,6 @@
       "unyielding"
     ],
     "exampleSentence": "The rules are rigid and enforced strictly.",
-    "unit": 3
-  },
-  {
-    "word": "rigid",
-    "partOfSpeech": "adjective",
-    "hebrewShort": "נוקשה, מחמיר",
-    "hebrewFull": "לא גמיש, קשה ובעל צורה קבועה",
-    "ipa": "ˈrɪdʒɪd",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "stiff",
-      "inflexible",
-      "unyielding",
-      "strict"
-    ],
-    "exampleSentence": "The rigid rules made it hard to adapt to changes.",
     "unit": 3
   },
   {
@@ -60902,22 +59096,6 @@
     "unit": 6
   },
   {
-    "word": "vary",
-    "partOfSpeech": "verb",
-    "hebrewShort": "משתנה",
-    "hebrewFull": "לשנות או להבדיל בין דברים",
-    "ipa": "ˈvɛəri",
-    "frequencyTier": "MEDIUM",
-    "synonyms": [
-      "differ",
-      "change",
-      "alter",
-      "modify"
-    ],
-    "exampleSentence": "The results may vary from one experiment to another.",
-    "unit": 6
-  },
-  {
     "word": "vast",
     "partOfSpeech": "adjective",
     "hebrewShort": "גדול",
@@ -63400,50 +61578,5 @@
     ],
     "exampleSentence": "The zoo has a wide variety of animals.",
     "unit": 8
-  },
-  {
-    "word": "הלאש",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מילות",
-    "hebrewFull": "מילים המשמשות בהקשרים שונים",
-    "ipa": "həˈlaʃ",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "terms",
-      "words",
-      "expressions",
-      "phrases"
-    ],
-    "exampleSentence": "The לאש of the language enriches its beauty."
-  },
-  {
-    "word": "המגוד / ןוימד",
-    "partOfSpeech": "noun",
-    "hebrewShort": "מילות קישור -",
-    "hebrewFull": "מונחים המתחברים בין רעיונות ומשפטים",
-    "ipa": "mɛɡud",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "connectors",
-      "linkers",
-      "conjunctions",
-      "transitions"
-    ],
-    "exampleSentence": "The use of linking words is essential in essay writing."
-  },
-  {
-    "word": "התחפה / הפסוה",
-    "partOfSpeech": "phrase",
-    "hebrewShort": "מילות קישור -",
-    "hebrewFull": "שימוש במילים לחיבור רעיונות",
-    "ipa": "həˈtʃəfə / hɛsˈvoʊə",
-    "frequencyTier": "LOW",
-    "synonyms": [
-      "linking words",
-      "connection phrases",
-      "transition phrases",
-      "cohesive devices"
-    ],
-    "exampleSentence": "Using התחפה / הפסוה can make your writing flow better."
   }
 ]
