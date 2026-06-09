@@ -20,7 +20,7 @@ html = html.replace(
 );
 
 // 2. iOS Safari CSS fixes + ionicons web component (idempotent guard)
-if (!html.includes('ionicons.esm.js')) {
+if (!html.includes('ionicons@5.5.4')) {
   const injected = `<meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <style>
@@ -33,8 +33,8 @@ if (!html.includes('ionicons.esm.js')) {
     [role="tablist"] { padding-bottom: env(safe-area-inset-bottom) !important; }
   }
 </style>
-<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>`;
+<script type="module" src="https://unpkg.com/ionicons@5.5.4/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@5.5.4/dist/ionicons/ionicons.js"></script>`;
   html = html.replace('</head>', `${injected}\n</head>`);
 }
 

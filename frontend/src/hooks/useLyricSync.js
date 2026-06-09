@@ -112,12 +112,17 @@ export function useLyricSync(currentTrack) {
       // Step 1: Fetch lyrics — check Firestore cache directly, then LRCLIB if needed.
       // Bypasses the lyricsFetch backend function to eliminate cold-start and auth overhead.
       const cacheKey = `${track.track_name.toLowerCase().replace(/\s+/g, '_')}_${track.artist.toLowerCase().replace(/\s+/g, '_')}`;
-      const lyricsCacheDoc = await getDoc(doc(db, 'lyrics_cache', cacheKey));
+      const t0 = Date.now();
+      const lyricsCacheDoc = await Promise.race([
+        getDoc(doc(db, 'lyrics_cache', cacheKey)),
+        new Promise(r => setTimeout(() => r(null), 3000)),
+      ]);
+      console.log(`[LL] Firestore cache: ${lyricsCacheDoc ? (lyricsCacheDoc.exists() ? 'HIT' : 'miss') : 'timeout'} (${Date.now()-t0}ms)`);
 
       if (signal.aborted) return;
 
       let lyricsData;
-      if (lyricsCacheDoc.exists()) {
+      if (lyricsCacheDoc?.exists()) {
         lyricsData = lyricsCacheDoc.data().lyrics;
       } else {
         const lyricsParams = new URLSearchParams({ track_name: track.track_name, artist_name: track.artist });
@@ -126,28 +131,48 @@ export function useLyricSync(currentTrack) {
         let fetchedViaBackend = false;
         let rawData = null;
 
-        // Try direct LRCLIB first; fall back to backend on CORS/network failure (e.g. Safari)
+        // Try direct LRCLIB first (15s timeout).
+        // Only fall back to backend on CORS/network errors — not on timeout, since the
+        // backend would just call LRCLIB again and compound the wait.
+        let lrclibTimedOut = false;
         try {
+          const lrclibAbort = new AbortController();
+          const lrclibTimeout = setTimeout(() => lrclibAbort.abort(), 15000);
+          signal.addEventListener('abort', () => lrclibAbort.abort());
+
+          const t1 = Date.now();
           const lrclibRes = await fetch(`https://lrclib.net/api/get?${lyricsParams}`, {
             headers: { 'User-Agent': 'LyricLearn/1.0' },
-            signal,
+            signal: lrclibAbort.signal,
           });
+          clearTimeout(lrclibTimeout);
+          console.log(`[LL] LRCLIB direct: ${lrclibRes.status} (${Date.now()-t1}ms)`);
+
           if (signal.aborted) return;
           if (lrclibRes.status === 404) { setStatus('no_lyrics'); return; }
           if (lrclibRes.ok) rawData = await lrclibRes.json();
         } catch (lrclibErr) {
-          console.warn('[useLyricSync] Direct LRCLIB failed, trying backend:', lrclibErr.message);
+          if (lrclibErr.name === 'AbortError') {
+            console.warn(`[LL] LRCLIB timed out — no backend retry`);
+            lrclibTimedOut = true;
+          } else {
+            console.warn(`[LL] LRCLIB CORS/network error, trying backend: ${lrclibErr.message}`);
+          }
         }
 
-        // Backend fallback (handles CORS, sets proper User-Agent server-side)
+        if (lrclibTimedOut) { setStatus('no_lyrics'); return; }
+
+        // Backend fallback — only reached on CORS/network failure (e.g. Safari)
         if (!rawData) {
           if (signal.aborted) return;
+          const t2 = Date.now();
           const backendRes = await fetch(
             `${BACKEND_URL}/lyricsFetch?${lyricsParams}`,
             { headers: { Authorization: `Bearer ${token}` }, signal }
           );
+          console.log(`[LL] Backend lyricsFetch: ${backendRes.status} (${Date.now()-t2}ms)`);
           if (signal.aborted) return;
-          if (backendRes.status === 404) { setStatus('no_lyrics'); return; }
+          if (backendRes.status === 404 || backendRes.status === 504) { setStatus('no_lyrics'); return; }
           if (!backendRes.ok) { setStatus('error'); return; }
           rawData = await backendRes.json();
           fetchedViaBackend = true;
@@ -194,9 +219,13 @@ export function useLyricSync(currentTrack) {
 
       if (signal.aborted) return;
 
-      // Step 4: Check if translation was already cached (Firestore read fired in parallel above)
+      // Step 4: Check if translation was already cached (Firestore read fired in parallel above).
+      // Use Promise.race with a 2s cap so a slow Firestore read doesn't delay starting the stream.
       const englishLines = parsedLines.map(l => l.text);
-      const translationCacheDoc = await translationCachePromise;
+      const translationCacheDoc = await Promise.race([
+        translationCachePromise,
+        new Promise(r => setTimeout(() => r(null), 2000)),
+      ]);
       if (translationCacheDoc?.exists()) {
         const cached = translationCacheDoc.data().translated_lyrics;
         if (Array.isArray(cached)) {
@@ -333,7 +362,7 @@ export function useLyricSync(currentTrack) {
 
     } catch (err) {
       if (err.name === 'AbortError') return;
-      console.error('useLyricSync error:', err);
+      console.error('[LL] outer catch:', err.name, err.message, err);
       setStatus('error');
     }
   };

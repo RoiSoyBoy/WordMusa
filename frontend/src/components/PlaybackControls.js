@@ -18,6 +18,7 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
   const [loadingAction, setLoadingAction] = useState(null);
   const [displayPositionMs, setDisplayPositionMs] = useState(0);
   const [dragDisplay, setDragDisplay] = useState(null);
+  const [optimisticIsPlaying, setOptimisticIsPlaying] = useState(null);
   const progressBarRef = useRef(null);
   const barLayoutRef = useRef(null);
   const lastPollRef = useRef({ positionMs: 0, timestamp: Date.now(), isPlaying: false });
@@ -32,6 +33,11 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
     setDisplayPositionMs(currentTrack.position_ms);
   }, [currentTrack?.position_ms, currentTrack?.track_id]);
 
+  // Clear optimistic override when Spotify confirms the new play/pause state
+  useEffect(() => {
+    setOptimisticIsPlaying(null);
+  }, [currentTrack?.is_playing, currentTrack?.track_id]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       const { positionMs, timestamp, isPlaying } = lastPollRef.current;
@@ -44,6 +50,16 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
 
   const handleControl = useCallback(async (action, positionMs) => {
     if (loadingAction) return;
+
+    // Optimistic UI: flip play/pause instantly so user doesn't wait for API round-trip
+    if (action === 'pause') {
+      setOptimisticIsPlaying(false);
+      lastPollRef.current = { ...lastPollRef.current, isPlaying: false };
+    } else if (action === 'play') {
+      setOptimisticIsPlaying(true);
+      lastPollRef.current = { ...lastPollRef.current, isPlaying: true, timestamp: Date.now() };
+    }
+
     setLoadingAction(action);
     try {
       const token = await auth.currentUser.getIdToken();
@@ -55,8 +71,10 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
         body: JSON.stringify(body),
       });
       if (res.ok) onPollNow?.();
+      else setOptimisticIsPlaying(null); // revert on failure
     } catch (err) {
       console.warn('spotifyControl error:', err.message);
+      setOptimisticIsPlaying(null); // revert on network error
     } finally {
       setLoadingAction(null);
     }
@@ -92,7 +110,8 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
 
   if (!currentTrack) return null;
 
-  const { is_playing, duration_ms } = currentTrack;
+  const { is_playing: realIsPlaying, duration_ms } = currentTrack;
+  const is_playing = optimisticIsPlaying !== null ? optimisticIsPlaying : realIsPlaying;
   const isDragging = dragDisplay !== null;
   const seekMs = isDragging ? dragDisplay : displayPositionMs;
   const progress = duration_ms > 0 ? seekMs / duration_ms : 0;

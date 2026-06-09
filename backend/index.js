@@ -85,7 +85,7 @@ async function checkRateLimit(uid, endpoint, maxRequests) {
     });
   } catch (error) {
     console.error('Rate limit error:', error);
-    return false;
+    return true;
   }
 }
 
@@ -365,11 +365,22 @@ exports.lyricsFetch = onRequest((req, res) => {
       }
 
       const url = `https://lrclib.net/api/get?${params.toString()}`;
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'LyricLearn/1.0'
+      const lrclibAbort = new AbortController();
+      const lrclibTimeout = setTimeout(() => lrclibAbort.abort(), 15000);
+      let response;
+      try {
+        response = await fetch(url, {
+          headers: { 'User-Agent': 'LyricLearn/1.0' },
+          signal: lrclibAbort.signal,
+        });
+      } catch (fetchErr) {
+        clearTimeout(lrclibTimeout);
+        if (fetchErr.name === 'AbortError') {
+          return res.status(504).json({ error: 'Lyrics fetch timed out', synced: null, plain: null });
         }
-      });
+        throw fetchErr;
+      }
+      clearTimeout(lrclibTimeout);
 
       if (response.status === 404) {
         return res.status(404).json({ error: 'Lyrics not found', synced: null, plain: null });
@@ -429,7 +440,7 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
       // Check cache first — return immediately if found
       const cacheRef = db.collection('translations').doc(track_id);
       const cacheDoc = await cacheRef.get();
-      if (cacheDoc.exists) {
+      if (cacheDoc.exists && cacheDoc.data().prompt_version === 2) {
         res.write(`data: ${JSON.stringify({ translated_lyrics: cacheDoc.data().translated_lyrics })}\n\n`);
         res.write('data: [DONE]\n\n');
         res.end();
@@ -450,14 +461,16 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
   'OUTPUT: a JSON array of Hebrew strings — one per input lyric line, identical length, same order. ' +
   'RULES: ' +
   '1. Use the artist and track name to understand the genre, era, and cultural context (e.g. hip-hop AAVE, pop, R&B, rock). Use this to correctly interpret slang and idioms. ' +
-  '2. Translate the MEANING, not the words. Treat multi-word phrases, idioms, and slang as a whole unit — never translate them word-by-word. E.g. "ride or die" → loyalty concept in Hebrew, not literally "ride" and "die". ' +
+  '2. Translate the MEANING, not the words. Treat multi-word phrases, idioms, and slang as a whole unit — never translate them word-by-word. E.g. "ride or die" → loyalty concept in Hebrew, not literally "ride" and "die". For genre-specific terms without a direct Hebrew equivalent, transliterate into Hebrew letters rather than keeping them in English: "rhyme" → "ריים", "bar" (rap) → "בר", "flow" → "פלואו". ' +
   '3. Use the surrounding lyric lines in the array for context — they are from the same song and help clarify ambiguous phrases. ' +
   '4. Translate to natural, spoken Israeli Hebrew (not formal or biblical). Preserve emotional tone and poetic rhythm. ' +
-  '5. Every output string MUST contain ONLY Hebrew characters and spaces. No other language characters (not English, Malay, Chinese, Arabic, French, or any other). Proper nouns may be transliterated into Hebrew letters. ' +
+  '5. Every output string MUST contain ONLY Hebrew characters, spaces, and standard punctuation (commas, periods, hyphens, exclamation marks). ZERO Latin/English characters are permitted — not a single A-Z or a-z letter, no exceptions. When a word has no direct Hebrew equivalent, transliterate it phonetically into Hebrew letters. Common examples: "rap" → "ראפ", "flow" → "פלואו", "vibe" → "וויב", "flex" → "פלקס", "hook" → "הוק", "bar" → "בר". Never leave any word in English. ' +
   '6. If a line is empty or a section marker (e.g. "[Chorus]"), return an empty string for that index. ' +
   '7. Output a raw JSON array only — no markdown fences, no object keys, no explanation, no preamble. ' +
   'EXAMPLE INPUT: {"artist":"The Weeknd","track":"Blinding Lights","lyrics":["I\'ve been alone all night","She\'s touching my elusive heart"]} ' +
-  'EXAMPLE OUTPUT: ["הייתי לבד כל הלילה","היא נוגעת בלבי החמקמק"]';
+  'EXAMPLE OUTPUT: ["הייתי לבד כל הלילה","היא נוגעת בלבי החמקמק"] ' +
+  'EXAMPLE INPUT 2: {"artist":"Kendrick Lamar","track":"HUMBLE.","lyrics":["Sit down, be humble","I\'m so fucking sick and tired of the Photoshop"]} ' +
+  'EXAMPLE OUTPUT 2: ["שב, תהיה צנוע","אני כל כך חולה ועייף מהפוטושופ"]';
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -468,7 +481,7 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
         body: JSON.stringify({
           model: 'gpt-4o-mini',
           max_tokens: 4096,
-          temperature: 0.3,
+          temperature: 0.1,
           stream: true,
           messages: [
             { role: 'system', content: systemPrompt },
@@ -519,29 +532,69 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
       res.end();
 
       // Write to cache after streaming completes (non-blocking for client)
-      try {
-        const translatedArray = JSON.parse(fullText);
-        // Reject translations that contain non-Hebrew/non-Latin scripts (Malay, Chinese, Arabic, etc.)
-        // Hebrew: ֐-׿, Latin:  -ɏ, spaces/punctuation allowed
-        const hasForeignScript = translatedArray.some(
-          line => typeof line === 'string' && /[؀-ۿ一-鿿　-〿Ѐ-ӿ]/.test(line)
-        );
-        if (hasForeignScript) {
-          console.error('Translation rejected — contains non-Hebrew foreign script:', translatedArray);
-        } else {
-          // Optimistic check: skip write if a concurrent request already populated the cache
+      ;(async () => {
+        const invalidCharsRe = /[A-Za-z؀-ۿ一-鿿　-〿Ѐ-ӿ]/;
+        const writeCache = async (arr) => {
           const existingCache = await cacheRef.get();
           if (!existingCache.exists) {
             await cacheRef.set({
-              translated_lyrics: translatedArray,
+              translated_lyrics: arr,
               updated_at: FieldValue.serverTimestamp(),
               model: 'gpt-4o-mini',
+              prompt_version: 2,
             });
           }
+        };
+
+        try {
+          const translatedArray = JSON.parse(fullText);
+          const hasInvalidChars = translatedArray.some(
+            line => typeof line === 'string' && invalidCharsRe.test(line)
+          );
+
+          if (!hasInvalidChars) {
+            await writeCache(translatedArray);
+            return;
+          }
+
+          console.warn('[translateLyrics] English/foreign chars found — retrying silently:',
+            translatedArray.filter(l => typeof l === 'string' && /[A-Za-z]/.test(l))
+          );
+
+          const retryResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'gpt-4o-mini',
+              max_tokens: 4096,
+              temperature: 0.1,
+              stream: false,
+              messages: [
+                { role: 'system', content: systemPrompt + ' IMPORTANT: Your previous output contained Latin/English characters. This is forbidden. Every character must be Hebrew. Transliterate any untranslatable term into Hebrew letters.' },
+                { role: 'user', content: JSON.stringify({ artist: safeArtistName, track: safeTrackName, lyrics: sanitizedLyrics }) },
+              ],
+            }),
+          });
+
+          if (!retryResponse.ok) {
+            console.error('[translateLyrics] Retry API call failed:', await retryResponse.text());
+            return;
+          }
+
+          const retryData = await retryResponse.json();
+          const retryText = retryData.choices?.[0]?.message?.content?.trim() || '';
+          const retryArray = JSON.parse(retryText);
+          const retryHasInvalid = retryArray.some(l => typeof l === 'string' && invalidCharsRe.test(l));
+
+          if (retryHasInvalid) {
+            console.error('[translateLyrics] Retry also failed validation — not caching.');
+          } else {
+            await writeCache(retryArray);
+          }
+        } catch (e) {
+          console.error('[translateLyrics] Failed to parse or cache translation:', e.message);
         }
-      } catch (e) {
-        console.error('Failed to parse OpenAI output or save to cache:', fullText);
-      }
+      })()
 
     } catch (error) {
       if (error.name === 'AbortError') {

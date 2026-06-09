@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Image, Animated,
-  Dimensions, Platform,
+  Dimensions, Platform, Linking,
 } from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -12,6 +12,7 @@ import { useWordTracking } from '../hooks/useWordTracking';
 import useWordStore from '../store/useWordStore';
 import { psychometricWordMap, basicWordSet } from '../utils/psychometricWords';
 import WordCard from '../components/WordCard';
+import Icon from '../components/Icon';
 import SongWordsSheet from '../components/SongWordsSheet';
 import PlaybackControls from '../components/PlaybackControls';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -401,9 +402,18 @@ export default function NowPlayingScreen() {
             <Text style={styles.trackName} numberOfLines={1}>{currentTrack.track_name}</Text>
             <Text style={styles.artistName} numberOfLines={1}>{currentTrack.artist}</Text>
           </View>
-          {currentTrack.is_playing && (
-            <Animated.View style={[styles.playingDot, { opacity: pulseAnim }]} />
-          )}
+          <Pressable
+            onPress={() => Linking.openURL(Platform.OS === 'web' ? 'https://open.spotify.com' : 'spotify://')}
+            style={({ pressed }) => [styles.spotifyBtn, pressed && { opacity: 0.75 }]}
+          >
+            {Platform.OS !== 'web' && (
+              <Icon name="logo-spotify" size={14} color="#fff" style={{ marginRight: 5 }} />
+            )}
+            <Text style={styles.spotifyBtnLabel}>Open Spotify</Text>
+            {currentTrack.is_playing && (
+              <Animated.View style={[styles.spotifyDot, { opacity: pulseAnim }]} />
+            )}
+          </Pressable>
         </View>
       </View>
 
@@ -490,6 +500,30 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   trackInfo: { flex: 1 },
+  spotifyBtn: {
+    marginLeft: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.spotify,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  spotifyBtnLabel: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  spotifyDot: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: theme.colors.accent,
+  },
   trackName: {
     color: theme.colors.text,
     fontSize: 15,
@@ -502,13 +536,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontWeight: '400',
   },
-  playingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: theme.colors.accent,
-    marginLeft: 8,
-  },
+
 
   // ── Lyrics ──────────────────────────────────────────────────────────────────
   lyricsScroll: { flex: 1 },
