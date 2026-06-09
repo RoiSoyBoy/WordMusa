@@ -136,9 +136,11 @@ export default function ReviewScreen() {
     );
     const unsub = onSnapshot(q, snap => {
       const words = snap.docs.map(d => {
-        const lookup = WORD_MAP.get(d.id);
-        if (lookup) return lookup;
         const data = d.data();
+        const contexts = data.songContexts || [];
+        const songContext = contexts.length > 0 ? contexts[contexts.length - 1] : null;
+        const lookup = WORD_MAP.get(d.id);
+        if (lookup) return { ...lookup, songContext };
         if (!data.word) return null;
         return {
           word: data.word,
@@ -148,6 +150,7 @@ export default function ReviewScreen() {
           level: null,
           frequencyTier: null,
           exampleSentence: null,
+          songContext,
         };
       }).filter(Boolean);
       setFocusWords(words);
@@ -334,6 +337,9 @@ export default function ReviewScreen() {
               <Text style={[styles.levelBadgeText, { color }]}>רמה {card?.level}</Text>
             </View>
             <Text style={styles.wordEn}>{card?.word}</Text>
+            {card?.songContext?.trackName ? (
+              <Text style={styles.songContext}>♪  {card.songContext.trackName}</Text>
+            ) : null}
             <Text style={styles.pos}>{card?.partOfSpeech}</Text>
             <Text style={styles.tapHint}>הקש לגלות • החלק לתשובה</Text>
           </View>
@@ -484,6 +490,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: -0.5,
   },
+  songContext: { color: theme.colors.muted, fontSize: 12, textAlign: 'center', opacity: 0.65 },
   pos: { color: theme.colors.muted, fontSize: 13, fontStyle: 'italic' },
   tapHint: {
     color: 'rgba(179,179,179,0.35)',
