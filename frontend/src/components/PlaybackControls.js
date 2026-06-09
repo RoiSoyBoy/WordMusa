@@ -6,6 +6,20 @@ import { theme } from '../styles/theme';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
+async function callSpotifyDirect(action, positionMs, token) {
+  const map = {
+    play:     ['https://api.spotify.com/v1/me/player/play',     'PUT'],
+    pause:    ['https://api.spotify.com/v1/me/player/pause',    'PUT'],
+    next:     ['https://api.spotify.com/v1/me/player/next',     'POST'],
+    previous: ['https://api.spotify.com/v1/me/player/previous', 'POST'],
+    seek:     [`https://api.spotify.com/v1/me/player/seek?position_ms=${positionMs}`, 'PUT'],
+  };
+  const [url, method] = map[action];
+  const res = await fetch(url, { method, headers: { Authorization: `Bearer ${token}` } });
+  if (res.status === 401) return 401;
+  return res.status === 204 || res.ok;
+}
+
 function formatMs(ms) {
   if (!ms || ms < 0) return '0:00';
   const totalSecs = Math.floor(ms / 1000);
@@ -14,7 +28,7 @@ function formatMs(ms) {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-export default function PlaybackControls({ currentTrack, onPollNow }) {
+export default function PlaybackControls({ currentTrack, onPollNow, spotifyTokenRef }) {
   const [loadingAction, setLoadingAction] = useState(null);
   const [displayPositionMs, setDisplayPositionMs] = useState(0);
   const [dragDisplay, setDragDisplay] = useState(null);
@@ -62,6 +76,13 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
 
     setLoadingAction(action);
     try {
+      const directToken = spotifyTokenRef?.current;
+      if (directToken) {
+        const result = await callSpotifyDirect(action, positionMs, directToken);
+        if (result === true) { onPollNow?.(); return; }
+        if (result === 401) spotifyTokenRef.current = null; // expired — fall through to backend
+      }
+      // Backend fallback: handles token refresh + covers first load before token arrives
       const token = await auth.currentUser.getIdToken();
       const body = { action };
       if (action === 'seek') body.position_ms = positionMs;
@@ -71,14 +92,14 @@ export default function PlaybackControls({ currentTrack, onPollNow }) {
         body: JSON.stringify(body),
       });
       if (res.ok) onPollNow?.();
-      else setOptimisticIsPlaying(null); // revert on failure
+      else setOptimisticIsPlaying(null);
     } catch (err) {
       console.warn('spotifyControl error:', err.message);
-      setOptimisticIsPlaying(null); // revert on network error
+      setOptimisticIsPlaying(null);
     } finally {
       setLoadingAction(null);
     }
-  }, [loadingAction, onPollNow]);
+  }, [loadingAction, onPollNow, spotifyTokenRef]);
 
   const getMsFromPageX = useCallback((pageX) => {
     if (!barLayoutRef.current || !currentTrack?.duration_ms) return null;

@@ -41,6 +41,7 @@ export default function NowPlayingScreen() {
   const [currentTrack, setCurrentTrack] = useState(null);
   const [highlightedWord, setHighlightedWord] = useState(null);
   const pollIntervalRef = useRef(null);
+  const spotifyTokenRef = useRef(null);
   const scrollViewRef = useRef(null);
   const itemRefs = useRef({});
   const itemYOffsets = useRef({});
@@ -102,6 +103,7 @@ export default function NowPlayingScreen() {
       }
       if (!res.ok) return;
       const data = await res.json();
+      if (data.spotify_access_token) spotifyTokenRef.current = data.spotify_access_token;
       if (!data.is_playing) {
         setCurrentTrack(prev => prev ? { ...prev, is_playing: false } : null);
         return;
@@ -456,7 +458,7 @@ export default function NowPlayingScreen() {
         onWordTap={(wordData) => recordWordTap(wordData)}
       />
 
-      <PlaybackControls currentTrack={currentTrack} onPollNow={pollSpotify} />
+      <PlaybackControls currentTrack={currentTrack} onPollNow={pollSpotify} spotifyTokenRef={spotifyTokenRef} />
 
       <SongWordsSheet
         visible={sheetVisible}

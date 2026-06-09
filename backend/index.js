@@ -320,6 +320,7 @@ exports.spotifyPlayer = onRequest({ secrets: [spotifyClientId, spotifyClientSecr
         duration_ms: data.item.duration_ms,
         is_playing: data.is_playing,
         shuffle_state: data.shuffle_state,
+        spotify_access_token: accessToken,
       });
 
     } catch (error) {
