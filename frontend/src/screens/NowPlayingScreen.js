@@ -346,17 +346,21 @@ export default function NowPlayingScreen() {
         style={({ pressed }) => [
           styles.lyricLine,
           isActive && styles.lyricLineActive,
-          pressed && styles.lyricLinePressed,
           { opacity },
         ]}
       >
-        {renderHighlightedLine(line.text, englishStyle, line)}
-        {line.translation ? (
-          <Text style={[styles.lyricHebrew, isActive && styles.hebrewActive]}>
-            {line.translation}
-          </Text>
-        ) : (
-          status === 'ready' && <View style={styles.translationPlaceholder} />
+        {({ pressed }) => (
+          <>
+            {pressed && <View style={styles.pressedOverlay} pointerEvents="none" />}
+            {renderHighlightedLine(line.text, englishStyle, line)}
+            {line.translation ? (
+              <Text style={[styles.lyricHebrew, isActive && styles.hebrewActive]}>
+                {line.translation}
+              </Text>
+            ) : (
+              status === 'ready' && <View style={styles.translationPlaceholder} />
+            )}
+          </>
         )}
       </Pressable>
     );
@@ -549,7 +553,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   lyricLineActive: {},
-  lyricLinePressed: { opacity: 0.6 },
+  pressedOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(124,106,247,0.15)',
+    borderRadius: 8,
+  },
   lyricEnglish: {
     fontSize: 18,
     color: 'rgba(255,255,255,0.55)',
