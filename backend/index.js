@@ -3,6 +3,7 @@
 // causes a double-parse conflict that can crash the emulator.
 
 const { onRequest } = require('firebase-functions/v2/https');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { defineSecret } = require('firebase-functions/params');
 const admin = require('firebase-admin');
 const cors = require('cors')({ origin: true });
@@ -21,7 +22,7 @@ if (process.env.FUNCTIONS_EMULATOR === 'true') {
 } else {
   admin.initializeApp();
 }
-const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getFirestore, FieldValue, Timestamp } = require('firebase-admin/firestore');
 const db = getFirestore(); 
 
 
@@ -775,3 +776,113 @@ exports.spotifyControl = onRequest({ secrets: [spotifyClientId, spotifyClientSec
     }
   });
 });
+
+// Sends a push notification to users whose streak is at risk of breaking today.
+// Runs daily at 20:00 Jerusalem time.
+exports.scheduledStreakReminder = onSchedule(
+  { schedule: '0 20 * * *', timeZone: 'Asia/Jerusalem' },
+  async () => {
+    const today = new Intl.DateTimeFormat('he-IL', {
+      timeZone: 'Asia/Jerusalem',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+    }).format(new Date()); // DD/MM/YYYY
+
+    const usersSnap = await db.collection('users')
+      .where('streakCount', '>', 0)
+      .get();
+
+    const tokens = [];
+    usersSnap.forEach(doc => {
+      const { streakCount, streakLastUpdated, expoPushToken } = doc.data();
+      if (
+        expoPushToken &&
+        typeof expoPushToken === 'string' &&
+        expoPushToken.startsWith('ExponentPushToken[') &&
+        streakLastUpdated !== today
+      ) {
+        tokens.push({ token: expoPushToken, streak: streakCount });
+      }
+    });
+
+    if (tokens.length === 0) return;
+
+    const messages = tokens.map(({ token, streak }) => ({
+      to: token,
+      title: '🔥 הרצף שלך בסכנה!',
+      body: `${streak} ימים ברצף — פתח את LyricLearn לפני חצות`,
+      sound: 'default',
+    }));
+
+    // Expo push API accepts up to 100 messages per request
+    for (let i = 0; i < messages.length; i += 100) {
+      const batch = messages.slice(i, i + 100);
+      try {
+        const res = await fetch('https://exp.host/--/api/v2/push/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(batch),
+        });
+        if (!res.ok) console.error('Expo push error (streak):', await res.text());
+      } catch (e) {
+        console.error('Expo push fetch failed (streak):', e.message);
+      }
+    }
+
+    console.log(`[streakReminder] Sent ${messages.length} streak-at-risk notifications.`);
+  }
+);
+
+// Sends a weekly summary notification: words learned in the past 7 days.
+// Runs every Sunday at 20:00 Jerusalem time.
+exports.scheduledWeeklySummary = onSchedule(
+  { schedule: '0 20 * * 0', timeZone: 'Asia/Jerusalem' },
+  async () => {
+    const sevenDaysAgo = Timestamp.fromDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
+
+    const usersSnap = await db.collection('users').get();
+    const notifications = [];
+
+    await Promise.all(usersSnap.docs.map(async doc => {
+      const { expoPushToken } = doc.data();
+      if (
+        !expoPushToken ||
+        typeof expoPushToken !== 'string' ||
+        !expoPushToken.startsWith('ExponentPushToken[')
+      ) return;
+
+      const wordHistorySnap = await db
+        .collection('users').doc(doc.id)
+        .collection('wordHistory')
+        .where('learnedAt', '>=', sevenDaysAgo)
+        .get();
+
+      const count = wordHistorySnap.size;
+      notifications.push({
+        to: expoPushToken,
+        title: '🎵 סיכום שבועי',
+        body: count > 0
+          ? `השבוע למדת ${count} מילים חדשות!`
+          : 'השבוע לא למדת מילים — תעלה את המוזיקה!',
+        sound: 'default',
+      });
+    }));
+
+    if (notifications.length === 0) return;
+
+    for (let i = 0; i < notifications.length; i += 100) {
+      const batch = notifications.slice(i, i + 100);
+      try {
+        const res = await fetch('https://exp.host/--/api/v2/push/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(batch),
+        });
+        if (!res.ok) console.error('Expo push error (weekly):', await res.text());
+      } catch (e) {
+        console.error('Expo push fetch failed (weekly):', e.message);
+      }
+    }
+
+    console.log(`[weeklySummary] Sent ${notifications.length} weekly summary notifications.`);
+  }
+);
