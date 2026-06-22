@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { parseLRC, getActiveLyricIndex } from '../utils/lrcParser';
 import { auth, db } from '../firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -112,12 +112,10 @@ export function useLyricSync(currentTrack) {
       // Step 1: Fetch lyrics — check Firestore cache directly, then LRCLIB if needed.
       // Bypasses the lyricsFetch backend function to eliminate cold-start and auth overhead.
       const cacheKey = `${track.track_name.toLowerCase().replace(/\s+/g, '_')}_${track.artist.toLowerCase().replace(/\s+/g, '_')}`;
-      const t0 = Date.now();
       const lyricsCacheDoc = await Promise.race([
         getDoc(doc(db, 'lyrics_cache', cacheKey)),
         new Promise(r => setTimeout(() => r(null), 3000)),
       ]);
-      console.log(`[LL] Firestore cache: ${lyricsCacheDoc ? (lyricsCacheDoc.exists() ? 'HIT' : 'miss') : 'timeout'} (${Date.now()-t0}ms)`);
 
       if (signal.aborted) return;
 
@@ -140,23 +138,21 @@ export function useLyricSync(currentTrack) {
           const lrclibTimeout = setTimeout(() => lrclibAbort.abort(), 15000);
           signal.addEventListener('abort', () => lrclibAbort.abort());
 
-          const t1 = Date.now();
           const lrclibRes = await fetch(`https://lrclib.net/api/get?${lyricsParams}`, {
             headers: { 'User-Agent': 'LyricLearn/1.0' },
             signal: lrclibAbort.signal,
           });
           clearTimeout(lrclibTimeout);
-          console.log(`[LL] LRCLIB direct: ${lrclibRes.status} (${Date.now()-t1}ms)`);
 
           if (signal.aborted) return;
           if (lrclibRes.status === 404) { setStatus('no_lyrics'); return; }
           if (lrclibRes.ok) rawData = await lrclibRes.json();
         } catch (lrclibErr) {
           if (lrclibErr.name === 'AbortError') {
-            console.warn(`[LL] LRCLIB timed out — no backend retry`);
+            console.warn('[useLyricSync] LRCLIB timed out — no backend retry');
             lrclibTimedOut = true;
           } else {
-            console.warn(`[LL] LRCLIB CORS/network error, trying backend: ${lrclibErr.message}`);
+            console.warn(`[useLyricSync] LRCLIB CORS/network error, trying backend: ${lrclibErr.message}`);
           }
         }
 
@@ -165,12 +161,10 @@ export function useLyricSync(currentTrack) {
         // Backend fallback — only reached on CORS/network failure (e.g. Safari)
         if (!rawData) {
           if (signal.aborted) return;
-          const t2 = Date.now();
           const backendRes = await fetch(
             `${BACKEND_URL}/lyricsFetch?${lyricsParams}`,
             { headers: { Authorization: `Bearer ${token}` }, signal }
           );
-          console.log(`[LL] Backend lyricsFetch: ${backendRes.status} (${Date.now()-t2}ms)`);
           if (signal.aborted) return;
           if (backendRes.status === 404 || backendRes.status === 504) { setStatus('no_lyrics'); return; }
           if (!backendRes.ok) { setStatus('error'); return; }
@@ -229,7 +223,6 @@ export function useLyricSync(currentTrack) {
       if (translationCacheDoc?.exists()) {
         const cached = translationCacheDoc.data().translated_lyrics;
         if (Array.isArray(cached)) {
-          console.log(`[useLyricSync] Translation cache hit (Firestore direct) for: ${track.track_name}`);
           setLines(parsedLines.map((l, i) => ({ ...l, translation: cached[i] || null })));
           setTranslationsReady(true);
           return;
@@ -237,8 +230,6 @@ export function useLyricSync(currentTrack) {
       }
 
       // Step 5: Cache miss — fetch Hebrew translation via streaming SSE
-      console.log(`[useLyricSync] Requesting translation for: ${track.track_name} (${englishLines.length} lines)`);
-
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', `${BACKEND_URL}/translateLyrics`);
@@ -278,16 +269,12 @@ export function useLyricSync(currentTrack) {
               for (const line of lines) {
                 if (!line.startsWith('data: ')) continue;
                 const dataStr = line.slice(6);
-                if (dataStr === '[DONE]') {
-                  console.log('[useLyricSync] Stream [DONE] received');
-                  break;
-                }
+                if (dataStr === '[DONE]') break;
 
                 try {
                   const event = JSON.parse(dataStr);
 
                   if (event.translated_lyrics) {
-                    console.log('[useLyricSync] Cache hit received');
                     translationsArray = event.translated_lyrics;
                   } else if (event.text) {
                     fullText += event.text;
@@ -306,7 +293,7 @@ export function useLyricSync(currentTrack) {
                       }
                     }
                   } else if (event.error) {
-                    console.error('[useLyricSync] Stream error event:', event.error);
+                    console.warn('[useLyricSync] Stream error event:', event.error);
                   }
                 } catch (e) {
                   // Incomplete chunk, ignore
@@ -324,7 +311,6 @@ export function useLyricSync(currentTrack) {
 
           if (xhr.readyState === 4) {
             setTranslationsReady(true);
-            console.log('[useLyricSync] XHR complete. Final status:', xhr.status);
             if (!translationsArray && fullText) {
               try {
                 const finalArray = JSON.parse(fullText);
@@ -335,7 +321,7 @@ export function useLyricSync(currentTrack) {
                   })));
                 }
               } catch (e) {
-                console.log('[useLyricSync] Final parse error (could mean stream died early):', e.message);
+                console.warn('[useLyricSync] Final parse error (stream may have ended early):', e.message);
               }
             }
             resolve();
@@ -362,7 +348,7 @@ export function useLyricSync(currentTrack) {
 
     } catch (err) {
       if (err.name === 'AbortError') return;
-      console.error('[LL] outer catch:', err.name, err.message, err);
+      console.error('[useLyricSync] Unexpected error:', err.name, err.message, err);
       setStatus('error');
     }
   };
