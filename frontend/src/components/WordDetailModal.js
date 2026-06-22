@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, Modal, TouchableOpacity,
   ScrollView, PanResponder, ActivityIndicator,
 } from 'react-native';
+import * as Speech from 'expo-speech';
 import useWordStore from '../store/useWordStore';
 import { psychometricWordMap } from '../utils/psychometricWords';
 import { useWordTracking } from '../hooks/useWordTracking';
@@ -25,12 +26,16 @@ export default function WordDetailModal() {
   const [added, setAdded] = useState(false);
   const [wordTranslation, setWordTranslation] = useState(null);
   const [translationLoading, setTranslationLoading] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
 
   const isPsychometric = !!(selectedWord?.frequencyTier || selectedWord?.hebrewShort || selectedWord?.hebrewFull);
   const wordId = selectedWord?.word?.toLowerCase().replace(/[^a-z0-9]/g, '_');
   const isAlreadyFlagged = !!(wordId && flaggedWordSet.has(wordId));
 
+  // Stop speech when modal closes or word changes
   useEffect(() => {
+    setSpeaking(false);
+    Speech.stop();
     setAdded(false);
     setWordTranslation(null);
     if (!selectedWord?.word || isPsychometric) return;
@@ -50,8 +55,7 @@ export default function WordDetailModal() {
         });
         if (!cancelled && res.ok) {
           const data = await res.json();
-          const translation = data.translation || null;
-          setWordTranslation(translation);
+          setWordTranslation(data.translation || null);
         }
       } catch (err) {
         console.warn('translateWord error:', err.message);
@@ -62,6 +66,21 @@ export default function WordDetailModal() {
 
     return () => { cancelled = true; };
   }, [selectedWord?.word, isPsychometric]);
+
+  const handleSpeak = () => {
+    if (speaking) {
+      Speech.stop();
+      setSpeaking(false);
+      return;
+    }
+    setSpeaking(true);
+    Speech.speak(selectedWord.word, {
+      language: 'en-US',
+      onDone: () => setSpeaking(false),
+      onStopped: () => setSpeaking(false),
+      onError: () => setSpeaking(false),
+    });
+  };
 
   // Swipe-down to close
   const panResponder = useRef(
@@ -92,7 +111,7 @@ export default function WordDetailModal() {
     >
       <View style={styles.overlay}>
         <View style={styles.sheet}>
-          {/* Drag handle — pan responder target */}
+          {/* Drag handle */}
           <View {...panResponder.panHandlers} style={styles.dragArea}>
             <View style={styles.handle} />
           </View>
@@ -107,11 +126,19 @@ export default function WordDetailModal() {
             </TouchableOpacity>
           </View>
 
-          {/* IPA + pos + freq badge */}
+          {/* IPA + pronunciation + pos + freq badge */}
           <View style={styles.metaRow}>
             {selectedWord.ipa ? (
               <Text style={styles.ipaText}>/{selectedWord.ipa}/</Text>
             ) : null}
+            <TouchableOpacity
+              onPress={handleSpeak}
+              style={[styles.speakBtn, speaking && styles.speakBtnActive]}
+              activeOpacity={0.7}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.speakBtnText}>{speaking ? '⏹' : '🔊'}</Text>
+            </TouchableOpacity>
             {selectedWord.partOfSpeech ? (
               <Text style={styles.posText}>{selectedWord.partOfSpeech}</Text>
             ) : null}
@@ -127,7 +154,7 @@ export default function WordDetailModal() {
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-            {/* Hebrew definition — psychometric words show dictionary def; others show fetched translation */}
+            {/* Hebrew definition */}
             {isPsychometric ? (
               <Text style={styles.defText}>{selectedWord.hebrewFull || selectedWord.hebrewShort}</Text>
             ) : translationLoading ? (
@@ -271,6 +298,21 @@ const styles = StyleSheet.create({
     color: theme.colors.muted,
     fontSize: 13,
     fontFamily: 'monospace',
+  },
+  speakBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  speakBtnActive: {
+    backgroundColor: 'rgba(124,106,247,0.2)',
+  },
+  speakBtnText: {
+    fontSize: 14,
+    lineHeight: 16,
   },
   posText: {
     color: theme.colors.accentGreen,
