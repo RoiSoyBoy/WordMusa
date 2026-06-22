@@ -7,6 +7,7 @@ import NowPlayingScreen from '../screens/NowPlayingScreen';
 import DictionaryScreen from '../screens/DictionaryScreen';
 import ProgressScreen from '../screens/ProgressScreen';
 import ReviewScreen from '../screens/ReviewScreen';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 const Tab = createBottomTabNavigator();
 
@@ -18,6 +19,8 @@ const TAB_ICONS = {
 };
 
 export default function AppNavigator() {
+  usePushNotifications();
+
   return (
     <NavigationContainer>
       <Tab.Navigator
