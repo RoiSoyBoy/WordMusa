@@ -4,6 +4,8 @@ import {
   collection, query, where, onSnapshot,
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
+import { readWidgetWord, writeWidgetWord } from '../utils/widgetBridge';
+import { selectWidgetWord } from '../utils/widgetWordSelector';
 
 function toWordId(word) {
   return word.toLowerCase().replace(/[^a-z0-9]/g, '_');
@@ -55,6 +57,21 @@ export function useWordTracking() {
     }, err => console.warn('learnedWordSet snapshot error:', err.message));
     return unsub;
   }, []);
+
+  // Widget: update daily word whenever learned set changes (and it's a new day)
+  useEffect(() => {
+    if (learnedWordSet.size === 0) return;
+    const user = auth.currentUser;
+    if (!user) return;
+    const today = new Date().toISOString().slice(0, 10);
+    (async () => {
+      const existing = await readWidgetWord();
+      if (existing?.isPinned) return;      // user pinned a word — don't override
+      if (existing?.date === today) return; // already wrote today's word
+      const wordData = selectWidgetWord(learnedWordSet, user.uid, today);
+      if (wordData) await writeWidgetWord(wordData, { isPinned: false });
+    })();
+  }, [learnedWordSet]);
 
   // Live subscription to focus words (flagged === true)
   useEffect(() => {

@@ -265,11 +265,10 @@ export default function NowPlayingScreen() {
     }
   }, [resumeAutoScroll]);
 
-  // Auto-scroll suppressed during streaming — Y positions are unstable while
-  // translations are filling in, causing scroll flicker.
+  // Scroll whenever activeIndex changes. Placeholder height (19px) matches
+  // Hebrew text lineHeight (19px), so layout is stable throughout streaming.
   useEffect(() => {
     if (userScrollingRef.current) return;
-    if (!translationsReadyRef.current) return;
     const y = itemYOffsets.current[activeIndex];
     if (y != null) {
       scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 180), animated: true });

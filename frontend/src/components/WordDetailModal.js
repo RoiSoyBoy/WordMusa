@@ -9,6 +9,7 @@ import { psychometricWordMap } from '../utils/psychometricWords';
 import { useWordTracking } from '../hooks/useWordTracking';
 import { auth } from '../firebase';
 import { theme } from '../styles/theme';
+import { readWidgetWord, writeWidgetWord } from '../utils/widgetBridge';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -31,6 +32,7 @@ export default function WordDetailModal() {
   const isPsychometric = !!(selectedWord?.frequencyTier || selectedWord?.hebrewShort || selectedWord?.hebrewFull);
   const wordId = selectedWord?.word?.toLowerCase().replace(/[^a-z0-9]/g, '_');
   const isAlreadyFlagged = !!(wordId && flaggedWordSet.has(wordId));
+  const [pinned, setPinned] = useState(false);
 
   // Stop speech when modal closes or word changes
   useEffect(() => {
@@ -38,6 +40,15 @@ export default function WordDetailModal() {
     Speech.stop();
     setAdded(false);
     setWordTranslation(null);
+    setPinned(false);
+    if (!selectedWord?.word || !isPsychometric) return;
+    readWidgetWord().then(payload => {
+      if (payload?.word === selectedWord.word && payload?.isPinned) setPinned(true);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWord?.word]);
+
+  useEffect(() => {
     if (!selectedWord?.word || isPsychometric) return;
 
     let cancelled = false;
@@ -225,6 +236,22 @@ export default function WordDetailModal() {
                 {(added || isAlreadyFlagged) ? 'בפוקוס ✓' : 'הוסף לפוקוס'}
               </Text>
             </TouchableOpacity>
+
+            {isPsychometric ? (
+              <TouchableOpacity
+                style={[styles.pinBtn, pinned && styles.pinBtnDone]}
+                activeOpacity={pinned ? 1 : 0.7}
+                onPress={async () => {
+                  if (pinned) return;
+                  await writeWidgetWord(selectedWord, { isPinned: true });
+                  setPinned(true);
+                }}
+              >
+                <Text style={[styles.pinBtnText, pinned && styles.pinBtnTextDone]}>
+                  {pinned ? 'מוצמד לווידג\'ט ✓' : '📌 הצמד לווידג\'ט'}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
 
             <View style={styles.bottomSpacer} />
           </ScrollView>
@@ -426,6 +453,28 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   addBtnTextDone: {
+    color: theme.colors.muted,
+    fontWeight: '600',
+  },
+  pinBtn: {
+    marginTop: 10,
+    backgroundColor: 'rgba(106,247,200,0.15)',
+    borderRadius: 500,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(106,247,200,0.35)',
+  },
+  pinBtnDone: {
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderColor: 'rgba(255,255,255,0.12)',
+  },
+  pinBtnText: {
+    color: theme.colors.accentGreen,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  pinBtnTextDone: {
     color: theme.colors.muted,
     fontWeight: '600',
   },

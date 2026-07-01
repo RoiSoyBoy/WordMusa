@@ -466,7 +466,7 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
   '2. Translate the MEANING, not the words. Treat multi-word phrases, idioms, and slang as a whole unit — never translate them word-by-word. E.g. "ride or die" → loyalty concept in Hebrew, not literally "ride" and "die". For genre-specific terms without a direct Hebrew equivalent, transliterate into Hebrew letters rather than keeping them in English: "rhyme" → "ריים", "bar" (rap) → "בר", "flow" → "פלואו". ' +
   '3. Use the surrounding lyric lines in the array for context — they are from the same song and help clarify ambiguous phrases. ' +
   '4. Translate to natural, spoken Israeli Hebrew (not formal or biblical). Preserve emotional tone and poetic rhythm. ' +
-  '5. Every output string MUST contain ONLY Hebrew characters, spaces, and standard punctuation (commas, periods, hyphens, exclamation marks). ZERO Latin/English characters are permitted — not a single A-Z or a-z letter, no exceptions. When a word has no direct Hebrew equivalent, transliterate it phonetically into Hebrew letters. Common examples: "rap" → "ראפ", "flow" → "פלואו", "vibe" → "וויב", "flex" → "פלקס", "hook" → "הוק", "bar" → "בר". Never leave any word in English. ' +
+  '5. Every output string MUST contain ONLY Hebrew characters, spaces, and standard punctuation (commas, periods, hyphens, exclamation marks). ZERO Latin/English characters are permitted — not a single A-Z or a-z letter, no exceptions. Transliterate into Hebrew letters ONLY for: (a) music/slang terms with no Hebrew concept equivalent ("rap" → "ראפ", "flow" → "פלואו", "vibe" → "וויב", "flex" → "פלקס"); (b) specific personal names and well-known brand names. For ALL other words — including capitalized common nouns — translate the meaning: "Battleship" → "אוניית קרב", "Kingdom" → "ממלכה", "Paradise" → "גן עדן", "Champion" → "אלוף", "Devil" → "שטן". Capitalization in English lyrics is stylistic, not a sign of a proper noun. Never leave any word in English. ' +
   '6. If a line is empty or a section marker (e.g. "[Chorus]"), return an empty string for that index. ' +
   '7. Output a raw JSON array only — no markdown fences, no object keys, no explanation, no preamble. ' +
   'EXAMPLE INPUT: {"artist":"The Weeknd","track":"Blinding Lights","lyrics":["I\'ve been alone all night","She\'s touching my elusive heart"]} ' +
@@ -474,12 +474,17 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
   'EXAMPLE INPUT 2: {"artist":"Kendrick Lamar","track":"HUMBLE.","lyrics":["Sit down, be humble","I\'m so fucking sick and tired of the Photoshop"]} ' +
   'EXAMPLE OUTPUT 2: ["שב, תהיה צנוע","אני כל כך חולה ועייף מהפוטושופ"]';
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const userContent = JSON.stringify({ artist: safeArtistName, track: safeTrackName, lyrics: sanitizedLyrics });
+      const invalidCharsRe = /[A-Za-z؀-ۿ一-鿿　-〿Ѐ-ӿ]/;
+
+      const isValid = (arr) =>
+        Array.isArray(arr) && arr.length > 0 && !arr.some(line => typeof line === 'string' && invalidCharsRe.test(line));
+
+      // Stream from OpenAI — forward each chunk to the client immediately so the
+      // user sees translations appear line-by-line instead of waiting for the full song.
+      const openAIRes = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'gpt-4o-mini',
           max_tokens: 4096,
@@ -487,116 +492,83 @@ exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
           stream: true,
           messages: [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: JSON.stringify({ artist: safeArtistName, track: safeTrackName, lyrics: sanitizedLyrics }) },
+            { role: 'user', content: userContent },
           ],
         }),
         signal: controller.signal,
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('OpenAI API error:', errorText);
-        res.write(`data: ${JSON.stringify({ error: 'Translation failed' })}\n\n`);
-        return res.end();
-      }
+      if (!openAIRes.ok) throw new Error(`OpenAI ${openAIRes.status}: ${await openAIRes.text()}`);
 
       let fullText = '';
-      let buffer = '';
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep the incomplete line
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          const dataStr = line.slice(6);
-          if (dataStr === '[DONE]') continue;
-          try {
-            const event = JSON.parse(dataStr);
-            // OpenAI streaming: choices[0].delta.content
-            if (event.choices && event.choices[0] && event.choices[0].delta && event.choices[0].delta.content) {
-              fullText += event.choices[0].delta.content;
-              res.write(`data: ${JSON.stringify({ text: event.choices[0].delta.content })}\n\n`);
-            }
-          } catch (e) {
-            // Incomplete chunk — safe to ignore
+      const reader = openAIRes.body.getReader();
+      const decoder = new TextDecoder();
+      let sseBuffer = '';
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          sseBuffer += decoder.decode(value, { stream: true });
+          const chunks = sseBuffer.split('\n');
+          sseBuffer = chunks.pop() || '';
+          for (const chunk of chunks) {
+            if (!chunk.startsWith('data: ')) continue;
+            const payload = chunk.slice(6).trim();
+            if (payload === '[DONE]') continue;
+            try {
+              const delta = JSON.parse(payload).choices?.[0]?.delta?.content;
+              if (delta) { fullText += delta; res.write(`data: ${JSON.stringify({ text: delta })}\n\n`); }
+            } catch {}
           }
         }
+      } finally {
+        reader.releaseLock();
+      }
+
+      // Validate — if English characters leaked in, silently retry with a corrective prompt.
+      // Client already has the streamed content; if the retry is clean we send a corrected
+      // translated_lyrics event so the frontend overwrites what it received.
+      let translatedArray = null;
+      let isClean = false;
+      try { translatedArray = JSON.parse(fullText); isClean = isValid(translatedArray); } catch {}
+
+      if (!isClean && translatedArray) {
+        console.warn('[translateLyrics] English chars in first pass — retrying for cache quality');
+        try {
+          const correctivePrompt = systemPrompt +
+            ' IMPORTANT: Your previous output contained Latin/English characters. This is forbidden.' +
+            ' Every character must be Hebrew. Transliterate any untranslatable term into Hebrew letters.';
+          const retryRes = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'gpt-4o-mini', max_tokens: 4096, temperature: 0.1, stream: false,
+              messages: [{ role: 'system', content: correctivePrompt }, { role: 'user', content: userContent }],
+            }),
+            signal: controller.signal,
+          });
+          if (retryRes.ok) {
+            const retryText = (await retryRes.json()).choices?.[0]?.message?.content?.trim() || '';
+            const retryArray = JSON.parse(retryText);
+            if (isValid(retryArray)) {
+              translatedArray = retryArray;
+              isClean = true;
+              res.write(`data: ${JSON.stringify({ translated_lyrics: retryArray })}\n\n`);
+            }
+          }
+        } catch (e) { console.warn('[translateLyrics] Retry failed:', e.message); }
       }
 
       res.write('data: [DONE]\n\n');
       res.end();
 
-      // Write to cache after streaming completes (non-blocking for client)
-      ;(async () => {
-        const invalidCharsRe = /[A-Za-z؀-ۿ一-鿿　-〿Ѐ-ӿ]/;
-        const writeCache = async (arr) => {
-          const existingCache = await cacheRef.get();
-          if (!existingCache.exists) {
-            await cacheRef.set({
-              translated_lyrics: arr,
-              updated_at: FieldValue.serverTimestamp(),
-              model: 'gpt-4o-mini',
-              prompt_version: 2,
-            });
-          }
-        };
-
-        try {
-          const translatedArray = JSON.parse(fullText);
-          const hasInvalidChars = translatedArray.some(
-            line => typeof line === 'string' && invalidCharsRe.test(line)
-          );
-
-          if (!hasInvalidChars) {
-            await writeCache(translatedArray);
-            return;
-          }
-
-          console.warn('[translateLyrics] English/foreign chars found — retrying silently:',
-            translatedArray.filter(l => typeof l === 'string' && /[A-Za-z]/.test(l))
-          );
-
-          const retryResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              model: 'gpt-4o-mini',
-              max_tokens: 4096,
-              temperature: 0.1,
-              stream: false,
-              messages: [
-                { role: 'system', content: systemPrompt + ' IMPORTANT: Your previous output contained Latin/English characters. This is forbidden. Every character must be Hebrew. Transliterate any untranslatable term into Hebrew letters.' },
-                { role: 'user', content: JSON.stringify({ artist: safeArtistName, track: safeTrackName, lyrics: sanitizedLyrics }) },
-              ],
-            }),
-          });
-
-          if (!retryResponse.ok) {
-            console.error('[translateLyrics] Retry API call failed:', await retryResponse.text());
-            return;
-          }
-
-          const retryData = await retryResponse.json();
-          const retryText = retryData.choices?.[0]?.message?.content?.trim() || '';
-          const retryArray = JSON.parse(retryText);
-          const retryHasInvalid = retryArray.some(l => typeof l === 'string' && invalidCharsRe.test(l));
-
-          if (retryHasInvalid) {
-            console.error('[translateLyrics] Retry also failed validation — not caching.');
-          } else {
-            await writeCache(retryArray);
-          }
-        } catch (e) {
-          console.error('[translateLyrics] Failed to parse or cache translation:', e.message);
-        }
-      })()
+      if (isClean && translatedArray) {
+        cacheRef.set({
+          translated_lyrics: translatedArray,
+          updated_at: FieldValue.serverTimestamp(),
+          model: 'gpt-4o-mini',
+          prompt_version: 2,
+        }).catch(e => console.error('[translateLyrics] Cache write failed:', e.message));
+      }
 
     } catch (error) {
       if (error.name === 'AbortError') {

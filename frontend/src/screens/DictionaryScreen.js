@@ -12,6 +12,7 @@ import useWordStore from '../store/useWordStore';
 import { psychometricWordMap, psychometricWordList } from '../utils/psychometricWords';
 import { theme } from '../styles/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { readWidgetWord } from '../utils/widgetBridge';
 
 const TIER_RANK = { LOW: 0, MEDIUM: 1, HIGH: 2 };
 const TABS = ['כל המילים', 'הפוקוס שלי'];
@@ -75,7 +76,14 @@ export default function DictionaryScreen() {
   const [search, setSearch] = useState('');
   const [flaggedDocs, setFlaggedDocs] = useState([]);
   const [loadingFocus, setLoadingFocus] = useState(true);
+  const [pinnedWord, setPinnedWord] = useState(null);
   const { setSelectedWord } = useWordStore();
+
+  useEffect(() => {
+    readWidgetWord().then(payload => {
+      if (payload?.isPinned) setPinnedWord(payload.word);
+    });
+  }, []);
 
   // Live subscription to focus words
   useEffect(() => {
@@ -137,6 +145,9 @@ export default function DictionaryScreen() {
           <Text style={styles.hebrewText} numberOfLines={1}>{item.hebrewShort}</Text>
         </View>
         <View style={styles.rowRight}>
+          {pinnedWord === wordKey ? (
+            <Text style={styles.pinIcon}>📌</Text>
+          ) : null}
           {item.level ? (
             <View style={[styles.badge, { backgroundColor: levelBg(item.level) }]}>
               <Text style={[styles.badgeText, { color: levelColor(item.level) }]}>
@@ -339,6 +350,7 @@ const styles = StyleSheet.create({
   focusBtnActive: {},
   focusBtnText: { color: 'rgba(255,255,255,0.25)', fontSize: 20 },
   focusBtnTextActive: { color: theme.colors.accent },
+  pinIcon: { fontSize: 14 },
   spinner: { marginTop: 40 },
   empty: { marginTop: 50, paddingHorizontal: 40 },
   emptyText: { color: theme.colors.muted, fontSize: 14, textAlign: 'center', lineHeight: 22 },

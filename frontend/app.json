@@ -14,8 +14,13 @@
       "backgroundColor": "#121212"
     },
     "ios": {
+      "bundleIdentifier": "com.roisoyboy.psycholyrics",
       "supportsTablet": true
     },
+    "plugins": [
+      "./plugins/withAndroidWidget",
+      "./plugins/withIOSWidget"
+    ],
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
