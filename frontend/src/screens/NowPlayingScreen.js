@@ -14,6 +14,7 @@ import { psychometricWordMap, basicWordSet } from '../utils/psychometricWords';
 import WordCard from '../components/WordCard';
 import Icon from '../components/Icon';
 import SongWordsSheet from '../components/SongWordsSheet';
+import SongWordsList from '../components/SongWordsList';
 import PlaybackControls from '../components/PlaybackControls';
 import { LinearGradient } from 'expo-linear-gradient';
 import { extractAlbumColor } from '../utils/extractAlbumColor';
@@ -55,6 +56,8 @@ export default function NowPlayingScreen() {
   const [sheetWords, setSheetWords] = useState([]);
   const [sheetVisible, setSheetVisible] = useState(false);
   const songWordsRef = useRef([]);
+  const [activeTab, setActiveTab] = useState('lyrics');
+  const [allSongWords, setAllSongWords] = useState([]);
 
   const { lines, activeIndex, status, translationsReady } = useLyricSync(currentTrack);
   const { recordWordEncounter, recordWordTap, recordTrackSeen, recordWordFlag, flaggedWordSet } = useWordTracking();
@@ -146,6 +149,8 @@ export default function NowPlayingScreen() {
       setSheetVisible(true);
     }
     songWordsRef.current = [];
+    setAllSongWords([]);
+    setActiveTab('lyrics');
   }, [currentTrack?.track_id]);
 
   // ── Word scanning ─────────────────────────────────────────────────────────────
@@ -192,6 +197,22 @@ export default function NowPlayingScreen() {
     setActiveWords(focusMatched);
     setHighlightedWord(focusMatched[0] || null);
   }, [activeIndex, flaggedWordSet]);
+
+  // ── Scan full song lyrics for all psychometric words ─────────────────────────
+
+  useEffect(() => {
+    if (!lines.length) { setAllSongWords([]); return; }
+    const found = new Map();
+    lines.forEach(({ text }) => {
+      text.split(/\b/).forEach(part => {
+        const clean = part.toLowerCase().replace(/[^a-z]/g, '');
+        if (!clean || !psychometricWordMap.has(clean)) return;
+        if (!found.has(clean)) found.set(clean, psychometricWordMap.get(clean));
+      });
+    });
+    const sorted = [...found.values()].sort((a, b) => (a.unit ?? 99) - (b.unit ?? 99));
+    setAllSongWords(sorted);
+  }, [lines]);
 
   // ── Auto-scroll (Spotify-style) ───────────────────────────────────────────────
 
@@ -419,37 +440,64 @@ export default function NowPlayingScreen() {
         </View>
       </View>
 
-      {/* Lyrics area */}
-      {status === 'loading' && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator color={theme.colors.accent} />
-          <Text style={styles.loadingText}>טוען מילים...</Text>
-        </View>
-      )}
-      {status === 'no_lyrics' && (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>מילות השיר הזה לא זמינות כרגע</Text>
-        </View>
-      )}
-      {status === 'error' && (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>שגיאה בטעינת המילים</Text>
-        </View>
-      )}
-      {status === 'ready' && lines.length > 0 && (
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.lyricsScroll}
-          contentContainerStyle={styles.lyricsContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          onScrollBeginDrag={handleScrollBeginDrag}
-          onScrollEndDrag={handleScrollEnd}
-          onMomentumScrollEnd={handleScrollEnd}
+      {/* Tab bar */}
+      <View style={styles.tabBar}>
+        <Pressable
+          onPress={() => setActiveTab('lyrics')}
+          style={({ pressed }) => [styles.tabBtn, activeTab === 'lyrics' && styles.tabBtnActive, pressed && { opacity: 0.7 }]}
         >
-          {lines.map((line, index) => renderLyricLine(line, index))}
-          <View style={styles.bottomPadding} />
-        </ScrollView>
+          <Text style={[styles.tabText, activeTab === 'lyrics' && styles.tabTextActive]}>קריוקי</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setActiveTab('words')}
+          style={({ pressed }) => [styles.tabBtn, activeTab === 'words' && styles.tabBtnActive, pressed && { opacity: 0.7 }]}
+        >
+          <Text style={[styles.tabText, activeTab === 'words' && styles.tabTextActive]}>
+            {`מילים בשיר${allSongWords.length > 0 ? ` (${allSongWords.length})` : ''}`}
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* Lyrics area / Song words list */}
+      {activeTab === 'lyrics' ? (
+        <>
+          {status === 'loading' && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator color={theme.colors.accent} />
+              <Text style={styles.loadingText}>טוען מילים...</Text>
+            </View>
+          )}
+          {status === 'no_lyrics' && (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>מילות השיר הזה לא זמינות כרגע</Text>
+            </View>
+          )}
+          {status === 'error' && (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>שגיאה בטעינת המילים</Text>
+            </View>
+          )}
+          {status === 'ready' && lines.length > 0 && (
+            <ScrollView
+              ref={scrollViewRef}
+              style={styles.lyricsScroll}
+              contentContainerStyle={styles.lyricsContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              onScrollBeginDrag={handleScrollBeginDrag}
+              onScrollEndDrag={handleScrollEnd}
+              onMomentumScrollEnd={handleScrollEnd}
+            >
+              {lines.map((line, index) => renderLyricLine(line, index))}
+              <View style={styles.bottomPadding} />
+            </ScrollView>
+          )}
+        </>
+      ) : (
+        <SongWordsList
+          words={allSongWords}
+          onWordPress={(word) => setSelectedWord({ ...word, lyricContext: null })}
+        />
       )}
 
       {/* Word card */}
@@ -539,6 +587,35 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
 
+
+  // ── Tab bar ─────────────────────────────────────────────────────────────────
+  tabBar: {
+    flexDirection: 'row',
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    backgroundColor: theme.colors.surface2,
+    borderRadius: theme.radii.md,
+    padding: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  tabBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 11,
+  },
+  tabBtnActive: {
+    backgroundColor: theme.colors.accent,
+  },
+  tabText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.muted,
+  },
+  tabTextActive: {
+    color: '#fff',
+  },
 
   // ── Lyrics ──────────────────────────────────────────────────────────────────
   lyricsScroll: { flex: 1 },
