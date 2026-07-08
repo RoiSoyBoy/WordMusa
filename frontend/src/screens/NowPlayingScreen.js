@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Image, Animated,
-  Dimensions, Platform, Linking,
+  Dimensions, Platform, Linking, Modal, SafeAreaView,
 } from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -13,6 +13,7 @@ import useWordStore from '../store/useWordStore';
 import { psychometricWordMap, basicWordSet } from '../utils/psychometricWords';
 import WordCard from '../components/WordCard';
 import Icon from '../components/Icon';
+import SpotifyIcon from '../components/SpotifyIcon';
 import SongWordsSheet from '../components/SongWordsSheet';
 import SongWordsList from '../components/SongWordsList';
 import PlaybackControls from '../components/PlaybackControls';
@@ -24,16 +25,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const POLL_INTERVAL_MS = 1000;
 const TIER_RANK = { LOW: 0, MEDIUM: 1, HIGH: 2 };
-
-function getLineOpacity(index, activeIdx) {
-  if (activeIdx < 0) return 0.5;
-  const distance = Math.abs(index - activeIdx);
-  if (distance === 0) return 1;
-  if (distance === 1) return 0.75;
-  if (distance === 2) return 0.5;
-  if (distance === 3) return 0.25;
-  return 0.05;
-}
 
 export default function NowPlayingScreen() {
   const insets = useSafeAreaInsets();
@@ -56,7 +47,7 @@ export default function NowPlayingScreen() {
   const [sheetWords, setSheetWords] = useState([]);
   const [sheetVisible, setSheetVisible] = useState(false);
   const songWordsRef = useRef([]);
-  const [activeTab, setActiveTab] = useState('lyrics');
+  const [wordsModalVisible, setWordsModalVisible] = useState(false);
   const [allSongWords, setAllSongWords] = useState([]);
 
   const { lines, activeIndex, status, translationsReady } = useLyricSync(currentTrack);
@@ -111,9 +102,14 @@ export default function NowPlayingScreen() {
         setCurrentTrack(prev => prev ? { ...prev, is_playing: false } : null);
         return;
       }
-      setCurrentTrack(prev =>
-        prev?.track_id === data.track_id ? { ...data } : data
-      );
+      setCurrentTrack(prev => {
+        if (
+          prev?.track_id === data.track_id &&
+          prev.position_ms === data.position_ms &&
+          prev.is_playing === data.is_playing
+        ) return prev;
+        return { ...data };
+      });
     } catch (err) {
       console.warn('Spotify poll failed:', err.message);
     }
@@ -142,7 +138,7 @@ export default function NowPlayingScreen() {
   // When song changes: show bottom sheet with top 5 words from the previous song
   useEffect(() => {
     const sorted = [...songWordsRef.current]
-      .sort((a, b) => TIER_RANK[a.frequencyTier] - TIER_RANK[b.frequencyTier])
+      .sort((a, b) => TIER_RANK[b.frequencyTier] - TIER_RANK[a.frequencyTier])
       .slice(0, 5);
     if (sorted.length > 0) {
       setSheetWords(sorted);
@@ -150,7 +146,7 @@ export default function NowPlayingScreen() {
     }
     songWordsRef.current = [];
     setAllSongWords([]);
-    setActiveTab('lyrics');
+    setWordsModalVisible(false);
   }, [currentTrack?.track_id]);
 
   // ── Word scanning ─────────────────────────────────────────────────────────────
@@ -253,16 +249,9 @@ export default function NowPlayingScreen() {
     clearTimeout(scrollResumeTimerRef.current);
   }, []);
 
-  const handleScrollEnd = useCallback((e) => {
+  const handleScrollEnd = useCallback(() => {
     clearTimeout(scrollResumeTimerRef.current);
-    const currentY = e.nativeEvent.contentOffset.y;
-    const idx = activeIndexRef.current;
-    const y = itemYOffsets.current[idx];
-    if (y == null) return;
-    const targetY = Math.max(0, y - 180);
-    if (Math.abs(currentY - targetY) < 250) {
-      scrollResumeTimerRef.current = setTimeout(resumeAutoScroll, 2000);
-    }
+    scrollResumeTimerRef.current = setTimeout(resumeAutoScroll, 2000);
   }, [resumeAutoScroll]);
 
   // Scroll whenever activeIndex changes. Placeholder height (19px) matches
@@ -350,7 +339,6 @@ export default function NowPlayingScreen() {
 
   const renderLyricLine = (line, index) => {
     const isActive = index === activeIndex;
-    const opacity = getLineOpacity(index, activeIndex);
 
     const englishStyle = [
       styles.lyricEnglish,
@@ -367,7 +355,6 @@ export default function NowPlayingScreen() {
           styles.lyricLine,
           isActive && styles.lyricLineActive,
           pressed && styles.lyricLinePressed,
-          { opacity },
         ]}
       >
         {renderHighlightedLine(line.text, englishStyle, line)}
@@ -424,14 +411,19 @@ export default function NowPlayingScreen() {
             <Text style={styles.trackName} numberOfLines={1}>{currentTrack.track_name}</Text>
             <Text style={styles.artistName} numberOfLines={1}>{currentTrack.artist}</Text>
           </View>
+          {allSongWords.length > 0 && (
+            <Pressable
+              onPress={() => setWordsModalVisible(true)}
+              style={({ pressed }) => [styles.wordsPill, pressed && { opacity: 0.75 }]}
+            >
+              <Text style={styles.wordsPillLabel}>{allSongWords.length} מילים</Text>
+            </Pressable>
+          )}
           <Pressable
             onPress={() => Linking.openURL(Platform.OS === 'web' ? 'https://open.spotify.com' : 'spotify://')}
-            style={({ pressed }) => [styles.spotifyBtn, pressed && { opacity: 0.75 }]}
+            style={({ pressed }) => [styles.spotifyIconBtn, pressed && { opacity: 0.75 }]}
           >
-            {Platform.OS !== 'web' && (
-              <Icon name="logo-spotify" size={14} color="#fff" style={{ marginRight: 5 }} />
-            )}
-            <Text style={styles.spotifyBtnLabel}>Open Spotify</Text>
+            <SpotifyIcon size={22} color="#fff" />
             {currentTrack.is_playing && (
               <Animated.View style={[styles.spotifyDot, { opacity: pulseAnim }]} />
             )}
@@ -439,65 +431,40 @@ export default function NowPlayingScreen() {
         </View>
       </View>
 
-      {/* Tab bar */}
-      <View style={styles.tabBar}>
-        <Pressable
-          onPress={() => setActiveTab('lyrics')}
-          style={({ pressed }) => [styles.tabBtn, activeTab === 'lyrics' && styles.tabBtnActive, pressed && { opacity: 0.7 }]}
-        >
-          <Text style={[styles.tabText, activeTab === 'lyrics' && styles.tabTextActive]}>קריוקי</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setActiveTab('words')}
-          style={({ pressed }) => [styles.tabBtn, activeTab === 'words' && styles.tabBtnActive, pressed && { opacity: 0.7 }]}
-        >
-          <Text style={[styles.tabText, activeTab === 'words' && styles.tabTextActive]}>
-            {`מילים בשיר${allSongWords.length > 0 ? ` (${allSongWords.length})` : ''}`}
-          </Text>
-        </Pressable>
+      {/* Lyrics area */}
+      <View style={styles.lyricsArea}>
+        {status === 'loading' && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator color={theme.colors.accent} />
+            <Text style={styles.loadingText}>טוען מילים...</Text>
+          </View>
+        )}
+        {status === 'no_lyrics' && (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>מילות השיר הזה לא זמינות כרגע</Text>
+          </View>
+        )}
+        {status === 'error' && (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>שגיאה בטעינת המילים</Text>
+          </View>
+        )}
+        {status === 'ready' && lines.length > 0 && (
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.lyricsScroll}
+            contentContainerStyle={styles.lyricsContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            onScrollBeginDrag={handleScrollBeginDrag}
+            onScrollEndDrag={handleScrollEnd}
+            onMomentumScrollEnd={handleScrollEnd}
+          >
+            {lines.map((line, index) => renderLyricLine(line, index))}
+            <View style={styles.bottomPadding} />
+          </ScrollView>
+        )}
       </View>
-
-      {/* Lyrics area / Song words list */}
-      {activeTab === 'lyrics' ? (
-        <>
-          {status === 'loading' && (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator color={theme.colors.accent} />
-              <Text style={styles.loadingText}>טוען מילים...</Text>
-            </View>
-          )}
-          {status === 'no_lyrics' && (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>מילות השיר הזה לא זמינות כרגע</Text>
-            </View>
-          )}
-          {status === 'error' && (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>שגיאה בטעינת המילים</Text>
-            </View>
-          )}
-          {status === 'ready' && lines.length > 0 && (
-            <ScrollView
-              ref={scrollViewRef}
-              style={styles.lyricsScroll}
-              contentContainerStyle={styles.lyricsContent}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              onScrollBeginDrag={handleScrollBeginDrag}
-              onScrollEndDrag={handleScrollEnd}
-              onMomentumScrollEnd={handleScrollEnd}
-            >
-              {lines.map((line, index) => renderLyricLine(line, index))}
-              <View style={styles.bottomPadding} />
-            </ScrollView>
-          )}
-        </>
-      ) : (
-        <SongWordsList
-          words={allSongWords}
-          onWordPress={(word) => setSelectedWord({ ...word, lyricContext: null })}
-        />
-      )}
 
       {/* Word card */}
       <WordCard
@@ -513,6 +480,31 @@ export default function NowPlayingScreen() {
         onAdd={(wordData) => recordWordFlag(wordData.word, null, null, wordData.hebrewShort)}
         onDismiss={() => setSheetVisible(false)}
       />
+
+      {/* Psychometric words modal */}
+      <Modal
+        visible={wordsModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setWordsModalVisible(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setWordsModalVisible(false)} />
+        <SafeAreaView style={styles.wordsSheet}>
+          <View style={styles.wordsSheetHandle} />
+          <View style={styles.wordsSheetHeader}>
+            <Pressable onPress={() => setWordsModalVisible(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+              <Text style={styles.wordsSheetClose}>✕</Text>
+            </Pressable>
+            <Text style={styles.wordsSheetTitle}>{`מילים פסיכומטריות בשיר (${allSongWords.length})`}</Text>
+          </View>
+          <SongWordsList
+            words={allSongWords}
+            onWordPress={(word) => { setWordsModalVisible(false); setSelectedWord({ ...word, lyricContext: null }); }}
+            flaggedWordSet={flaggedWordSet}
+            onWordFocus={(wordData) => recordWordFlag(wordData.word, null, null, wordData.hebrewShort)}
+          />
+        </SafeAreaView>
+      </Modal>
     </View>
   );
 }
@@ -549,20 +541,24 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   trackInfo: { flex: 1 },
-  spotifyBtn: {
-    marginLeft: 10,
+  wordsPill: {
+    marginLeft: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.spotify,
+    backgroundColor: theme.colors.accent,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 20,
   },
-  spotifyBtnLabel: {
+  wordsPillLabel: {
     color: '#fff',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.3,
+  },
+  spotifyIconBtn: {
+    marginLeft: 8,
+    padding: 4,
   },
   spotifyDot: {
     position: 'absolute',
@@ -587,33 +583,46 @@ const styles = StyleSheet.create({
   },
 
 
-  // ── Tab bar ─────────────────────────────────────────────────────────────────
-  tabBar: {
-    flexDirection: 'row',
-    marginHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
-    backgroundColor: theme.colors.surface2,
-    borderRadius: theme.radii.md,
-    padding: 3,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
-  },
-  tabBtn: {
+  // ── Lyrics area ──────────────────────────────────────────────────────────────
+  lyricsArea: { flex: 1 },
+
+  // ── Words modal ──────────────────────────────────────────────────────────────
+  modalOverlay: {
     flex: 1,
-    paddingVertical: 8,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  wordsSheet: {
+    backgroundColor: theme.colors.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '90%',
+  },
+  wordsSheetHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 12,
+  },
+  wordsSheetHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 11,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
   },
-  tabBtnActive: {
-    backgroundColor: theme.colors.accent,
-  },
-  tabText: {
-    fontSize: 13,
-    fontWeight: '600',
+  wordsSheetClose: {
     color: theme.colors.muted,
+    fontSize: 18,
+    padding: 4,
   },
-  tabTextActive: {
-    color: '#fff',
+  wordsSheetTitle: {
+    color: theme.colors.text,
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'right',
   },
 
   // ── Lyrics ──────────────────────────────────────────────────────────────────
@@ -631,7 +640,7 @@ const styles = StyleSheet.create({
   },
   lyricEnglish: {
     fontSize: 18,
-    color: 'rgba(255,255,255,0.55)',
+    color: 'rgba(255,255,255,0.65)',
     textAlign: 'left',
     lineHeight: 26,
     fontWeight: '700',
@@ -641,7 +650,7 @@ const styles = StyleSheet.create({
   },
   lyricHebrew: {
     fontSize: 13,
-    color: 'rgba(255,255,255,0.45)',
+    color: 'rgba(255,255,255,0.55)',
     textAlign: 'right',
     marginTop: 4,
     fontWeight: '600',

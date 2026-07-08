@@ -191,18 +191,7 @@ export function useLyricSync(currentTrack) {
       }
 
       if (!lyricsData.synced) {
-        // No synced lyrics — show plain text without sync
-        if (lyricsData.plain) {
-          const plainLines = lyricsData.plain
-            .split('\n')
-            .filter(l => l.trim())
-            .map((text, i) => ({ time_ms: i * 3000, text, translation: null }));
-          setLines(plainLines);
-          setStatus('ready');
-          setTranslationsReady(true);
-        } else {
-          setStatus('no_lyrics');
-        }
+        setStatus('no_lyrics');
         return;
       }
 
