@@ -7,6 +7,7 @@ import NowPlayingScreen from '../screens/NowPlayingScreen';
 import DictionaryScreen from '../screens/DictionaryScreen';
 import ProgressScreen from '../screens/ProgressScreen';
 import ReviewScreen from '../screens/ReviewScreen';
+import RecommendationsScreen from '../screens/RecommendationsScreen';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 
 const Tab = createBottomTabNavigator();
@@ -16,6 +17,7 @@ const TAB_ICONS = {
   Dictionary:  { focused: 'library',               unfocused: 'library-outline' },
   Progress:    { focused: 'bar-chart',             unfocused: 'bar-chart-outline' },
   Review:      { focused: 'albums',                unfocused: 'albums-outline' },
+  Recommendations: { focused: 'sparkles',           unfocused: 'sparkles-outline' },
 };
 
 export default function AppNavigator() {
@@ -63,6 +65,11 @@ export default function AppNavigator() {
           name="Review"
           component={ReviewScreen}
           options={{ tabBarLabel: 'קלפים' }}
+        />
+        <Tab.Screen
+          name="Recommendations"
+          component={RecommendationsScreen}
+          options={{ tabBarLabel: 'המלצות' }}
         />
       </Tab.Navigator>
     </NavigationContainer>
