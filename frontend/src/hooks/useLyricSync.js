@@ -3,7 +3,13 @@ import { parseLRC, getActiveLyricIndex } from '../utils/lrcParser';
 import { auth, db } from '../firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL; 
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+
+// How much earlier LRC timestamps tend to mark a line vs. when it's actually sung.
+const SYNC_LEAD_COMPENSATION_MS = 500;
+// Max time to extrapolate past the last successful poll before treating the
+// estimate as stale — bounds drift from missed polls / backgrounding.
+const MAX_EXTRAPOLATION_MS = 3000;
 
 /**
  * Hook: useLyricSync
@@ -82,8 +88,16 @@ export function useLyricSync(currentTrack) {
     }
 
     syncIntervalRef.current = setInterval(() => {
-      const elapsed = isPlayingRef.current ? Date.now() - lastPollTimeRef.current : 0;
-      const interpolatedPosition = positionRef.current + elapsed;
+      // Cap extrapolation: if a poll is missed (network hiccup, app backgrounded —
+      // OS throttles JS timers) elapsed can otherwise grow unbounded, racing the
+      // estimated position far past reality and locking the active line onto
+      // whatever's near the end of the song until the next poll corrects it.
+      const rawElapsed = isPlayingRef.current ? Date.now() - lastPollTimeRef.current : 0;
+      const elapsed = Math.min(rawElapsed, MAX_EXTRAPOLATION_MS);
+      // LRC timestamps (crowd-sourced via LRCLIB) commonly mark a line slightly
+      // before the vocal actually starts — compensate so the highlight doesn't
+      // jump early.
+      const interpolatedPosition = positionRef.current + elapsed - SYNC_LEAD_COMPENSATION_MS;
       const newIndex = getActiveLyricIndex(linesRef.current, interpolatedPosition);
       setActiveIndex(prev => prev !== newIndex ? newIndex : prev);
     }, 200);
