@@ -546,6 +546,8 @@ At the start of every new Claude Code session, do these in order:
 
 ## Session End / Retro
 
+**Before ending any session — merge or push your branch's work into `main` (or open a PR), don't leave it stranded on an isolated branch.** This matters most for phone sessions: there's no local PC copy to fall back on, so a branch that never gets merged looks to the next session like the work never happened. If a fast-forward merge isn't possible, open a PR instead of leaving it hanging.
+
 After every non-trivial session, generate a retro and save it to `docs/retros/YYYY-MM-DD-topic.md`.
 
 Retro format:
