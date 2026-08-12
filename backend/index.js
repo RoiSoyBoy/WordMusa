@@ -31,6 +31,26 @@ const spotifyClientId = defineSecret('SPOTIFY_CLIENT_ID');
 const spotifyClientSecret = defineSecret('SPOTIFY_CLIENT_SECRET');
 const openaiApiKey = defineSecret('OPENAI_API_KEY');
 
+const curatedRecommendedSongs = require('./recommendedSongs.json');
+const psychometricWordSet = new Set(
+  require('./words.json')
+    .filter(w => w?.word)
+    .map(w => w.word.toLowerCase())
+);
+
+// Counts distinct psychometric words appearing in a block of lyrics text.
+function countPsychometricWords(lyricsText) {
+  if (!lyricsText) return 0;
+  const found = new Set();
+  const regex = /\b([a-zA-Z']+)\b/g;
+  let match;
+  while ((match = regex.exec(lyricsText)) !== null) {
+    const clean = match[1].toLowerCase().replace(/[^a-z]/g, '');
+    if (clean && psychometricWordSet.has(clean)) found.add(clean);
+  }
+  return found.size;
+}
+
 // Helper to verify auth token
 async function verifyAuth(req, res) {
   const authHeader = req.headers.authorization;
@@ -414,6 +434,113 @@ exports.lyricsFetch = onRequest((req, res) => {
   });
 });
 
+// Resolves one curated song to a cached { spotifyTrackId, albumArt, psychometricWordCount } result.
+// Shared cache across all users — first request per song pays the Spotify+LRCLIB cost, every request after is free.
+async function resolveRecommendedSong({ trackName, artistName }, accessToken) {
+  const cacheKey = `${trackName.toLowerCase().replace(/\s+/g, '_')}_${artistName.toLowerCase().replace(/\s+/g, '_')}`;
+
+  try {
+    const cacheDoc = await db.collection('recommended_songs').doc(cacheKey).get();
+    if (cacheDoc.exists) {
+      const data = cacheDoc.data();
+      if (data.spotifyTrackId && typeof data.psychometricWordCount === 'number') {
+        return data;
+      }
+    }
+
+    const searchParams = new URLSearchParams({
+      q: `track:${trackName} artist:${artistName}`,
+      type: 'track',
+      limit: '1',
+    });
+    const searchRes = await fetch(`https://api.spotify.com/v1/search?${searchParams.toString()}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!searchRes.ok) {
+      console.error(`Spotify search failed for ${trackName} - ${artistName}:`, await searchRes.text());
+      return null;
+    }
+    const searchData = await searchRes.json();
+    const track = searchData.tracks?.items?.[0];
+    if (!track) {
+      console.error(`No Spotify match for ${trackName} - ${artistName}`);
+      return null;
+    }
+
+    // Lyrics — reuse the same lyrics_cache collection/key that lyricsFetch uses
+    const lyricsCacheDoc = await db.collection('lyrics_cache').doc(cacheKey).get();
+    let lyricsPayload;
+    if (lyricsCacheDoc.exists) {
+      lyricsPayload = lyricsCacheDoc.data().lyrics;
+    } else {
+      const lrcParams = new URLSearchParams({ track_name: trackName, artist_name: artistName });
+      const lrcRes = await fetch(`https://lrclib.net/api/get?${lrcParams.toString()}`, {
+        headers: { 'User-Agent': 'LyricLearn/1.0' },
+      });
+      if (lrcRes.ok) {
+        const lrcData = await lrcRes.json();
+        lyricsPayload = { synced: lrcData.syncedLyrics || null, plain: lrcData.plainLyrics || null };
+        db.collection('lyrics_cache').doc(cacheKey).set({
+          lyrics: lyricsPayload,
+          track_name: trackName,
+          artist_name: artistName,
+          cached_at: FieldValue.serverTimestamp(),
+        }).catch(e => console.error('Failed to cache lyrics:', e));
+      } else {
+        lyricsPayload = { synced: null, plain: null };
+      }
+    }
+
+    const lyricsText = lyricsPayload?.plain || lyricsPayload?.synced || '';
+    const psychometricWordCount = countPsychometricWords(lyricsText);
+
+    const result = {
+      trackName,
+      artistName,
+      spotifyTrackId: track.id,
+      albumArt: track.album?.images?.[0]?.url || null,
+      psychometricWordCount,
+    };
+
+    db.collection('recommended_songs').doc(cacheKey).set({
+      ...result,
+      cached_at: FieldValue.serverTimestamp(),
+    }).catch(e => console.error('Failed to cache recommended song:', e));
+
+    return result;
+  } catch (error) {
+    console.error(`Error resolving recommended song ${trackName} - ${artistName}:`, error);
+    return null;
+  }
+}
+
+exports.recommendedSongs = onRequest({ secrets: [spotifyClientId, spotifyClientSecret] }, (req, res) => {
+  cors(req, res, async () => {
+    try {
+      const user = await verifyAuth(req, res);
+      if (!user) return;
+
+      const allowed = await checkRateLimit(user.uid, 'recommended_songs', 15);
+      if (!allowed) return res.status(429).send('Too Many Requests');
+
+      const clientId = process.env.SPOTIFY_CLIENT_ID || spotifyClientId.value();
+      const clientSecret = process.env.SPOTIFY_CLIENT_SECRET || spotifyClientSecret.value();
+      const accessToken = await getValidSpotifyAccessToken(user.uid, clientId, clientSecret);
+
+      const results = await Promise.all(
+        curatedRecommendedSongs.map(song => resolveRecommendedSong(song, accessToken))
+      );
+      const valid = results.filter(Boolean);
+      valid.sort((a, b) => b.psychometricWordCount - a.psychometricWordCount);
+
+      res.status(200).json(valid);
+    } catch (error) {
+      console.error('Error in recommendedSongs:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+});
+
 exports.translateLyrics = onRequest({ secrets: [openaiApiKey] }, (req, res) => {
   cors(req, res, async () => {
     try {
@@ -707,6 +834,9 @@ exports.spotifyControl = onRequest({ secrets: [spotifyClientId, spotifyClientSec
         case 'play':
           spotifyUrl = 'https://api.spotify.com/v1/me/player/play';
           method = 'PUT';
+          if (typeof req.body.track_uri === 'string' && /^spotify:track:[a-zA-Z0-9]{1,64}$/.test(req.body.track_uri)) {
+            body = { uris: [req.body.track_uri] };
+          }
           break;
         case 'pause':
           spotifyUrl = 'https://api.spotify.com/v1/me/player/pause';
@@ -730,7 +860,10 @@ exports.spotifyControl = onRequest({ secrets: [spotifyClientId, spotifyClientSec
 
       const response = await fetch(spotifyUrl, {
         method,
-        headers: { 'Authorization': `Bearer ${accessToken}` },
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          ...(body ? { 'Content-Type': 'application/json' } : {}),
+        },
         body: body ? JSON.stringify(body) : undefined,
       });
 
