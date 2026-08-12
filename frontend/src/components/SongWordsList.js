@@ -1,22 +1,22 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
 import { theme } from '../styles/theme';
 
-const FILTERS = [
-  { key: 'all', label: 'הכל' },
-  { key: 'easy', label: 'קל 1–4' },
-  { key: 'medium', label: 'בינוני 5–7' },
-  { key: 'hard', label: 'קשה 8–10' },
-];
-
-export default function SongWordsList({ words, onWordPress }) {
+export default function SongWordsList({ words, onWordPress, flaggedWordSet, onWordFocus }) {
   const [filter, setFilter] = useState('all');
 
+  useEffect(() => { setFilter('all'); }, [words]);
+
+  const levelFilters = useMemo(() => {
+    const counts = {};
+    words.forEach(w => { if (w.unit != null) counts[w.unit] = (counts[w.unit] || 0) + 1; });
+    return Object.keys(counts).map(Number).sort((a, b) => a - b)
+      .map(u => ({ key: u, label: `${u} (${counts[u]})` }));
+  }, [words]);
+
   const filtered = useMemo(() => {
-    if (filter === 'easy')   return words.filter(w => (w.unit ?? 99) <= 4);
-    if (filter === 'medium') return words.filter(w => (w.unit ?? 99) >= 5 && (w.unit ?? 99) <= 7);
-    if (filter === 'hard')   return words.filter(w => (w.unit ?? 99) >= 8);
-    return words;
+    if (filter === 'all') return words;
+    return words.filter(w => w.unit === filter);
   }, [words, filter]);
 
   const renderEmpty = () => {
@@ -38,43 +38,55 @@ export default function SongWordsList({ words, onWordPress }) {
     );
   };
 
-  const renderItem = ({ item }) => (
-    <Pressable
-      onPress={() => onWordPress(item)}
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-    >
-      <View style={styles.rowLeft}>
-        <View style={styles.wordRow}>
-          <Text style={styles.word}>{item.word}</Text>
-          {item.unit != null && (
-            <View style={styles.unitBadge}>
-              <Text style={styles.unitText}>יחידה {item.unit}</Text>
-            </View>
-          )}
+  const renderItem = ({ item }) => {
+    const wordKey = item.word.toLowerCase();
+    const isInFocus = flaggedWordSet?.has(wordKey);
+    return (
+      <Pressable
+        onPress={() => onWordPress(item)}
+        style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      >
+        <View style={styles.rowLeft}>
+          <View style={styles.wordRow}>
+            <Text style={styles.word}>{item.word}</Text>
+            {item.unit != null && (
+              <View style={styles.unitBadge}>
+                <Text style={styles.unitText}>יחידה {item.unit}</Text>
+              </View>
+            )}
+          </View>
         </View>
-        {item.ipa ? <Text style={styles.ipa}>{item.ipa}</Text> : null}
-      </View>
-      <Text style={styles.hebrew} numberOfLines={2}>{item.hebrewShort}</Text>
-    </Pressable>
-  );
+        <Text style={styles.hebrew} numberOfLines={2}>{item.hebrewShort}</Text>
+        <Pressable
+          onPress={() => onWordFocus?.(item)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={styles.starBtn}
+        >
+          <Text style={[styles.starText, isInFocus && styles.starTextActive]}>
+            {isInFocus ? '★' : '☆'}
+          </Text>
+        </Pressable>
+      </Pressable>
+    );
+  };
 
   return (
     <View style={styles.container}>
       {/* Difficulty filter chips */}
       <View style={styles.filterRow}>
-        {FILTERS.map(f => (
+        <Pressable
+          onPress={() => setFilter('all')}
+          style={({ pressed }) => [styles.chip, filter === 'all' && styles.chipActive, pressed && { opacity: 0.7 }]}
+        >
+          <Text style={[styles.chipText, filter === 'all' && styles.chipTextActive]}>הכל</Text>
+        </Pressable>
+        {levelFilters.map(f => (
           <Pressable
             key={f.key}
             onPress={() => setFilter(f.key)}
-            style={({ pressed }) => [
-              styles.chip,
-              filter === f.key && styles.chipActive,
-              pressed && { opacity: 0.7 },
-            ]}
+            style={({ pressed }) => [styles.chip, filter === f.key && styles.chipActive, pressed && { opacity: 0.7 }]}
           >
-            <Text style={[styles.chipText, filter === f.key && styles.chipTextActive]}>
-              {f.label}
-            </Text>
+            <Text style={[styles.chipText, filter === f.key && styles.chipTextActive]}>{f.label}</Text>
           </Pressable>
         ))}
       </View>
@@ -97,13 +109,16 @@ const styles = StyleSheet.create({
 
   filterRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: theme.spacing.md,
-    paddingBottom: theme.spacing.sm,
-    gap: 8,
+    paddingBottom: theme.spacing.md,
+    rowGap: 8,
   },
   chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    flexShrink: 0,
+    marginRight: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.12)',
@@ -114,7 +129,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.accent,
   },
   chipText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: theme.colors.muted,
   },
@@ -156,11 +171,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.accent,
   },
-  ipa: {
-    fontSize: 12,
-    color: theme.colors.muted,
-    marginTop: 2,
+  starBtn: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 6,
   },
+  starText: { color: 'rgba(255,255,255,0.25)', fontSize: 20 },
+  starTextActive: { color: theme.colors.accent },
   hebrew: {
     fontSize: 14,
     fontWeight: '600',

@@ -84,6 +84,7 @@ export default function NowPlayingScreen() {
   // ── Spotify polling ──────────────────────────────────────────────────────────
 
   const pollSpotify = useCallback(async () => {
+    const requestStartedAt = Date.now();
     try {
       const user = auth.currentUser;
       if (!user) return;
@@ -102,13 +103,20 @@ export default function NowPlayingScreen() {
         setCurrentTrack(prev => prev ? { ...prev, is_playing: false } : null);
         return;
       }
+      // data.position_ms reflects playback position as of when Spotify answered our
+      // backend, which is already `requestRoundTripMs` in the past by the time we
+      // process it here — without this, lyrics/progress lag real audio by that amount.
+      const requestRoundTripMs = Date.now() - requestStartedAt;
+      const compensatedPositionMs = data.duration_ms
+        ? Math.min(data.position_ms + requestRoundTripMs, data.duration_ms)
+        : data.position_ms + requestRoundTripMs;
       setCurrentTrack(prev => {
         if (
           prev?.track_id === data.track_id &&
-          prev.position_ms === data.position_ms &&
+          prev.position_ms === compensatedPositionMs &&
           prev.is_playing === data.is_playing
         ) return prev;
-        return { ...data };
+        return { ...data, position_ms: compensatedPositionMs };
       });
     } catch (err) {
       console.warn('Spotify poll failed:', err.message);

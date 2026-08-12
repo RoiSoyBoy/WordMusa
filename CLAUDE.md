@@ -210,6 +210,12 @@ learnedAt: timestamp | null  (set when encounterCount >= 3 AND tappedAt exists)
 songContexts: array (max 5) of { trackName, artistName, lyricLine }
 ```
 
+### `users/{uid}/streakLog/{date}`
+```
+active: boolean  (always true; doc existence = day was active)
+```
+Doc ID is `YYYY-MM-DD` (Asia/Jerusalem). Written by `updateStreak()` in `useWordTracking.js` on every app open, independent of streak counter logic. Powers the Progress screen's streak calendar — no doc means that day had no activity.
+
 ### `translations/{spotifyTrackId}`
 ```
 translated_lyrics: string[]  (Hebrew translations, one per lyric line)
@@ -539,8 +545,9 @@ At the start of every new Claude Code session, do these in order:
 1. **Read the latest retro** — check `docs/retros/` for the most recent file and read it for continuity
 2. **Read this CLAUDE.md** — confirm you have the full project context
 3. **Confirm what's working** — ask the developer what was last verified as working before starting new work
-4. **Scope the task** — identify exactly which files need to change before writing any code
-5. **Check emulators are running** — if the task involves backend work, confirm `firebase emulators:start` is running and all functions loaded cleanly
+4. **Check the knowledge graph** — if `graphify-out/graph.json` exists, and the task touches cross-cutting or unfamiliar code (not a simple one-file fix), query it (`/graphify query "..."`) for architecture, community structure, and cross-file relationships before grepping from scratch. Skip this for small, well-scoped changes — it's not needed there. Treat the graph as a snapshot: verify anything it surfaces against the actual current file before acting on it, and re-run `/graphify --update` if the codebase has changed significantly since the last build.
+5. **Scope the task** — identify exactly which files need to change before writing any code
+6. **Check emulators are running** — if the task involves backend work, confirm `firebase emulators:start` is running and all functions loaded cleanly
 
 ---
 
@@ -569,3 +576,21 @@ Retro format:
 ```
 
 Keep retros short — 20 lines max. The goal is continuity, not documentation.
+
+After saving the retro, if `graphify-out/graph.json` exists, run `/graphify --update` so the new retro and any changed/added files get absorbed into the knowledge graph. This uses graphify's incremental extraction (only new/changed files, not a full rebuild). Skip this for trivial sessions that didn't warrant a retro in the first place.
+
+---
+
+## Agent skills
+
+### Issue tracker
+
+Issues live as local markdown files under `.scratch/<feature>/` in this repo (no GitHub Issues integration). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default canonical strings used — `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Multi-context layout — `CONTEXT-MAP.md` at root points to `frontend/CONTEXT.md` and `backend/CONTEXT.md`; ADRs live under `frontend/docs/adr/` and `backend/docs/adr/` for context-scoped decisions, and `docs/adr/` for system-wide ones. See `docs/agents/domain.md`.

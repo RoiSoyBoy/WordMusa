@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity,
+  View, Text, ScrollView, StyleSheet, ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   doc, onSnapshot, collection, query, where, orderBy, getDocs, Timestamp,
+  documentId,
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
-import useWordStore from '../store/useWordStore';
-import { psychometricWordMap } from '../utils/psychometricWords';
+import { getAchievements } from '../utils/achievements';
 import { theme } from '../styles/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const DAYS_HE = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+const CALENDAR_DAY_LETTERS = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
 
 function getDayLabel(daysAgo) {
   if (daysAgo === 0) return 'היום';
@@ -23,13 +24,39 @@ function getDayLabel(daysAgo) {
   return DAYS_HE[jerusalemDate.getDay()];
 }
 
+function toISOJerusalem(date) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(date);
+}
+
+// 4-week x 7-day grid (Sun..Sat columns), oldest week on top, current week on bottom.
+function buildStreakGrid(activeDates) {
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+  now.setHours(0, 0, 0, 0);
+  const startOfCurrentWeek = new Date(now);
+  startOfCurrentWeek.setDate(now.getDate() - now.getDay());
+  const gridStart = new Date(startOfCurrentWeek);
+  gridStart.setDate(startOfCurrentWeek.getDate() - 21);
+
+  const weeks = [];
+  for (let row = 0; row < 4; row++) {
+    const week = [];
+    for (let col = 0; col < 7; col++) {
+      const d = new Date(gridStart);
+      d.setDate(gridStart.getDate() + row * 7 + col);
+      const iso = toISOJerusalem(d);
+      week.push({ iso, active: activeDates.has(iso), isToday: iso === toISOJerusalem(now) });
+    }
+    weeks.push(week);
+  }
+  return weeks;
+}
+
 export default function ProgressScreen() {
   const insets = useSafeAreaInsets();
   const [userData, setUserData] = useState(null);
-  const [recentWords, setRecentWords] = useState([]);
   const [weeklyData, setWeeklyData] = useState(Array(7).fill(0));
+  const [streakLogDates, setStreakLogDates] = useState(new Set());
   const [loading, setLoading] = useState(true);
-  const { setSelectedWord } = useWordStore();
 
   // Real-time user stats
   useEffect(() => {
@@ -41,22 +68,6 @@ export default function ProgressScreen() {
       setUserData(snap.data() || {});
       setLoading(false);
     }, () => setLoading(false));
-
-    return unsub;
-  }, []);
-
-  // Recent words (last 10)
-  useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    const q = query(
-      collection(db, 'users', user.uid, 'wordHistory'),
-      orderBy('lastEncounteredAt', 'desc')
-    );
-    const unsub = onSnapshot(q, snap => {
-      setRecentWords(snap.docs.slice(0, 10).map(d => ({ id: d.id, ...d.data() })));
-    });
 
     return unsub;
   }, []);
@@ -88,6 +99,26 @@ export default function ProgressScreen() {
     }).catch(() => {});
   }, []);
 
+  // Streak calendar — last 28 days of activity log
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const start = new Date();
+    start.setDate(start.getDate() - 28);
+    const startISO = toISOJerusalem(start);
+
+    const q = query(
+      collection(db, 'users', user.uid, 'streakLog'),
+      where(documentId(), '>=', startISO)
+    );
+    const unsub = onSnapshot(q, snap => {
+      setStreakLogDates(new Set(snap.docs.map(d => d.id)));
+    }, () => {});
+
+    return unsub;
+  }, []);
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -103,6 +134,8 @@ export default function ProgressScreen() {
   const songs = stats.totalSongs || 0;
   const memory = encountered > 0 ? Math.round((learned / encountered) * 100) : 0;
   const maxBar = Math.max(...weeklyData, 1);
+  const streakGrid = buildStreakGrid(streakLogDates);
+  const achievements = getAchievements(stats);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + theme.spacing.md }]}>
@@ -118,12 +151,44 @@ export default function ProgressScreen() {
         <Text style={styles.streakLabel}>ימים רצופים</Text>
       </LinearGradient>
 
+      {/* Streak calendar */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>יומן רצף</Text>
+        <View style={styles.calendarDayLabels}>
+          {CALENDAR_DAY_LETTERS.map((d, i) => (
+            <Text key={i} style={styles.calendarDayLabel}>{d}</Text>
+          ))}
+        </View>
+        {streakGrid.map((week, wi) => (
+          <View key={wi} style={styles.calendarRow}>
+            {week.map(day => (
+              <View
+                key={day.iso}
+                style={[
+                  styles.calendarCell,
+                  day.active && styles.calendarCellActive,
+                  day.isToday && styles.calendarCellToday,
+                ]}
+              />
+            ))}
+          </View>
+        ))}
+      </View>
+
       {/* Stats grid */}
       <View style={styles.statsGrid}>
         <StatCell value={learned} label="מילים נלמדו" color={theme.colors.accent} />
         <StatCell value={encountered} label="מילים נתקלו" color={theme.colors.accentGreen} />
         <StatCell value={songs} label="שירים הושמעו" color={theme.colors.accent} />
         <StatCell value={`${memory}%`} label="אחוז זכירה" color={theme.colors.accentGreen} />
+      </View>
+
+      {/* Achievements */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>הישגים</Text>
+        {achievements.map(a => (
+          <AchievementRow key={a.key} achievement={a} />
+        ))}
       </View>
 
       {/* Weekly chart */}
@@ -146,42 +211,6 @@ export default function ProgressScreen() {
         </View>
       </View>
 
-      {/* Recent words */}
-      {recentWords.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>מילים אחרונות</Text>
-          {recentWords.map(item => {
-            const fullWord = psychometricWordMap.get(item.word?.toLowerCase());
-            const isLearned = !!item.learnedAt;
-            return (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.recentRow}
-                activeOpacity={0.7}
-                onPress={() => fullWord && setSelectedWord(fullWord)}
-              >
-                <View style={styles.recentLeft}>
-                  <Text style={styles.recentWord}>{item.word}</Text>
-                  <Text style={styles.recentHebrew} numberOfLines={1}>
-                    {fullWord?.hebrewShort || ''}
-                  </Text>
-                </View>
-                <View style={styles.recentRight}>
-                  {item.songContexts?.[0]?.trackName ? (
-                    <Text style={styles.recentSong} numberOfLines={1}>
-                      🎵 {item.songContexts[0].trackName}
-                    </Text>
-                  ) : null}
-                  <View style={[
-                    styles.statusDot,
-                    { backgroundColor: isLearned ? theme.colors.accentGreen : theme.colors.accent },
-                  ]} />
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
     </ScrollView>
   );
 }
@@ -191,6 +220,34 @@ function StatCell({ value, label, color }) {
     <View style={styles.statCell}>
       <Text style={[styles.statValue, { color }]}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function AchievementRow({ achievement }) {
+  const { icon, label, tiers, earnedTiers, nextTier, progress } = achievement;
+  const highest = earnedTiers.length ? earnedTiers[earnedTiers.length - 1] : 0;
+  return (
+    <View style={styles.achievementRow}>
+      <View style={styles.achievementHeader}>
+        <Text style={styles.achievementIcon}>{icon}</Text>
+        <Text style={styles.achievementLabel}>{label}</Text>
+      </View>
+      <View style={styles.badgeChipsRow}>
+        {tiers.map(t => {
+          const earned = t <= highest;
+          return (
+            <View key={t} style={[styles.badgeChip, earned ? styles.badgeChipEarned : styles.badgeChipLocked]}>
+              <Text style={[styles.badgeChipText, earned && styles.badgeChipTextEarned]}>{t}</Text>
+            </View>
+          );
+        })}
+      </View>
+      {nextTier != null && (
+        <View style={styles.achievementProgressTrack}>
+          <View style={[styles.achievementProgressFill, { width: `${Math.round(progress * 100)}%` }]} />
+        </View>
+      )}
     </View>
   );
 }
@@ -287,27 +344,40 @@ const styles = StyleSheet.create({
   },
   barEmpty: { backgroundColor: 'transparent' },
   barLabel: { color: theme.colors.muted, fontSize: 9, marginTop: 5, textAlign: 'center' },
-  recentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(255,255,255,0.06)',
+
+  calendarDayLabels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  calendarDayLabel: { color: theme.colors.muted, fontSize: 10, width: 24, textAlign: 'center' },
+  calendarRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  calendarCell: {
+    width: 24,
+    height: 24,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.surface2,
   },
-  recentLeft: { flex: 1 },
-  recentWord: { color: theme.colors.text, fontSize: 14, fontWeight: '600' },
-  recentHebrew: { color: theme.colors.muted, fontSize: 12, textAlign: 'right', marginTop: 2 },
-  recentRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginLeft: 8,
+  calendarCellActive: { backgroundColor: theme.colors.accentGreen },
+  calendarCellToday: { borderWidth: 2, borderColor: theme.colors.accent },
+
+  achievementRow: { marginBottom: theme.spacing.md },
+  achievementHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6, justifyContent: 'flex-end' },
+  achievementIcon: { fontSize: 14 },
+  achievementLabel: { color: theme.colors.text, fontSize: 13, fontWeight: '600' },
+  badgeChipsRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' },
+  badgeChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.surface2,
   },
-  recentSong: { color: theme.colors.muted, fontSize: 11, maxWidth: 100, textAlign: 'right' },
-  statusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
+  badgeChipEarned: { backgroundColor: theme.colors.accentPink },
+  badgeChipLocked: { backgroundColor: theme.colors.surface2 },
+  badgeChipText: { color: theme.colors.muted, fontSize: 11, fontWeight: '700' },
+  badgeChipTextEarned: { color: theme.colors.text },
+  achievementProgressTrack: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: theme.colors.surface2,
+    marginTop: 6,
+    overflow: 'hidden',
   },
+  achievementProgressFill: { height: '100%', backgroundColor: theme.colors.accentPink, borderRadius: 2 },
 });

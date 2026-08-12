@@ -25,6 +25,10 @@ function parseDDMMYYYY(str) {
   return new Date(`${y}-${m}-${d}`);
 }
 
+function getTodayISOJerusalem() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date()); // YYYY-MM-DD
+}
+
 export function useWordTracking() {
   const seenTrackIds = useRef(new Set());
   const streakUpdated = useRef(false);
@@ -211,6 +215,16 @@ export function useWordTracking() {
 
     try {
       const today = getTodayJerusalem();
+
+      // Log today's activity for the streak calendar — unconditional, independent
+      // of the counter logic below, so every app-open day is recorded.
+      const todayISO = getTodayISOJerusalem();
+      await setDoc(
+        doc(db, 'users', user.uid, 'streakLog', todayISO),
+        { active: true },
+        { merge: true }
+      ).catch(() => {});
+
       const userRef = doc(db, 'users', user.uid);
       const snap = await getDoc(userRef);
       if (!snap.exists()) return;
