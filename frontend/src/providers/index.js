@@ -14,6 +14,8 @@ import { createMockProvider } from './mockProvider';
  *                       { play(), pause(), next(), previous(), seek(ms) }, each
  *                       async → true on success. Missing ones are hidden in the UI.
  *   openApp?()          optional — open the source player app
+ *   syncOptions?        optional { leadCompensationMs, maxExtrapolationMs } overrides
+ *                       for useLyricSync's shared position estimate
  *
  * Track snapshot shape (same as the spotifyPlayer response the app already uses):
  *   { track_id, track_name, artist, album_art, duration_ms, position_ms, is_playing }

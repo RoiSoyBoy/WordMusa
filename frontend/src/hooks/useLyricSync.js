@@ -5,18 +5,23 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
-// How much earlier LRC timestamps tend to mark a line vs. when it's actually sung.
-const SYNC_LEAD_COMPENSATION_MS = 500;
-// Max time to extrapolate past the last successful poll before treating the
-// estimate as stale — bounds drift from missed polls / backgrounding.
-const MAX_EXTRAPOLATION_MS = 3000;
+// Shared position-estimate tuning; a provider can override any of these via
+// provider.syncOptions (e.g. if its reported time drifts differently).
+const DEFAULT_SYNC_OPTIONS = {
+  // How much earlier LRC timestamps tend to mark a line vs. when it's actually sung.
+  leadCompensationMs: 500,
+  // Max time to extrapolate past the last successful poll before treating the
+  // estimate as stale — bounds drift from missed polls / backgrounding.
+  maxExtrapolationMs: 3000,
+};
 
 /**
  * Hook: useLyricSync
- * 
- * Accepts the current track object from spotifyPlayer polling:
+ *
+ * Accepts the current track snapshot from the active now-playing provider:
  * { track_id, track_name, artist, duration_ms, position_ms, is_playing }
- * 
+ * and optional syncOptions overriding DEFAULT_SYNC_OPTIONS.
+ *
  * Returns:
  * {
  *   lines: [{ time_ms, text, translation }],  // merged lyrics + translations
@@ -24,7 +29,7 @@ const MAX_EXTRAPOLATION_MS = 3000;
  *   status: 'idle' | 'loading' | 'ready' | 'no_lyrics' | 'error'
  * }
  */
-export function useLyricSync(currentTrack) {
+export function useLyricSync(currentTrack, syncOptions) {
   const [lines, setLines] = useState([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [status, setStatus] = useState('idle');
@@ -36,6 +41,9 @@ export function useLyricSync(currentTrack) {
   const lastPollTimeRef = useRef(Date.now());
   const isPlayingRef = useRef(false);
   const linesRef = useRef([]);
+  // Read by the sync interval, so a provider switch applies without restarting it
+  const syncOptionsRef = useRef(DEFAULT_SYNC_OPTIONS);
+  syncOptionsRef.current = { ...DEFAULT_SYNC_OPTIONS, ...syncOptions };
 
   // Keep linesRef in sync so the interval always reads the latest lines
   useEffect(() => {
@@ -88,16 +96,17 @@ export function useLyricSync(currentTrack) {
     }
 
     syncIntervalRef.current = setInterval(() => {
+      const { leadCompensationMs, maxExtrapolationMs } = syncOptionsRef.current;
       // Cap extrapolation: if a poll is missed (network hiccup, app backgrounded —
       // OS throttles JS timers) elapsed can otherwise grow unbounded, racing the
       // estimated position far past reality and locking the active line onto
       // whatever's near the end of the song until the next poll corrects it.
       const rawElapsed = isPlayingRef.current ? Date.now() - lastPollTimeRef.current : 0;
-      const elapsed = Math.min(rawElapsed, MAX_EXTRAPOLATION_MS);
+      const elapsed = Math.min(rawElapsed, maxExtrapolationMs);
       // LRC timestamps (crowd-sourced via LRCLIB) commonly mark a line slightly
       // before the vocal actually starts — compensate so the highlight doesn't
       // jump early.
-      const interpolatedPosition = positionRef.current + elapsed - SYNC_LEAD_COMPENSATION_MS;
+      const interpolatedPosition = positionRef.current + elapsed - leadCompensationMs;
       const newIndex = getActiveLyricIndex(linesRef.current, interpolatedPosition);
       setActiveIndex(prev => prev !== newIndex ? newIndex : prev);
     }, 200);
