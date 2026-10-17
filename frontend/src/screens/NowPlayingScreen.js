@@ -6,7 +6,7 @@ import {
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 import { auth } from '../firebase';
-import { signOut } from 'firebase/auth';
+import { useNowPlaying } from '../hooks/useNowPlaying';
 import { useLyricSync } from '../hooks/useLyricSync';
 import { useWordTracking } from '../hooks/useWordTracking';
 import useWordStore from '../store/useWordStore';
@@ -23,17 +23,15 @@ import { theme } from '../styles/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-const POLL_INTERVAL_MS = 1000;
 const TIER_RANK = { LOW: 0, MEDIUM: 1, HIGH: 2 };
 
 export default function NowPlayingScreen() {
   const insets = useSafeAreaInsets();
   const [headerColor, setHeaderColor] = useState(null);
   const gradientOpacity = useRef(new Animated.Value(0)).current;
-  const [currentTrack, setCurrentTrack] = useState(null);
+  const { provider, currentTrack } = useNowPlaying('spotify');
+  const pollNow = provider.pollNow;
   const [highlightedWord, setHighlightedWord] = useState(null);
-  const pollIntervalRef = useRef(null);
-  const spotifyTokenRef = useRef(null);
   const scrollViewRef = useRef(null);
   const itemRefs = useRef({});
   const itemYOffsets = useRef({});
@@ -80,54 +78,6 @@ export default function NowPlayingScreen() {
         Animated.timing(gradientOpacity, { toValue: 1, duration: 900, useNativeDriver: false }).start();
       });
   }, [currentTrack?.album_art]);
-
-  // ── Spotify polling ──────────────────────────────────────────────────────────
-
-  const pollSpotify = useCallback(async () => {
-    const requestStartedAt = Date.now();
-    try {
-      const user = auth.currentUser;
-      if (!user) return;
-      const token = await user.getIdToken();
-      const res = await fetch(`${BACKEND_URL}/spotifyPlayer`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401) {
-        signOut(auth).catch(() => {});
-        return;
-      }
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.spotify_access_token) spotifyTokenRef.current = data.spotify_access_token;
-      if (!data.is_playing) {
-        setCurrentTrack(prev => prev ? { ...prev, is_playing: false } : null);
-        return;
-      }
-      // data.position_ms reflects playback position as of when Spotify answered our
-      // backend, which is already `requestRoundTripMs` in the past by the time we
-      // process it here — without this, lyrics/progress lag real audio by that amount.
-      const requestRoundTripMs = Date.now() - requestStartedAt;
-      const compensatedPositionMs = data.duration_ms
-        ? Math.min(data.position_ms + requestRoundTripMs, data.duration_ms)
-        : data.position_ms + requestRoundTripMs;
-      setCurrentTrack(prev => {
-        if (
-          prev?.track_id === data.track_id &&
-          prev.position_ms === compensatedPositionMs &&
-          prev.is_playing === data.is_playing
-        ) return prev;
-        return { ...data, position_ms: compensatedPositionMs };
-      });
-    } catch (err) {
-      console.warn('Spotify poll failed:', err.message);
-    }
-  }, []);
-
-  useEffect(() => {
-    pollSpotify();
-    pollIntervalRef.current = setInterval(pollSpotify, POLL_INTERVAL_MS);
-    return () => clearInterval(pollIntervalRef.current);
-  }, [pollSpotify]);
 
   useEffect(() => {
     if (currentTrack?.track_id) {
@@ -290,11 +240,11 @@ export default function NowPlayingScreen() {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'seek', position_ms: timeMs }),
-      }).then(() => pollSpotify()).catch(console.warn);
+      }).then(() => pollNow()).catch(console.warn);
     } catch (err) {
       console.warn('seek error:', err.message);
     }
-  }, [pollSpotify]);
+  }, [pollNow]);
 
   // ── Lyric line rendering ──────────────────────────────────────────────────────
 
@@ -480,7 +430,7 @@ export default function NowPlayingScreen() {
         onWordTap={(wordData) => recordWordTap(wordData)}
       />
 
-      <PlaybackControls currentTrack={currentTrack} onPollNow={pollSpotify} spotifyTokenRef={spotifyTokenRef} />
+      <PlaybackControls currentTrack={currentTrack} onPollNow={pollNow} spotifyTokenRef={provider.spotifyTokenRef} />
 
       <SongWordsSheet
         visible={sheetVisible}
