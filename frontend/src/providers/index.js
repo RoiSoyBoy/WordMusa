@@ -1,11 +1,13 @@
 import { createSpotifyProvider } from './spotifyProvider';
 import { createMockProvider } from './mockProvider';
+import { createAppleMusicProvider } from './appleMusicProvider';
 
 /**
  * Now-playing provider contract
  *
  * A provider is a plain object created by a factory below:
  *   id, label
+ *   available?          false when the provider can't run yet (Apple Music stub)
  *   start({ onTrack, onError }) → stop()
  *     onTrack(updater)  React-style setter: pass a track snapshot, null, or prev => next
  *     onError(message)  last error for the dev overlay (null clears it)
@@ -27,6 +29,7 @@ import { createMockProvider } from './mockProvider';
 
 const FACTORIES = {
   spotify: createSpotifyProvider,
+  apple: createAppleMusicProvider,
   ...(__DEV__ ? { mock: createMockProvider } : {}),
 };
 
