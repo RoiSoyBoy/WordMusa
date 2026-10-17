@@ -119,7 +119,11 @@ export function useLyricSync(currentTrack, syncOptions) {
 
   const getAuthToken = async () => {
     const user = auth.currentUser;
-    if (!user) throw new Error('Not authenticated');
+    if (!user) {
+      // Dev builds only: the Mock provider may run logged out (English lyrics, no translation)
+      if (__DEV__ && syncOptionsRef.current.allowAnonymous) return null;
+      throw new Error('Not authenticated');
+    }
     return user.getIdToken();
   };
 
@@ -246,6 +250,9 @@ export function useLyricSync(currentTrack, syncOptions) {
           return;
         }
       }
+
+      // Logged-out dev Mock session: translation needs auth, so stop at English
+      if (!token) { setTranslationsReady(true); return; }
 
       // Step 5: Cache miss — fetch Hebrew translation via streaming SSE
       await new Promise((resolve, reject) => {

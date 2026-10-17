@@ -32,6 +32,8 @@ export function createMockProvider() {
   return {
     id: 'mock',
     label: 'Mock',
+    // Lets useLyricSync load lyrics without a login (honoured in dev builds only)
+    syncOptions: { allowAnonymous: true },
     controls: {
       play: act(() => { anchor(position()); playing = true; }),
       pause: act(() => { anchor(position()); playing = false; }),
