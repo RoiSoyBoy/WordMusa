@@ -17,6 +17,8 @@ import SpotifyIcon from '../components/SpotifyIcon';
 import SongWordsSheet from '../components/SongWordsSheet';
 import SongWordsList from '../components/SongWordsList';
 import PlaybackControls from '../components/PlaybackControls';
+import DevMenu from '../components/dev/DevMenu';
+import DebugOverlay from '../components/dev/DebugOverlay';
 import { LinearGradient } from 'expo-linear-gradient';
 import { extractAlbumColor } from '../utils/extractAlbumColor';
 import { theme } from '../styles/theme';
@@ -29,7 +31,9 @@ export default function NowPlayingScreen() {
   const [headerColor, setHeaderColor] = useState(null);
   const gradientOpacity = useRef(new Animated.Value(0)).current;
   const providerId = useDevSettings(s => s.providerId);
-  const { provider, currentTrack } = useNowPlaying(providerId);
+  const { provider, currentTrack, lastError } = useNowPlaying(providerId);
+  const [devMenuVisible, setDevMenuVisible] = useState(false);
+  const openDevMenu = __DEV__ ? () => setDevMenuVisible(true) : undefined;
   const [highlightedWord, setHighlightedWord] = useState(null);
   const scrollViewRef = useRef(null);
   const itemRefs = useRef({});
@@ -318,14 +322,33 @@ export default function NowPlayingScreen() {
     );
   };
 
+  // ── Dev tools (dev builds only) ──────────────────────────────────────────────
+
+  const devTools = __DEV__ ? (
+    <>
+      <DebugOverlay
+        providerId={provider.id}
+        track={currentTrack}
+        activeIndex={activeIndex}
+        lineCount={lines.length}
+        status={status}
+        lastError={lastError}
+        top={insets.top + 72}
+        onPress={openDevMenu}
+      />
+      <DevMenu visible={devMenuVisible} onClose={() => setDevMenuVisible(false)} />
+    </>
+  ) : null;
+
   // ── Empty state ───────────────────────────────────────────────────────────────
 
   if (!currentTrack) {
     return (
-      <View style={styles.emptyContainer}>
+      <Pressable style={styles.emptyContainer} onLongPress={openDevMenu} delayLongPress={600}>
         <Text style={styles.emptyText}>פתח את ספוטיפיי והתחל להאזין</Text>
         <Text style={styles.emptySubtext}>PsychoLyrics יסנכרן אוטומטית</Text>
-      </View>
+        {devTools}
+      </Pressable>
     );
   }
 
@@ -356,10 +379,10 @@ export default function NowPlayingScreen() {
           {currentTrack.album_art && (
             <Image source={{ uri: currentTrack.album_art }} style={styles.albumArt} />
           )}
-          <View style={styles.trackInfo}>
+          <Pressable style={styles.trackInfo} onLongPress={openDevMenu} delayLongPress={600}>
             <Text style={styles.trackName} numberOfLines={1}>{currentTrack.track_name}</Text>
             <Text style={styles.artistName} numberOfLines={1}>{currentTrack.artist}</Text>
-          </View>
+          </Pressable>
           {allSongWords.length > 0 && (
             <Pressable
               onPress={() => setWordsModalVisible(true)}
@@ -456,6 +479,8 @@ export default function NowPlayingScreen() {
           />
         </SafeAreaView>
       </Modal>
+
+      {devTools}
     </View>
   );
 }
