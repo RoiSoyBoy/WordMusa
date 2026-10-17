@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Image, Animated,
-  Dimensions, Platform, Linking, Modal, SafeAreaView,
+  Dimensions, Platform, Modal, SafeAreaView,
 } from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-import { auth } from '../firebase';
 import { useNowPlaying } from '../hooks/useNowPlaying';
 import { useLyricSync } from '../hooks/useLyricSync';
 import { useWordTracking } from '../hooks/useWordTracking';
@@ -22,7 +21,6 @@ import { extractAlbumColor } from '../utils/extractAlbumColor';
 import { theme } from '../styles/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const TIER_RANK = { LOW: 0, MEDIUM: 1, HIGH: 2 };
 
 export default function NowPlayingScreen() {
@@ -30,7 +28,6 @@ export default function NowPlayingScreen() {
   const [headerColor, setHeaderColor] = useState(null);
   const gradientOpacity = useRef(new Animated.Value(0)).current;
   const { provider, currentTrack } = useNowPlaying('spotify');
-  const pollNow = provider.pollNow;
   const [highlightedWord, setHighlightedWord] = useState(null);
   const scrollViewRef = useRef(null);
   const itemRefs = useRef({});
@@ -233,18 +230,10 @@ export default function NowPlayingScreen() {
 
   // ── Lyric seek ───────────────────────────────────────────────────────────────
 
-  const seekToLine = useCallback(async (timeMs) => {
-    try {
-      const token = await auth.currentUser.getIdToken();
-      fetch(`${BACKEND_URL}/spotifyControl`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'seek', position_ms: timeMs }),
-      }).then(() => pollNow()).catch(console.warn);
-    } catch (err) {
-      console.warn('seek error:', err.message);
-    }
-  }, [pollNow]);
+  const seekToLine = useCallback((timeMs) => {
+    if (!provider.controls?.seek) return;
+    provider.controls.seek(timeMs).catch(err => console.warn('seek error:', err.message));
+  }, [provider]);
 
   // ── Lyric line rendering ──────────────────────────────────────────────────────
 
@@ -377,15 +366,17 @@ export default function NowPlayingScreen() {
               <Text style={styles.wordsPillLabel}>{allSongWords.length} מילים</Text>
             </Pressable>
           )}
-          <Pressable
-            onPress={() => Linking.openURL(Platform.OS === 'web' ? 'https://open.spotify.com' : 'spotify://')}
-            style={({ pressed }) => [styles.spotifyIconBtn, pressed && { opacity: 0.75 }]}
-          >
-            <SpotifyIcon size={22} color="#fff" />
-            {currentTrack.is_playing && (
-              <Animated.View style={[styles.spotifyDot, { opacity: pulseAnim }]} />
-            )}
-          </Pressable>
+          {provider.openApp && (
+            <Pressable
+              onPress={provider.openApp}
+              style={({ pressed }) => [styles.spotifyIconBtn, pressed && { opacity: 0.75 }]}
+            >
+              <SpotifyIcon size={22} color="#fff" />
+              {currentTrack.is_playing && (
+                <Animated.View style={[styles.spotifyDot, { opacity: pulseAnim }]} />
+              )}
+            </Pressable>
+          )}
         </View>
       </View>
 
@@ -430,7 +421,7 @@ export default function NowPlayingScreen() {
         onWordTap={(wordData) => recordWordTap(wordData)}
       />
 
-      <PlaybackControls currentTrack={currentTrack} onPollNow={pollNow} spotifyTokenRef={provider.spotifyTokenRef} />
+      <PlaybackControls currentTrack={currentTrack} controls={provider.controls} />
 
       <SongWordsSheet
         visible={sheetVisible}

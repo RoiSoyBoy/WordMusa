@@ -1,24 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from './Icon';
-import { auth } from '../firebase';
 import { theme } from '../styles/theme';
-
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-
-async function callSpotifyDirect(action, positionMs, token) {
-  const map = {
-    play:     ['https://api.spotify.com/v1/me/player/play',     'PUT'],
-    pause:    ['https://api.spotify.com/v1/me/player/pause',    'PUT'],
-    next:     ['https://api.spotify.com/v1/me/player/next',     'POST'],
-    previous: ['https://api.spotify.com/v1/me/player/previous', 'POST'],
-    seek:     [`https://api.spotify.com/v1/me/player/seek?position_ms=${positionMs}`, 'PUT'],
-  };
-  const [url, method] = map[action];
-  const res = await fetch(url, { method, headers: { Authorization: `Bearer ${token}` } });
-  if (res.status === 401) return 401;
-  return res.status === 204 || res.ok;
-}
 
 function formatMs(ms) {
   if (!ms || ms < 0) return '0:00';
@@ -28,7 +11,8 @@ function formatMs(ms) {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-export default function PlaybackControls({ currentTrack, onPollNow, spotifyTokenRef }) {
+// controls: optional provider capabilities { play, pause, next, previous, seek } — missing ones are hidden
+export default function PlaybackControls({ currentTrack, controls }) {
   const [loadingAction, setLoadingAction] = useState(null);
   const [displayPositionMs, setDisplayPositionMs] = useState(0);
   const [dragDisplay, setDragDisplay] = useState(null);
@@ -63,7 +47,8 @@ export default function PlaybackControls({ currentTrack, onPollNow, spotifyToken
   }, [currentTrack?.duration_ms]);
 
   const handleControl = useCallback(async (action, positionMs) => {
-    if (loadingAction) return;
+    const run = controls?.[action];
+    if (loadingAction || !run) return;
 
     // Optimistic UI: flip play/pause instantly so user doesn't wait for API round-trip
     if (action === 'pause') {
@@ -76,30 +61,15 @@ export default function PlaybackControls({ currentTrack, onPollNow, spotifyToken
 
     setLoadingAction(action);
     try {
-      const directToken = spotifyTokenRef?.current;
-      if (directToken) {
-        const result = await callSpotifyDirect(action, positionMs, directToken);
-        if (result === true) { onPollNow?.(); return; }
-        if (result === 401) spotifyTokenRef.current = null; // expired — fall through to backend
-      }
-      // Backend fallback: handles token refresh + covers first load before token arrives
-      const token = await auth.currentUser.getIdToken();
-      const body = { action };
-      if (action === 'seek') body.position_ms = positionMs;
-      const res = await fetch(`${BACKEND_URL}/spotifyControl`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) onPollNow?.();
-      else setOptimisticIsPlaying(null);
+      const ok = await run(positionMs);
+      if (!ok) setOptimisticIsPlaying(null);
     } catch (err) {
-      console.warn('spotifyControl error:', err.message);
+      console.warn('playback control error:', err.message);
       setOptimisticIsPlaying(null);
     } finally {
       setLoadingAction(null);
     }
-  }, [loadingAction, onPollNow, spotifyTokenRef]);
+  }, [loadingAction, controls]);
 
   const getMsFromPageX = useCallback((pageX) => {
     if (!barLayoutRef.current || !currentTrack?.duration_ms) return null;
@@ -137,14 +107,15 @@ export default function PlaybackControls({ currentTrack, onPollNow, spotifyToken
   const seekMs = isDragging ? dragDisplay : displayPositionMs;
   const progress = duration_ms > 0 ? seekMs / duration_ms : 0;
   const progressPct = `${Math.min(progress * 100, 100)}%`;
+  const canSeek = !!duration_ms && !!controls?.seek;
 
   return (
     <View style={styles.container}>
       {/* Progress bar — draggable */}
       <View
         style={styles.progressWrapper}
-        onStartShouldSetResponder={() => !!duration_ms}
-        onMoveShouldSetResponder={() => !!duration_ms}
+        onStartShouldSetResponder={() => canSeek}
+        onMoveShouldSetResponder={() => canSeek}
         onResponderGrant={onSeekGrant}
         onResponderMove={onSeekMove}
         onResponderRelease={onSeekRelease}
@@ -170,7 +141,7 @@ export default function PlaybackControls({ currentTrack, onPollNow, spotifyToken
 
       {/* Transport buttons */}
       <View style={styles.controls}>
-        <TouchableOpacity
+        {controls?.previous && <TouchableOpacity
           style={styles.sideBtn}
           activeOpacity={0.7}
           onPress={() => handleControl('previous')}
@@ -181,9 +152,9 @@ export default function PlaybackControls({ currentTrack, onPollNow, spotifyToken
             size={26}
             color={loadingAction === 'previous' ? 'rgba(255,255,255,0.3)' : theme.colors.text}
           />
-        </TouchableOpacity>
+        </TouchableOpacity>}
 
-        <TouchableOpacity
+        {controls?.play && controls?.pause && <TouchableOpacity
           style={styles.playBtn}
           activeOpacity={0.85}
           onPress={() => handleControl(is_playing ? 'pause' : 'play')}
@@ -195,9 +166,9 @@ export default function PlaybackControls({ currentTrack, onPollNow, spotifyToken
             color={loadingAction ? 'rgba(0,0,0,0.4)' : '#000000'}
             style={!is_playing && { marginLeft: 3 }}
           />
-        </TouchableOpacity>
+        </TouchableOpacity>}
 
-        <TouchableOpacity
+        {controls?.next && <TouchableOpacity
           style={styles.sideBtn}
           activeOpacity={0.7}
           onPress={() => handleControl('next')}
@@ -208,7 +179,7 @@ export default function PlaybackControls({ currentTrack, onPollNow, spotifyToken
             size={26}
             color={loadingAction === 'next' ? 'rgba(255,255,255,0.3)' : theme.colors.text}
           />
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
     </View>
   );
