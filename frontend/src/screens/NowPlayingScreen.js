@@ -9,6 +9,7 @@ import { useNowPlaying } from '../hooks/useNowPlaying';
 import { useLyricSync } from '../hooks/useLyricSync';
 import { useWordTracking } from '../hooks/useWordTracking';
 import useWordStore from '../store/useWordStore';
+import useDevSettings from '../store/useDevSettings';
 import { psychometricWordMap, basicWordSet } from '../utils/psychometricWords';
 import WordCard from '../components/WordCard';
 import Icon from '../components/Icon';
@@ -27,7 +28,8 @@ export default function NowPlayingScreen() {
   const insets = useSafeAreaInsets();
   const [headerColor, setHeaderColor] = useState(null);
   const gradientOpacity = useRef(new Animated.Value(0)).current;
-  const { provider, currentTrack } = useNowPlaying('spotify');
+  const providerId = useDevSettings(s => s.providerId);
+  const { provider, currentTrack } = useNowPlaying(providerId);
   const [highlightedWord, setHighlightedWord] = useState(null);
   const scrollViewRef = useRef(null);
   const itemRefs = useRef({});

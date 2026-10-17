@@ -1,4 +1,5 @@
 import { createSpotifyProvider } from './spotifyProvider';
+import { createMockProvider } from './mockProvider';
 
 /**
  * Now-playing provider contract
@@ -23,10 +24,12 @@ import { createSpotifyProvider } from './spotifyProvider';
 
 const FACTORIES = {
   spotify: createSpotifyProvider,
+  ...(__DEV__ ? { mock: createMockProvider } : {}),
 };
 
 export const PROVIDER_IDS = Object.keys(FACTORIES);
 
+// Unknown or dev-only ids fall back to Spotify, so production can never run Mock
 export function createProvider(id) {
   return (FACTORIES[id] || FACTORIES.spotify)();
 }
