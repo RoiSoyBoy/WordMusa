@@ -10,10 +10,13 @@ import OnboardingFlow from './src/components/OnboardingFlow';
 import AppNavigator from './src/navigation/AppNavigator';
 import WordDetailModal from './src/components/WordDetailModal';
 import WelcomeTourModal from './src/components/WelcomeTourModal';
+import useDevSettings from './src/store/useDevSettings';
 
 export default function App() {
   const [fontsLoaded] = useFonts(Ionicons.font);
   const [user, setUser] = useState(null);
+  // Dev builds only: Mock runs without a login, so it skips the login gate
+  const devMockBypass = useDevSettings(s => __DEV__ && s.providerId === 'mock');
   const [showOnboarding, setShowOnboarding] = useState(null);
   const [hasSeenTour, setHasSeenTour] = useState(null);
 
@@ -36,7 +39,7 @@ export default function App() {
   // Wait for data reads before rendering anything (fonts load in background)
   if (showOnboarding === null || hasSeenTour === null) return null;
 
-  if (showOnboarding || !user) {
+  if ((showOnboarding || !user) && !devMockBypass) {
     return (
       <SafeAreaProvider>
         <OnboardingFlow onComplete={() => setShowOnboarding(false)} />
