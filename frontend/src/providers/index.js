@@ -1,5 +1,4 @@
 import { createSpotifyProvider } from './spotifyProvider';
-import { createMockProvider } from './mockProvider';
 import { createAppleMusicProvider } from './appleMusicProvider';
 
 /**
@@ -30,7 +29,8 @@ import { createAppleMusicProvider } from './appleMusicProvider';
 const FACTORIES = {
   spotify: createSpotifyProvider,
   apple: createAppleMusicProvider,
-  ...(__DEV__ ? { mock: createMockProvider } : {}),
+  // Conditional require so the mock module is left out of production bundles entirely
+  ...(__DEV__ ? { mock: require('./mockProvider').createMockProvider } : {}),
 };
 
 export const PROVIDER_IDS = Object.keys(FACTORIES);
