@@ -118,13 +118,20 @@ export function useLyricSync(currentTrack, syncOptions) {
   }, [hasLines]);
 
   const getAuthToken = async () => {
+    // Dev builds only: the Mock provider may run without a usable login — logged out,
+    // or a stale emulator session whose token can't refresh (English lyrics, no translation)
+    const anonymousOk = __DEV__ && syncOptionsRef.current.allowAnonymous;
     const user = auth.currentUser;
     if (!user) {
-      // Dev builds only: the Mock provider may run logged out (English lyrics, no translation)
-      if (__DEV__ && syncOptionsRef.current.allowAnonymous) return null;
+      if (anonymousOk) return null;
       throw new Error('Not authenticated');
     }
-    return user.getIdToken();
+    try {
+      return await user.getIdToken();
+    } catch (err) {
+      if (anonymousOk) return null;
+      throw err;
+    }
   };
 
   const loadLyricsAndTranslation = async (track, signal) => {
@@ -193,6 +200,8 @@ export function useLyricSync(currentTrack, syncOptions) {
 
         // Backend fallback — on timeout or CORS/network failure
         if (!rawData) {
+          // No token (dev Mock without login): the backend would reject the request anyway
+          if (!token) { setStatus('error'); return; }
           const t2 = Date.now();
           const backendRes = await fetch(
             `${BACKEND_URL}/lyricsFetch?${lyricsParams}`,
