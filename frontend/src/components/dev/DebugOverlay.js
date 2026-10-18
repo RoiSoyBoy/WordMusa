@@ -5,7 +5,7 @@ import { theme } from '../../styles/theme';
 
 // Dev builds only — live provider/sync state for testing on a phone with no console.
 // Tap it to open the dev menu.
-export default function DebugOverlay({ providerId, track, activeIndex, lineCount, status, lastError, top, onPress }) {
+export default function DebugOverlay({ providerId, track, activeIndex, lineCount, status, lastError, lyricsError, top, onPress }) {
   const visible = useDevSettings(s => s.overlayVisible);
   if (!__DEV__ || !visible) return null;
 
@@ -16,12 +16,13 @@ export default function DebugOverlay({ providerId, track, activeIndex, lineCount
     `isPlaying: ${track ? String(!!track.is_playing) : '—'}`,
     `line: ${activeIndex} / ${lineCount} (${status})`,
     `error: ${lastError || '—'}`,
+    `lyrics error: ${lyricsError || '—'}`,
   ];
 
   return (
     <Pressable onPress={onPress} style={[styles.box, { top }]}>
       {rows.map((row, i) => (
-        <Text key={i} style={styles.text} numberOfLines={2}>{row}</Text>
+        <Text key={i} style={styles.text} numberOfLines={4}>{row}</Text>
       ))}
     </Pressable>
   );

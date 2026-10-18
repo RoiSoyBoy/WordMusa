@@ -51,7 +51,7 @@ export default function NowPlayingScreen() {
   const [wordsModalVisible, setWordsModalVisible] = useState(false);
   const [allSongWords, setAllSongWords] = useState([]);
 
-  const { lines, activeIndex, status, translationsReady } = useLyricSync(currentTrack, provider.syncOptions);
+  const { lines, activeIndex, status, translationsReady, lyricsError } = useLyricSync(currentTrack, provider.syncOptions);
   const { recordWordEncounter, recordWordTap, recordTrackSeen, recordWordFlag, flaggedWordSet } = useWordTracking();
   const { setActiveWords, setSelectedWord } = useWordStore();
 
@@ -333,6 +333,7 @@ export default function NowPlayingScreen() {
         lineCount={lines.length}
         status={status}
         lastError={lastError}
+        lyricsError={lyricsError}
         top={insets.top + 72}
         onPress={openDevMenu}
       />

@@ -34,6 +34,8 @@ export function useLyricSync(currentTrack, syncOptions) {
   const [activeIndex, setActiveIndex] = useState(-1);
   const [status, setStatus] = useState('idle');
   const [translationsReady, setTranslationsReady] = useState(false);
+  // Last lyric-loading problem, shown in the dev debug overlay (no console on the phone)
+  const [lyricsError, setLyricsError] = useState(null);
   const currentTrackIdRef = useRef(null);
   const abortControllerRef = useRef(null);
   const syncIntervalRef = useRef(null);
@@ -74,6 +76,7 @@ export function useLyricSync(currentTrack, syncOptions) {
     setActiveIndex(-1);
     setStatus('loading');
     setTranslationsReady(false);
+    setLyricsError(null);
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -187,13 +190,16 @@ export function useLyricSync(currentTrack, syncOptions) {
           if (err.name === 'AbortError') {
             if (signal.aborted) return; // track changed
             console.warn('[LL] LRCLIB timed out — trying backend');
+            setLyricsError('LRCLIB timed out (10s)');
           } else {
             console.warn(`[LL] LRCLIB CORS/network error, trying backend: ${err.message}`);
+            setLyricsError(`LRCLIB: ${err.message}`);
           }
         } else {
           console.log(`[LL] LRCLIB direct: ${lrclibResult.status} (${Date.now()-t1}ms)`);
           if (lrclibResult.status === 404) { setStatus('no_lyrics'); return; }
           if (lrclibResult.ok) rawData = await lrclibResult.json();
+          else setLyricsError(`LRCLIB HTTP ${lrclibResult.status}`);
         }
 
         if (signal.aborted) return;
@@ -383,9 +389,10 @@ export function useLyricSync(currentTrack, syncOptions) {
     } catch (err) {
       if (err.name === 'AbortError') return;
       console.error('[useLyricSync] Unexpected error:', err.name, err.message, err);
+      setLyricsError(prev => prev ? `${prev} → ${err.message}` : err.message);
       setStatus('error');
     }
   };
 
-  return { lines, activeIndex, status, translationsReady };
+  return { lines, activeIndex, status, translationsReady, lyricsError };
 }
