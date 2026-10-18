@@ -7,26 +7,30 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#121212"
-    },
     "ios": {
       "bundleIdentifier": "com.roisoyboy.psycholyrics",
       "supportsTablet": true
     },
     "plugins": [
       "./plugins/withAndroidWidget",
-      "./plugins/withIOSWidget"
+      "./plugins/withIOSWidget",
+      "expo-font",
+      "expo-status-bar",
+      "expo-web-browser",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#121212"
+        }
+      ]
     ],
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#121212"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.roisoyboy.psycholyrics"
     },
     "web": {
